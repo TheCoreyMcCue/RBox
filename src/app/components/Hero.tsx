@@ -13,7 +13,7 @@ const Hero = () => {
           <p className="text-lg md:text-xl mb-8">
             We help you pick whats for dinner tonight!
           </p>
-          <Link href="/services">
+          <Link href="/recipes/create">
             <div className="inline-block bg-blue-500 text-white py-3 px-6 rounded-full text-lg font-semibold hover:bg-blue-600 transition duration-300 cursor-pointer">
               Get Started
             </div>
