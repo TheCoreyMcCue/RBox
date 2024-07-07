@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import Image from "next/image";
+import logo from "../../../public/dinnerlogo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,11 +20,15 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="text-xl font-bold text-gray-900">
-                MyLogo
+                <Image
+                  src={logo}
+                  alt="logo"
+                  className="h-auto w-[2rem] rounded"
+                />
               </Link>
             </div>
 
-            <div className="hidden md:flex space-x-8 ml-10">
+            <div className="hidden md:flex items-center space-x-8 ml-10">
               <Link href="/" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>

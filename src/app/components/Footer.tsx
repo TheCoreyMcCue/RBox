@@ -1,13 +1,16 @@
 import Link from "next/link";
+import logo from "../../../public/dinnerlogo.png";
+import Image from "next/image";
 
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white py-4">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <div className="text-center md:text-left">
-          <h3 className="text-lg font-semibold">MyLogo</h3>
+        <div className="text-center md:text-left flex flex-col justify-center items-center">
+          <Image src={logo} alt="logo" className="h-auto w-[1.5rem] rounded" />
+
           <p className="text-gray-400">
-            © {new Date().getFullYear()} MyLogo. All rights reserved.
+            © {new Date().getFullYear()} AreBox. All rights reserved.
           </p>
         </div>
         <div className="flex space-x-4 mt-4 md:mt-0">
