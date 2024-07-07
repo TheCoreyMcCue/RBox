@@ -1,5 +1,7 @@
 "use client";
 
+import { createRecipe } from "@/lib/actions/recipe.action";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const CreateRecipe = () => {
@@ -10,6 +12,9 @@ const CreateRecipe = () => {
   const [ingredients, setIngredients] = useState<string[]>([""]);
   const [steps, setSteps] = useState<string[]>([""]);
   const [category, setCategory] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
 
   const handleIngredientChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
@@ -41,18 +46,39 @@ const CreateRecipe = () => {
     setSteps(newSteps);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({
-      title,
-      description,
-      cookTime,
-      image,
-      ingredients,
-      steps,
-      category,
-    });
+
+    try {
+      const newRecipe = await createRecipe({
+        creator: "668a8b83d31f9d6de41b9a06",
+        title: title,
+        description: description,
+        cookTime: cookTime,
+        image: image,
+        ingredients: ingredients,
+        steps: steps,
+        category: category,
+      });
+
+      if (newRecipe) {
+        // Reset form fields
+        setTitle("");
+        setDescription("");
+        setCookTime("");
+        setImage("");
+        setIngredients([""]);
+        setSteps([""]);
+        setCategory("");
+        setError(null);
+
+        // Redirect to the new recipe page
+        router.push(`/}`);
+      }
+    } catch (error) {
+      console.error("Error creating recipe:", error);
+      setError("Failed to create recipe. Please try again.");
+    }
   };
 
   return (
@@ -91,7 +117,7 @@ const CreateRecipe = () => {
               Cook Time (minutes)
             </label>
             <input
-              type="number"
+              type="text"
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
@@ -181,6 +207,7 @@ const CreateRecipe = () => {
               required
             />
           </div>
+          {error && <div className="mb-4 text-red-500">{error}</div>}
           <div className="text-center">
             <button
               type="submit"
