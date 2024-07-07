@@ -1,4 +1,4 @@
-import { Schema, model, models, Document } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
 export interface IRecipe extends Document {
   title: string;
@@ -9,7 +9,7 @@ export interface IRecipe extends Document {
   steps: string[];
   category: string;
   createdAt: Date;
-  creator: Schema.Types.ObjectId; // Reference to the user who created the recipe
+  creator: Types.ObjectId; // Reference to the user who created the recipe
 }
 
 const RecipeSchema = new Schema<IRecipe>({
@@ -46,7 +46,7 @@ const RecipeSchema = new Schema<IRecipe>({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: "User", // Reference to User model
     required: true,
   },
 });

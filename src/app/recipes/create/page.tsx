@@ -3,6 +3,7 @@
 import { createRecipe } from "@/lib/actions/recipe.action";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 const CreateRecipe = () => {
   const [title, setTitle] = useState("");
@@ -13,6 +14,10 @@ const CreateRecipe = () => {
   const [steps, setSteps] = useState<string[]>([""]);
   const [category, setCategory] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const { user } = useUser();
+
+  console.log(user);
 
   const router = useRouter();
 
@@ -51,7 +56,7 @@ const CreateRecipe = () => {
 
     try {
       const newRecipe = await createRecipe({
-        creator: "668a8b83d31f9d6de41b9a06",
+        creator: user?.id,
         title: title,
         description: description,
         cookTime: cookTime,
