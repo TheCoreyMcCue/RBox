@@ -73,7 +73,7 @@ const CreateRecipe = () => {
         setError(null);
 
         // Redirect to the new recipe page
-        router.push(`/}`);
+        router.push(`/`);
       }
     } catch (error) {
       console.error("Error creating recipe:", error);
