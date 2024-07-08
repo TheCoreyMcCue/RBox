@@ -1,37 +1,107 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { getRecipesByUser } from "@/lib/actions/recipe.action";
+"use client";
 
-const Dashboard = async () => {
-  const user = await currentUser();
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
+import Link from "next/link";
+
+interface Recipe {
+  _id: string;
+  title: string;
+  description: string;
+  image: string;
+  cookTime: string;
+  // add other necessary fields
+}
+
+const Dashboard = () => {
+  const { user } = useUser();
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      if (user) {
+        try {
+          const fetchedRecipes = await getRecipesByUser(user.id);
+          setRecipes(fetchedRecipes);
+        } catch (error) {
+          console.error("Error fetching recipes:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRecipes();
+  }, [user]);
+
+  const handleDelete = async (recipeId: string) => {
+    try {
+      await deleteRecipe(recipeId, user!.id);
+      setRecipes(recipes.filter((recipe) => recipe._id !== recipeId));
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[90vh] flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
   if (!user) {
-    // Handle the case where the user is not authenticated
     return (
-      <div className="min-h-[90vh]">
-        <h1 className="text-2xl font-bold mb-4">
+      <div className="min-h-[90vh] flex items-center justify-center">
+        <h1 className="text-2xl font-bold">
           Please sign in to view your recipes
         </h1>
       </div>
     );
   }
 
-  const recipes = await getRecipesByUser(user.id);
-  console.log(user.id, "recipes", recipes);
-
+  console.log(recipes);
   return (
-    <div className="min-h-[90vh]">
-      <h1 className="text-2xl font-bold mb-4">Your Recipes</h1>
+    <div className="min-h-[90vh] container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8 text-center">Your Recipes</h1>
       {recipes.length > 0 ? (
-        <ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => (
-            <li key={recipe._id}>
-              <h2 className="text-xl font-semibold">{recipe.title}</h2>
-              <p>{recipe.description}</p>
-            </li>
+            <div key={recipe._id}>
+              <Link href={`/recipes/${recipe._id}`}>
+                <div className="block bg-white shadow-lg rounded-lg overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
+                  <img
+                    src={recipe.image || "https://via.placeholder.com/400x300"}
+                    alt={recipe.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h2 className="text-2xl font-semibold mb-2">
+                      {recipe.title}
+                    </h2>
+                    <p className="text-gray-700">{recipe.description}</p>
+                    <p className="text-gray-500 mt-2">
+                      Cook Time: {recipe.cookTime} minutes
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              <button
+                onClick={() => handleDelete(recipe._id)}
+                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300 mt-2 mx-4"
+              >
+                Delete
+              </button>
+            </div>
           ))}
-        </ul>
+        </div>
       ) : (
-        <p>No recipes found.</p>
+        <p className="text-center text-gray-700">No recipes found.</p>
       )}
     </div>
   );
