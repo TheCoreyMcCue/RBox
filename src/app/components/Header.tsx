@@ -38,18 +38,6 @@ const Navbar = () => {
               >
                 My Dashboard
               </Link>
-              <Link
-                href="/services"
-                className="text-gray-700 hover:text-gray-900"
-              >
-                Services
-              </Link>
-              <Link
-                href="/contact"
-                className="text-gray-700 hover:text-gray-900"
-              >
-                Contact
-              </Link>
             </div>
           </div>
           <SignedOut>
@@ -113,21 +101,6 @@ const Navbar = () => {
               className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
             >
               My Dashboard
-            </Link>
-
-            <Link
-              href="/services"
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
-            >
-              Services
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
-            >
-              Contact
             </Link>
           </div>
         </div>
