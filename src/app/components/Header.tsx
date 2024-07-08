@@ -102,12 +102,14 @@ const Navbar = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link
               href="/"
+              onClick={() => setIsOpen(false)}
               className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
             >
               Home
             </Link>
             <Link
               href="/dashboard"
+              onClick={() => setIsOpen(false)}
               className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
             >
               My Dashboard
@@ -115,12 +117,14 @@ const Navbar = () => {
 
             <Link
               href="/services"
+              onClick={() => setIsOpen(false)}
               className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
             >
               Services
             </Link>
             <Link
               href="/contact"
+              onClick={() => setIsOpen(false)}
               className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
             >
               Contact
