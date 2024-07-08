@@ -1,51 +1,52 @@
-// components/EditModal.tsx
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-// import { updateRecipe } from "@/lib/actions/recipe.action";
+import { useRouter } from "next/navigation"; // Use next/router instead of next/navigation
 
 interface EditModalProps {
-  // Assuming Recipe interface is imported or defined
   onClose: () => void;
 }
 
 const EditModal: React.FC<EditModalProps> = ({ onClose }) => {
   const router = useRouter();
-  //   const [updatedRecipe, setUpdatedRecipe] = useState<Recipe>({
-  //     ...recipe, // Initialize with current recipe details
-  //   });
+  const [updatedRecipe, setUpdatedRecipe] = useState({
+    title: "",
+    description: "",
+    cookTime: "",
+    // Add other fields as needed
+  });
 
-  //   const handleSubmit = async () => {
-  //     try {
-  //       await updateRecipe(updatedRecipe); // Implement updateRecipe function accordingly
-  //       onClose(); // Close modal after successful update
-  //       router.reload(); // Reload the page to reflect updated recipe details
-  //     } catch (error) {
-  //       console.error("Error updating recipe:", error);
-  //       // Handle error (e.g., show error message)
-  //     }
-  //   };
+  const handleSubmit = async () => {
+    try {
+      // Implement your update logic here
+      console.log("Updated recipe:", updatedRecipe);
+      onClose(); // Close modal after successful update
+      router.push("/dashboard"); // Reload the page to reflect updated recipe details
+    } catch (error) {
+      console.error("Error updating recipe:", error);
+      // Handle error (e.g., show error message)
+    }
+  };
 
-  //   const handleChange = (
-  //     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  //   ) => {
-  //     const { name, value } = event.target;
-  //     setUpdatedRecipe((prevRecipe) => ({
-  //       ...prevRecipe,
-  //       [name]: value,
-  //     }));
-  //   };
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+    setUpdatedRecipe((prevRecipe) => ({
+      ...prevRecipe,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96 overflow-y-auto max-h-[90vh]">
         <h2 className="text-2xl font-semibold mb-4">Edit Recipe</h2>
         <label className="block mb-2">
           Title:
           <input
             type="text"
             name="title"
-            // value={updatedRecipe.title}
-            // onChange={handleChange}
+            value={updatedRecipe.title}
+            onChange={handleChange}
             className="block w-full border-gray-300 rounded-lg mt-1"
           />
         </label>
@@ -53,8 +54,8 @@ const EditModal: React.FC<EditModalProps> = ({ onClose }) => {
           Description:
           <textarea
             name="description"
-            // value={updatedRecipe.description}
-            // onChange={handleChange}
+            value={updatedRecipe.description}
+            onChange={handleChange}
             className="block w-full border-gray-300 rounded-lg mt-1"
           />
         </label>
@@ -63,14 +64,14 @@ const EditModal: React.FC<EditModalProps> = ({ onClose }) => {
           <input
             type="text"
             name="cookTime"
-            // value={updatedRecipe.cookTime}
-            // onChange={handleChange}
+            value={updatedRecipe.cookTime}
+            onChange={handleChange}
             className="block w-full border-gray-300 rounded-lg mt-1"
           />
         </label>
         <div className="flex justify-end">
           <button
-            // onClick={handleSubmit}
+            onClick={handleSubmit}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-blue-600"
           >
             Save
