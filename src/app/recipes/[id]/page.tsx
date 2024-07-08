@@ -4,8 +4,9 @@
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { getRecipeById, deleteRecipe } from "@/lib/actions/recipe.action";
+import { getRecipeById } from "@/lib/actions/recipe.action";
+import Link from "next/link";
+import EditModal from "@/app/components/EditModal"; // Adjust path as per your project structure
 
 interface Recipe {
   _id: string;
@@ -21,22 +22,11 @@ interface Recipe {
 const RecipeDetails = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const recipeId = useSearchParams();
   const [id, setId] = useState(pathname.split("/")[2]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const { user } = useUser();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-
-  const handleDelete = async (recipeId: string) => {
-    try {
-      await deleteRecipe(recipeId, user!.id);
-      setRecipes(recipes.filter((recipe) => recipe._id !== recipeId));
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Error deleting recipe:", error);
-    }
-  };
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -59,6 +49,14 @@ const RecipeDetails = () => {
 
     fetchRecipe();
   }, [id, router]);
+
+  const openEditModal = () => {
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+  };
 
   if (loading) {
     return (
@@ -104,20 +102,23 @@ const RecipeDetails = () => {
           </ol>
           <h2 className="text-2xl font-semibold mb-4">Category</h2>
           <p className="text-gray-500">{recipe.category}</p>
-          <div
-            className="text-blue-500 hover:underline mt-4 cursor-pointer"
-            onClick={() => router.push("/dashboard")}
-          >
-            Back to Dashboard
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="bg-green-500 text-white px-4 py-2 rounded-lg  hover:bg-blue-600"
+            >
+              ⬅️ Back to Dashboard
+            </button>
+            <button
+              onClick={openEditModal}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Edit
+            </button>
           </div>
-          <button
-            onClick={() => handleDelete(recipe._id)}
-            className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300 mt-2 mx-4"
-          >
-            Delete
-          </button>
         </div>
       </div>
+      {showEditModal && <EditModal onClose={closeEditModal} />}
     </div>
   );
 };
