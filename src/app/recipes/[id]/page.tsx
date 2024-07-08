@@ -1,11 +1,9 @@
-// pages/recipes/[id].tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { getRecipeById } from "@/lib/actions/recipe.action";
-import Link from "next/link";
+import { getRecipeById, deleteRecipe } from "@/lib/actions/recipe.action";
 import EditModal from "@/app/components/EditModal"; // Adjust path as per your project structure
 
 interface Recipe {
@@ -23,10 +21,8 @@ interface Recipe {
 const RecipeDetails = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const recipeId = useSearchParams();
   const [id, setId] = useState(pathname.split("/")[2]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  console.log("🚀 ~ RecipeDetails ~ recipe:", recipe);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -58,6 +54,17 @@ const RecipeDetails = () => {
 
   const closeEditModal = () => {
     setShowEditModal(false);
+  };
+
+  const handleDelete = async () => {
+    if (recipe) {
+      try {
+        await deleteRecipe(recipe._id, recipe.creator);
+        router.push("/dashboard"); // Navigate back to the dashboard after deletion
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+      }
+    }
   };
 
   if (loading) {
@@ -107,16 +114,24 @@ const RecipeDetails = () => {
           <div className="flex justify-between mt-4">
             <button
               onClick={() => router.push("/dashboard")}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg  hover:bg-blue-600"
+              className="bg-green-500 text-white px-2 py-2 rounded-lg  hover:bg-blue-600"
             >
-              ⬅️ Back to Dashboard
+              ⬅️ Back
             </button>
-            <button
-              onClick={openEditModal}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            >
-              Edit
-            </button>
+            <div className="flex space-x-2">
+              <button
+                onClick={openEditModal}
+                className="bg-blue-500 text-white px-2 py-2 rounded-lg hover:bg-blue-600"
+              >
+                Edit
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 text-white px-2 py-2 rounded-lg hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
