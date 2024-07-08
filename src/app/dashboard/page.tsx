@@ -33,6 +33,7 @@ const Dashboard = () => {
           setLoading(false);
         }
       }
+      setLoading(false);
     };
 
     fetchRecipes();
