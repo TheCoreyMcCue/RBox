@@ -28,7 +28,7 @@ export async function createRecipe(recipe: any) {
 export const getRecipesByUser = async (userId: string) => {
   try {
     // Ensure the user ID is properly cast to ObjectId if needed
-
+    await connect();
     const recipes = await Recipe.find({ creator: userId }).exec();
     return recipes;
   } catch (error) {
@@ -36,31 +36,3 @@ export const getRecipesByUser = async (userId: string) => {
     throw error;
   }
 };
-
-// const populateRecipe = (query: any) => {
-//   return query
-//     .populate({
-//       path: "creator",
-//       model: User,
-//       select: "_id firstName lastName",
-//     })
-//     .populate({ path: "category", model: Category, select: "_id name" });
-// };
-
-// export async function getRecipesByUser({ userId }: GetRecipesByUserParams) {
-//   try {
-//     await connect();
-
-//     const conditions = { creator: userId };
-
-//     const recipesQuery = Recipe.find(conditions).sort({ createdAt: "desc" });
-
-//     const recipes = await populateRecipe(recipesQuery);
-
-//     return {
-//       data: JSON.parse(JSON.stringify(recipes)),
-//     };
-//   } catch (error) {
-//     handleError(error);
-//   }
-// }

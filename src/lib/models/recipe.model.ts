@@ -9,7 +9,7 @@ export interface IRecipe extends Document {
   steps: string[];
   category: string;
   createdAt: Date;
-  creator: Types.ObjectId; // Reference to the user who created the recipe
+  creator: string; // Reference to the user who created the recipe
 }
 
 const RecipeSchema = new Schema<IRecipe>({
@@ -45,7 +45,7 @@ const RecipeSchema = new Schema<IRecipe>({
     default: Date.now,
   },
   creator: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: "User", // Reference to User model
     required: true,
   },
