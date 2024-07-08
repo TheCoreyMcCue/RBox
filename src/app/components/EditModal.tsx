@@ -22,14 +22,7 @@ interface EditModalProps {
 }
 
 const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
-  console.log("🚀 ~ recipe:", recipe);
   const router = useRouter();
-  //   const [updatedRecipe, setUpdatedRecipe] = useState({
-  //     title: "",
-  //     description: "",
-  //     cookTime: "",
-  //     // Add other fields as needed
-  //   });
 
   const [title, setTitle] = useState(recipe.title);
   const [description, setDescription] = useState(recipe.description);

@@ -6,8 +6,13 @@ import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import logo from "../../../public/dinnerlogo.png";
 
+import { useUser } from "@clerk/nextjs";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const user = useUser();
+  const signedIn = user.isSignedIn;
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -32,12 +37,14 @@ const Navbar = () => {
               <Link href="/" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>
-              <Link
-                href="/dashboard"
-                className="text-gray-700 hover:text-gray-900"
-              >
-                My Dashboard
-              </Link>
+              {signedIn && (
+                <Link
+                  href="/dashboard"
+                  className="text-gray-700 hover:text-gray-900"
+                >
+                  My Dashboard
+                </Link>
+              )}
             </div>
           </div>
           <SignedOut>
@@ -95,13 +102,15 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              href="/dashboard"
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
-            >
-              My Dashboard
-            </Link>
+            {signedIn && (
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+              >
+                My Dashboard
+              </Link>
+            )}
           </div>
         </div>
       )}

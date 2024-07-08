@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 
@@ -15,9 +16,11 @@ interface Recipe {
 }
 
 const Dashboard = () => {
-  const { user } = useUser();
+  const user = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const isSignedIn = user.isSignedIn;
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -34,7 +37,7 @@ const Dashboard = () => {
     };
 
     fetchRecipes();
-  }, [user]);
+  }, []);
 
   if (loading) {
     return (
@@ -44,12 +47,21 @@ const Dashboard = () => {
     );
   }
 
-  if (!user) {
+  if (!isSignedIn) {
     return (
-      <div className="min-h-[90vh] flex items-center justify-center">
-        <h1 className="text-2xl font-bold">
-          Please sign in to view your recipes
-        </h1>
+      <div className="bg-gray-900 min-h-[90vh] text-white py-20">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
+          <div className="md:w-1/2 text-center md:text-left">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              Sign In to get Started!
+            </h1>
+            <Link href={isSignedIn ? "/resipes/create" : "/dashboard"}>
+              <div className="inline-block bg-blue-500 text-white py-3 px-6 rounded-full text-lg font-semibold hover:bg-blue-600 transition duration-300 cursor-pointer">
+                <SignInButton>Get Started</SignInButton>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -83,7 +95,18 @@ const Dashboard = () => {
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-700">No recipes found.</p>
+        <div className="flex flex-col items-center">
+          <p className="text-center text-gray-700">
+            No recipes found. <br />
+          </p>
+          <p className="text-center text-gray-700">Add one to get started</p>
+          <br />
+          <Link href="/recipes/create">
+            <div className="inline-block bg-blue-500 text-white py-3 px-6 rounded-full text-lg font-semibold hover:bg-blue-600 transition duration-300 cursor-pointer">
+              Get Started
+            </div>
+          </Link>
+        </div>
       )}
     </div>
   );

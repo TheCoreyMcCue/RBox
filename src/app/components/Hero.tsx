@@ -1,8 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import heroImage from "../../../public/family-dinner.png";
 import Image from "next/image";
 
+import { useUser } from "@clerk/nextjs";
+
 const Hero = () => {
+  const user = useUser();
+  const isSignedIn = user?.isSignedIn;
+
   return (
     <div className="bg-gray-900 text-white py-20">
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
@@ -13,7 +20,7 @@ const Hero = () => {
           <p className="text-lg md:text-xl mb-8">
             We help you pick whats for dinner tonight!
           </p>
-          <Link href="/recipes/create">
+          <Link href={isSignedIn ? "/recipes/create" : "/dashboard"}>
             <div className="inline-block bg-blue-500 text-white py-3 px-6 rounded-full text-lg font-semibold hover:bg-blue-600 transition duration-300 cursor-pointer">
               Get Started
             </div>
