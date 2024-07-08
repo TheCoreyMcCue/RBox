@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
 import Link from "next/link";
@@ -19,7 +18,6 @@ const Dashboard = () => {
   const { user } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -37,16 +35,6 @@ const Dashboard = () => {
 
     fetchRecipes();
   }, [user]);
-
-  const handleDelete = async (recipeId: string) => {
-    try {
-      await deleteRecipe(recipeId, user!.id);
-      setRecipes(recipes.filter((recipe) => recipe._id !== recipeId));
-      router.refresh(); // Refresh the page to reflect the deletion
-    } catch (error) {
-      console.error("Error deleting recipe:", error);
-    }
-  };
 
   if (loading) {
     return (
@@ -91,12 +79,6 @@ const Dashboard = () => {
                   </div>
                 </div>
               </Link>
-              <button
-                onClick={() => handleDelete(recipe._id)}
-                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300 mt-2 mx-4"
-              >
-                Delete
-              </button>
             </div>
           ))}
         </div>
