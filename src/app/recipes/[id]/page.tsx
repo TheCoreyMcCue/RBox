@@ -11,6 +11,7 @@ import EditModal from "@/app/components/EditModal"; // Adjust path as per your p
 interface Recipe {
   _id: string;
   title: string;
+  creator: string;
   description: string;
   image: string;
   cookTime: string;
@@ -25,6 +26,7 @@ const RecipeDetails = () => {
   const recipeId = useSearchParams();
   const [id, setId] = useState(pathname.split("/")[2]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  console.log("🚀 ~ RecipeDetails ~ recipe:", recipe);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 

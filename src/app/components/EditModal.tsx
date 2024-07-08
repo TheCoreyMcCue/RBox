@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs";
 interface Recipe {
   _id: string;
   title: string;
+  creator: string;
   description: string;
   image: string;
   cookTime: string;
@@ -21,13 +22,14 @@ interface EditModalProps {
 }
 
 const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
+  console.log("🚀 ~ recipe:", recipe);
   const router = useRouter();
-  const [updatedRecipe, setUpdatedRecipe] = useState({
-    title: "",
-    description: "",
-    cookTime: "",
-    // Add other fields as needed
-  });
+  //   const [updatedRecipe, setUpdatedRecipe] = useState({
+  //     title: "",
+  //     description: "",
+  //     cookTime: "",
+  //     // Add other fields as needed
+  //   });
 
   const [title, setTitle] = useState(recipe.title);
   const [description, setDescription] = useState(recipe.description);
@@ -73,22 +75,26 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const updatedRecipe = await updateRecipe(recipe._id, {
-        creator: user?.id,
-        title: title,
-        description: description,
-        cookTime: cookTime,
-        image: image,
-        ingredients: ingredients,
-        steps: steps,
-        category: category,
-      });
-    } catch (error) {
-      console.error("Error updating recipe:", error);
-      setError("Failed to update recipe. Please try again.");
+    if (user?.id == recipe?.creator) {
+      try {
+        const updatedRecipe = await updateRecipe(recipe._id, {
+          creator: user?.id,
+          title: title,
+          description: description,
+          cookTime: cookTime,
+          image: image,
+          ingredients: ingredients,
+          steps: steps,
+          category: category,
+        });
+      } catch (error) {
+        console.error("Error updating recipe:", error);
+        setError("Failed to update recipe. Please try again.");
+      }
+      router.push("/dashboard");
+    } else {
+      onClose();
     }
-    router.push("/dashboard");
   };
 
   return (
