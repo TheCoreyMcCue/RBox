@@ -16,17 +16,15 @@ interface Recipe {
 }
 
 const Dashboard = () => {
-  const user = useUser();
+  const { user, isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const isSignedIn = user.isSignedIn;
 
   useEffect(() => {
     const fetchRecipes = async () => {
       if (user) {
         try {
-          const fetchedRecipes = await getRecipesByUser(user.id);
+          const fetchedRecipes = await getRecipesByUser(user?.id);
           setRecipes(fetchedRecipes);
         } catch (error) {
           console.error("Error fetching recipes:", error);
