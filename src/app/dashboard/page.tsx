@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
 import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 
@@ -47,10 +48,19 @@ const Dashboard = () => {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-[90vh] flex items-center justify-center">
-        <h1 className="text-2xl font-bold">
-          Please sign in to view your recipes
-        </h1>
+      <div className="bg-gray-900 min-h-[90vh] text-white py-20">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
+          <div className="md:w-1/2 text-center md:text-left">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              Welcome to AreBox
+            </h1>
+            <p className="text-lg md:text-xl mb-8">Sign in to get started!</p>
+
+            <div className="inline-block bg-blue-500 text-white py-3 px-6 rounded-full text-lg font-semibold hover:bg-blue-600 transition duration-300 cursor-pointer">
+              <SignInButton>Get Started!</SignInButton>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
