@@ -35,8 +35,8 @@ export const getRecipesByUser = async (userId: string) => {
 export const getRecipeById = async (id: string) => {
   try {
     await connect();
-    const recipe = await Recipe.findById(id).exec();
-    return recipe ? JSON.parse(JSON.stringify(recipe)) : null;
+    const updatedRecipe = await Recipe.findById(id).exec();
+    return updatedRecipe ? JSON.parse(JSON.stringify(updatedRecipe)) : null;
   } catch (error) {
     console.error("Error fetching recipe by ID:", error);
     throw error;
@@ -49,6 +49,19 @@ export const deleteRecipe = async (recipeId: string, userId: string) => {
     await Recipe.deleteOne({ _id: recipeId, creator: userId }).exec();
   } catch (error) {
     console.error("Error deleting recipe:", error);
+    throw error;
+  }
+};
+
+export const updateRecipe = async (id: string, updatedRecipe: any) => {
+  try {
+    await connect();
+    const recipe = await Recipe.findByIdAndUpdate(id, updatedRecipe, {
+      new: true, // Return the updated document
+    }).exec();
+    return recipe ? JSON.parse(JSON.stringify(recipe)) : null;
+  } catch (error) {
+    console.error("Error updating recipe:", error);
     throw error;
   }
 };

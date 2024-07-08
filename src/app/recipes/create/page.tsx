@@ -17,8 +17,6 @@ const CreateRecipe = () => {
 
   const { user } = useUser();
 
-  console.log(user);
-
   const router = useRouter();
 
   const handleIngredientChange = (index: number, value: string) => {

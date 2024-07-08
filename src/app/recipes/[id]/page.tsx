@@ -118,7 +118,7 @@ const RecipeDetails = () => {
           </div>
         </div>
       </div>
-      {showEditModal && <EditModal onClose={closeEditModal} />}
+      {showEditModal && <EditModal recipe={recipe} onClose={closeEditModal} />}
     </div>
   );
 };
