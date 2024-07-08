@@ -42,6 +42,7 @@ const Dashboard = () => {
     try {
       await deleteRecipe(recipeId, user!.id);
       setRecipes(recipes.filter((recipe) => recipe._id !== recipeId));
+      router.refresh(); // Refresh the page to reflect the deletion
     } catch (error) {
       console.error("Error deleting recipe:", error);
     }
@@ -65,7 +66,6 @@ const Dashboard = () => {
     );
   }
 
-  console.log(recipes);
   return (
     <div className="min-h-[90vh] container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Your Recipes</h1>
