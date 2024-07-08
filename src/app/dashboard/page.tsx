@@ -17,6 +17,7 @@ interface Recipe {
 
 const Dashboard = () => {
   const { user, isSignedIn } = useUser();
+  console.log("🚀 ~ Dashboard ~ isSignedIn:", isSignedIn);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,14 +38,6 @@ const Dashboard = () => {
     fetchRecipes();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-[90vh] flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
   if (!isSignedIn) {
     return (
       <div className="bg-gray-900 min-h-[90vh] text-white py-20">
@@ -60,6 +53,14 @@ const Dashboard = () => {
             </Link>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[90vh] flex items-center justify-center">
+        Loading...
       </div>
     );
   }

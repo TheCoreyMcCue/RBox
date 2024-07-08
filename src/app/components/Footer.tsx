@@ -17,15 +17,6 @@ const Footer = () => {
           <Link href="/" className="text-gray-400 hover:text-white">
             Home
           </Link>
-          <Link href="/about" className="text-gray-400 hover:text-white">
-            About
-          </Link>
-          <Link href="/services" className="text-gray-400 hover:text-white">
-            Services
-          </Link>
-          <Link href="/contact" className="text-gray-400 hover:text-white">
-            Contact
-          </Link>
         </div>
       </div>
     </footer>
