@@ -124,9 +124,10 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               Cook Time (minutes)
             </label>
             <input
-              type="number"
+              type="text"
               value={cookTime}
-              onChange={(e) => setCookTime(e.target.value.toString())}
+              inputMode="numeric"
+              onChange={(e) => setCookTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
               required
             />
