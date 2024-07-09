@@ -213,12 +213,18 @@ const CreateRecipe = () => {
             />
           </div>
           {error && <div className="mb-4 text-red-500">{error}</div>}
-          <div className="text-center">
+          <div className="w-full flex justify-around">
             <button
               type="submit"
               className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
             >
               Create Recipe
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
+            >
+              Cancel
             </button>
           </div>
         </form>
