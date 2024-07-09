@@ -121,6 +121,8 @@ const CreateRecipe = () => {
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="^\d+$"
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
