@@ -49,8 +49,7 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === "user.created") {
-    const { id, email_addresses, image_url, first_name, last_name, username } =
-      evt.data;
+    const { id, email_addresses, image_url, first_name, last_name } = evt.data;
 
     if (!email_addresses || email_addresses.length === 0) {
       console.error("Error: No email addresses provided");
@@ -62,7 +61,6 @@ export async function POST(req: Request) {
     const user = {
       clerkId: id,
       email: email_addresses[0].email_address,
-      username: username || "", // Ensure username is not null
       firstName: first_name || "", // Ensure first name is not null
       lastName: last_name || "", // Ensure last name is not null
       photo: image_url || "", // Ensure image_url is not null
