@@ -1,4 +1,4 @@
-import { Schema, model, models, Document, Types } from "mongoose";
+import { Schema, model, models, Document } from "mongoose";
 
 export interface IRecipe extends Document {
   title: string;
@@ -7,7 +7,7 @@ export interface IRecipe extends Document {
   image: string;
   ingredients: string[];
   steps: string[];
-  category: string;
+  category: string[];
   createdAt: Date;
   creator: string; // Reference to the user who created the recipe
 }
@@ -37,7 +37,7 @@ const RecipeSchema = new Schema<IRecipe>({
     required: true,
   },
   category: {
-    type: String,
+    type: [String],
     required: true,
   },
   createdAt: {

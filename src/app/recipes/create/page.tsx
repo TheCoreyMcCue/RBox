@@ -12,11 +12,10 @@ const CreateRecipe = () => {
   const [image, setImage] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([""]);
   const [steps, setSteps] = useState<string[]>([""]);
-  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<string[]>([""]);
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
-
   const router = useRouter();
 
   const handleIngredientChange = (index: number, value: string) => {
@@ -31,12 +30,22 @@ const CreateRecipe = () => {
     setSteps(newSteps);
   };
 
+  const handleCategoryChange = (index: number, value: string) => {
+    const newCategories = [...categories];
+    newCategories[index] = value;
+    setCategories(newCategories);
+  };
+
   const handleAddIngredient = () => {
     setIngredients([...ingredients, ""]);
   };
 
   const handleAddStep = () => {
     setSteps([...steps, ""]);
+  };
+
+  const handleAddCategory = () => {
+    setCategories([...categories, ""]);
   };
 
   const handleRemoveIngredient = (index: number) => {
@@ -49,19 +58,24 @@ const CreateRecipe = () => {
     setSteps(newSteps);
   };
 
+  const handleRemoveCategory = (index: number) => {
+    const newCategories = categories.filter((_, i) => i !== index);
+    setCategories(newCategories);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       const newRecipe = await createRecipe({
         creator: user?.id,
-        title: title,
-        description: description,
-        cookTime: cookTime,
-        image: image,
-        ingredients: ingredients,
-        steps: steps,
-        category: category,
+        title,
+        description,
+        cookTime,
+        image,
+        ingredients,
+        steps,
+        category: categories,
       });
 
       if (newRecipe) {
@@ -72,7 +86,7 @@ const CreateRecipe = () => {
         setImage("");
         setIngredients([""]);
         setSteps([""]);
-        setCategory("");
+        setCategories([""]);
         setError(null);
 
         // Redirect to the new recipe page
@@ -202,15 +216,33 @@ const CreateRecipe = () => {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
-              Category
+              Categories
             </label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
+            {categories.map((category, index) => (
+              <div key={index} className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => handleCategoryChange(index, e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveCategory(index)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  &minus;
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddCategory}
+              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+            >
+              Add Category
+            </button>
           </div>
           {error && <div className="mb-4 text-red-500">{error}</div>}
           <div className="w-full flex justify-around">

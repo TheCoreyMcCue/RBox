@@ -16,7 +16,7 @@ interface Recipe {
   cookTime: string;
   ingredients: string[];
   steps: string[];
-  category: string;
+  category: string[];
 }
 
 const RecipeDetails = () => {
@@ -118,8 +118,12 @@ const RecipeDetails = () => {
               <li key={index}>{step}</li>
             ))}
           </ol>
-          <h2 className="text-2xl font-semibold mb-4">Category</h2>
-          <p className="text-gray-500">{recipe.category}</p>
+          <h5 className="text-md font-semibold mb-1">Categories</h5>
+          <ul className="list-disc list-inside mb-4">
+            {recipe.category.map((category, index) => (
+              <p className="text-gray-500">{category}</p>
+            ))}
+          </ul>
           <div className="flex justify-between mt-4">
             <button
               onClick={() => router.push("/dashboard")}

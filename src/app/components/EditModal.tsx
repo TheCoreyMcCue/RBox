@@ -13,7 +13,7 @@ interface Recipe {
   cookTime: string;
   ingredients: string[];
   steps: string[];
-  category: string;
+  category: string[]; // Update to categories
 }
 
 interface EditModalProps {
@@ -22,6 +22,7 @@ interface EditModalProps {
 }
 
 const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
+  console.log("🚀 ~ recipe:", recipe);
   const router = useRouter();
 
   const [title, setTitle] = useState(recipe.title);
@@ -30,7 +31,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const [image, setImage] = useState(recipe.image);
   const [ingredients, setIngredients] = useState<string[]>(recipe.ingredients);
   const [steps, setSteps] = useState<string[]>(recipe.steps);
-  const [category, setCategory] = useState(recipe.category);
+  const [categories, setCategories] = useState<string[]>(recipe.category);
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
@@ -47,12 +48,22 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
     setSteps(newSteps);
   };
 
+  const handleCategoryChange = (index: number, value: string) => {
+    const newCategories = [...categories];
+    newCategories[index] = value;
+    setCategories(newCategories);
+  };
+
   const handleAddIngredient = () => {
     setIngredients([...ingredients, ""]);
   };
 
   const handleAddStep = () => {
     setSteps([...steps, ""]);
+  };
+
+  const handleAddCategory = () => {
+    setCategories([...categories, ""]);
   };
 
   const handleRemoveIngredient = (index: number) => {
@@ -63,6 +74,11 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const handleRemoveStep = (index: number) => {
     const newSteps = steps.filter((_, i) => i !== index);
     setSteps(newSteps);
+  };
+
+  const handleRemoveCategory = (index: number) => {
+    const newCategories = categories.filter((_, i) => i !== index);
+    setCategories(newCategories);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +94,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
           image: image,
           ingredients: ingredients,
           steps: steps,
-          category: category,
+          categories: categories, // Update to categories
         });
       } catch (error) {
         console.error("Error updating recipe:", error);
@@ -206,15 +222,33 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
-              Category
+              Categories
             </label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
+            {categories.map((category, index) => (
+              <div key={index} className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => handleCategoryChange(index, e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveCategory(index)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  &minus;
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddCategory}
+              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+            >
+              Add Category
+            </button>
           </div>
           {error && <div className="mb-4 text-red-500">{error}</div>}
           <div className="w-full flex justify-around">
