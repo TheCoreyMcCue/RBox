@@ -5,8 +5,8 @@ import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 
 import { createUser } from "@/lib/actions/user.action";
+
 export async function POST(req: Request) {
-  // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
@@ -15,29 +15,24 @@ export async function POST(req: Request) {
     );
   }
 
-  // Get the headers
   const headerPayload = headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
   const svix_signature = headerPayload.get("svix-signature");
 
-  // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response("Error occured -- no svix headers", {
+    return new Response("Error occurred -- no svix headers", {
       status: 400,
     });
   }
 
-  // Get the body
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
-  // Create a new Svix instance with your secret.
   const wh = new Webhook(WEBHOOK_SECRET);
 
   let evt: WebhookEvent;
 
-  // Verify the payload with the headers
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
@@ -46,28 +41,34 @@ export async function POST(req: Request) {
     }) as WebhookEvent;
   } catch (err) {
     console.error("Error verifying webhook:", err);
-    return new Response("Error occured", {
+    return new Response("Error occurred", {
       status: 400,
     });
   }
 
-  // Get the ID and type
-  const { id } = evt.data;
   const eventType = evt.type;
 
-  // CREATE User in mongodb
   if (eventType === "user.created") {
     const { id, email_addresses, image_url, first_name, last_name, username } =
       evt.data;
 
+    if (!email_addresses || email_addresses.length === 0) {
+      console.error("Error: No email addresses provided");
+      return new Response("Error: No email addresses provided", {
+        status: 400,
+      });
+    }
+
     const user = {
       clerkId: id,
       email: email_addresses[0].email_address,
-      username: username!,
-      firstName: first_name,
-      lastName: last_name,
-      photo: image_url,
+      username: username || "", // Ensure username is not null
+      firstName: first_name || "", // Ensure first name is not null
+      lastName: last_name || "", // Ensure last name is not null
+      photo: image_url || "", // Ensure image_url is not null
     };
+
+    console.log("🚀 ~ POST ~ user:", user);
 
     const newUser = await createUser(user);
 
@@ -77,12 +78,15 @@ export async function POST(req: Request) {
           userId: newUser._id,
         },
       });
+      return NextResponse.json({ message: "New user created", user: newUser });
+    } else {
+      return new Response("Error: User not created", {
+        status: 500,
+      });
     }
-
-    return NextResponse.json({ message: "New user created", user: newUser });
   }
 
-  console.log(`Webhook with and ID of ${id} and type of ${eventType}`);
+  console.log(`Webhook with an ID of ${body} and type of ${eventType}`);
   console.log("Webhook body:", body);
 
   return new Response("", { status: 200 });
