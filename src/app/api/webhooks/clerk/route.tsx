@@ -66,8 +66,6 @@ export async function POST(req: Request) {
       photo: image_url || "", // Ensure image_url is not null
     };
 
-    console.log("🚀 ~ POST ~ user:", user);
-
     const newUser = await createUser(user);
 
     if (newUser) {
@@ -83,9 +81,6 @@ export async function POST(req: Request) {
       });
     }
   }
-
-  console.log(`Webhook with an ID of ${body} and type of ${eventType}`);
-  console.log("Webhook body:", body);
 
   return new Response("", { status: 200 });
 }
