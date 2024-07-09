@@ -5,6 +5,9 @@ import { useUser } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
 import Link from "next/link";
+import Image from "next/image";
+
+import Placeholder from "../../../public/placeholder.png";
 
 interface Recipe {
   _id: string;
@@ -74,8 +77,8 @@ const Dashboard = () => {
             <div key={recipe._id}>
               <Link href={`/recipes/${recipe._id}`}>
                 <div className="block bg-white shadow-lg rounded-lg overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
-                  <img
-                    src={recipe.image || "https://via.placeholder.com/400x300"}
+                  <Image
+                    src={recipe.image || Placeholder}
                     alt={recipe.title}
                     className="w-full h-48 object-cover"
                   />

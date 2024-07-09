@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { getRecipeById, deleteRecipe } from "@/lib/actions/recipe.action";
 import EditModal from "@/app/components/EditModal";
 import DeleteModal from "@/app/components/DeleteModal";
+import Image from "next/image";
+
+import Placeholder from "../../../../public/placeholder.png";
 
 interface Recipe {
   _id: string;
@@ -96,8 +99,8 @@ const RecipeDetails = () => {
     <div className="min-h-[90vh] container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">{recipe.title}</h1>
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        <img
-          src={recipe.image || "https://via.placeholder.com/400x300"}
+        <Image
+          src={recipe.image || Placeholder}
           alt={recipe.title}
           className="w-full h-64 object-cover"
         />
