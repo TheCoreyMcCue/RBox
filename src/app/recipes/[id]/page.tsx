@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { getRecipeById, deleteRecipe } from "@/lib/actions/recipe.action";
-import EditModal from "@/app/components/EditModal"; // Adjust path as per your project structure
+import EditModal from "@/app/components/EditModal";
+import DeleteModal from "@/app/components/DeleteModal";
 
 interface Recipe {
   _id: string;
@@ -25,6 +26,7 @@ const RecipeDetails = () => {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -51,9 +53,16 @@ const RecipeDetails = () => {
   const openEditModal = () => {
     setShowEditModal(true);
   };
+  const openDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
 
   const closeEditModal = () => {
     setShowEditModal(false);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
   };
 
   const handleDelete = async () => {
@@ -126,7 +135,7 @@ const RecipeDetails = () => {
                 Edit
               </button>
               <button
-                onClick={handleDelete}
+                onClick={openDeleteModal}
                 className="bg-red-500 text-white px-2 py-2 rounded-lg hover:bg-red-600"
               >
                 Delete
@@ -136,6 +145,9 @@ const RecipeDetails = () => {
         </div>
       </div>
       {showEditModal && <EditModal recipe={recipe} onClose={closeEditModal} />}
+      {showDeleteModal && (
+        <DeleteModal handleDelete={handleDelete} onClose={closeDeleteModal} />
+      )}
     </div>
   );
 };
