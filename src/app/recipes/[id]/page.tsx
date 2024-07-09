@@ -121,7 +121,9 @@ const RecipeDetails = () => {
           <h5 className="text-md font-semibold mb-1">Categories</h5>
           <ul className="list-disc list-inside mb-4">
             {recipe.category.map((category, index) => (
-              <p className="text-gray-500">{category}</p>
+              <p key={index} className="text-gray-500">
+                {category}
+              </p>
             ))}
           </ul>
           <div className="flex justify-between mt-4">
