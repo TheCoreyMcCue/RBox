@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation"; // Use next/router instead of next/
 import { updateRecipe } from "@/lib/actions/recipe.action";
 
 import { useUser } from "@clerk/nextjs";
+import ImageUpload from "./ImageUpload";
 
 interface Recipe {
   _id: string;
@@ -152,12 +153,13 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
             <label className="block text-gray-700 font-bold mb-2">
               Image URL
             </label>
-            <input
+            <ImageUpload setImage={setImage} />
+            {/* <input
               type="text"
               value={image}
               onChange={(e) => setImage(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            />
+            /> */}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">

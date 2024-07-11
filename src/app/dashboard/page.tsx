@@ -80,6 +80,8 @@ const Dashboard = () => {
                   <Image
                     src={recipe.image || Placeholder}
                     alt={recipe.title}
+                    height={200}
+                    width={100}
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-4">

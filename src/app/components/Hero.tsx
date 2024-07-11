@@ -11,11 +11,11 @@ const Hero = () => {
   const isSignedIn = user?.isSignedIn;
 
   return (
-    <div className="bg-gray-900 text-white py-20">
+    <div className="bg-teal-600 text-white py-20">
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 text-center md:text-left">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            Welcome to AreBox
+            Welcome to Our Box
           </h1>
           <p className="text-lg md:text-xl mb-8">
             We help you pick whats for dinner tonight!
