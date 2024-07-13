@@ -21,6 +21,7 @@ interface Recipe {
 const Dashboard = () => {
   const { user, isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  console.log("🚀 ~ Dashboard ~ recipes:", recipes);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

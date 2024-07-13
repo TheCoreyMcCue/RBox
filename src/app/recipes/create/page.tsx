@@ -6,12 +6,20 @@ import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import ImageUpload from "@/app/components/ImageUpload";
 
+type Ingredient = {
+  amount: string;
+  unit: string;
+  name: string;
+};
+
 const CreateRecipe = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [cookTime, setCookTime] = useState("");
   const [image, setImage] = useState("");
-  const [ingredients, setIngredients] = useState<string[]>([""]);
+  const [ingredients, setIngredients] = useState<Ingredient[]>([
+    { amount: "", unit: "", name: "" },
+  ]);
   const [steps, setSteps] = useState<string[]>([""]);
   const [categories, setCategories] = useState<string[]>([""]);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +27,13 @@ const CreateRecipe = () => {
   const { user } = useUser();
   const router = useRouter();
 
-  const handleIngredientChange = (index: number, value: string) => {
+  const handleIngredientChange = (
+    index: number,
+    field: keyof Ingredient,
+    value: string
+  ) => {
     const newIngredients = [...ingredients];
-    newIngredients[index] = value;
+    newIngredients[index] = { ...newIngredients[index], [field]: value };
     setIngredients(newIngredients);
   };
 
@@ -38,7 +50,7 @@ const CreateRecipe = () => {
   };
 
   const handleAddIngredient = () => {
-    setIngredients([...ingredients, ""]);
+    setIngredients([...ingredients, { amount: "", unit: "", name: "" }]);
   };
 
   const handleAddStep = () => {
@@ -85,7 +97,7 @@ const CreateRecipe = () => {
         setDescription("");
         setCookTime("");
         setImage("");
-        setIngredients([""]);
+        setIngredients([{ amount: "", unit: "", name: "" }]);
         setSteps([""]);
         setCategories([""]);
         setError(null);
@@ -148,12 +160,6 @@ const CreateRecipe = () => {
             <label className="block text-gray-700 font-bold mb-2">
               Image URL
             </label>
-            {/* <input
-              type="text"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            /> */}
             <ImageUpload setImage={setImage} />
           </div>
           <div className="mb-4">
@@ -161,14 +167,35 @@ const CreateRecipe = () => {
               Ingredients
             </label>
             {ingredients.map((ingredient, index) => (
-              <div key={index} className="flex items-center mb-2">
+              <div key={index} className="flex flex-wrap mb-2">
                 <input
                   type="text"
-                  value={ingredient}
+                  placeholder="Amount"
+                  value={ingredient.amount}
                   onChange={(e) =>
-                    handleIngredientChange(index, e.target.value)
+                    handleIngredientChange(index, "amount", e.target.value)
                   }
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Unit"
+                  value={ingredient.unit}
+                  onChange={(e) =>
+                    handleIngredientChange(index, "unit", e.target.value)
+                  }
+                  className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={ingredient.name}
+                  onChange={(e) =>
+                    handleIngredientChange(index, "name", e.target.value)
+                  }
+                  className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-2"
                   required
                 />
                 <button
