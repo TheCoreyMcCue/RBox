@@ -148,7 +148,7 @@ const CreateRecipe = () => {
             </label>
             <input
               type="text"
-              inputMode="numeric"
+              inputMode="decimal"
               pattern="^\d+$"
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
@@ -172,7 +172,7 @@ const CreateRecipe = () => {
                   type="text"
                   placeholder="Qty"
                   value={ingredient.amount}
-                  inputMode="numeric"
+                  inputMode="decimal"
                   pattern="^\d+$"
                   onChange={(e) =>
                     handleIngredientChange(index, "amount", e.target.value)
