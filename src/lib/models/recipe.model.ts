@@ -1,16 +1,37 @@
 import { Schema, model, models, Document } from "mongoose";
 
+export interface IIngredient {
+  amount: string;
+  unit: string;
+  name: string;
+}
+
 export interface IRecipe extends Document {
   title: string;
   description: string;
   cookTime: string;
   image: string;
-  ingredients: string[];
+  ingredients: IIngredient[];
   steps: string[];
   category: string[];
   createdAt: Date;
   creator: string; // Reference to the user who created the recipe
 }
+
+const IngredientSchema = new Schema<IIngredient>({
+  amount: {
+    type: String,
+    required: true,
+  },
+  unit: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+});
 
 const RecipeSchema = new Schema<IRecipe>({
   title: {
@@ -29,7 +50,7 @@ const RecipeSchema = new Schema<IRecipe>({
     type: String,
   },
   ingredients: {
-    type: [String],
+    type: [IngredientSchema],
     required: true,
   },
   steps: {

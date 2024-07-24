@@ -10,6 +10,12 @@ import Image from "next/image";
 
 import Placeholder from "../../../../public/placeholder.png";
 
+interface Ingredient {
+  amount: string;
+  unit: string;
+  name: string;
+}
+
 interface Recipe {
   _id: string;
   title: string;
@@ -17,7 +23,7 @@ interface Recipe {
   description: string;
   image: string;
   cookTime: string;
-  ingredients: string[];
+  ingredients: Ingredient[];
   steps: string[];
   category: string[];
 }
@@ -102,8 +108,8 @@ const RecipeDetails = () => {
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
-          height={700}
-          width={700}
+          height={1200}
+          width={1200}
           className="w-full h-64 object-cover"
         />
         <div className="p-6">
@@ -114,7 +120,9 @@ const RecipeDetails = () => {
           <h2 className="text-2xl font-semibold mb-4">Ingredients</h2>
           <ul className="list-disc list-inside mb-4">
             {recipe.ingredients.map((ingredient, index) => (
-              <li key={index}>{ingredient}</li>
+              <li key={index}>
+                {ingredient.amount} {ingredient.unit} - {ingredient.name}
+              </li>
             ))}
           </ul>
           <h2 className="text-2xl font-semibold mb-4">Steps</h2>
@@ -126,9 +134,9 @@ const RecipeDetails = () => {
           <h5 className="text-md font-semibold mb-1">Categories</h5>
           <ul className="list-disc list-inside mb-4">
             {recipe.category.map((category, index) => (
-              <p key={index} className="text-gray-500">
+              <li key={index} className="text-gray-500">
                 {category}
-              </p>
+              </li>
             ))}
           </ul>
           <div className="flex justify-between mt-4">
