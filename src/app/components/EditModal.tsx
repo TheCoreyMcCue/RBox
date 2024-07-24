@@ -114,7 +114,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
           image: image,
           ingredients: ingredients,
           steps: steps,
-          categories: categories, // Update to categories
+          category: categories,
         });
 
         // Handle success message or any additional logic here
