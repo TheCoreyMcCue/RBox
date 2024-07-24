@@ -108,8 +108,8 @@ const RecipeDetails = () => {
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
-          height={1000}
-          width={1000}
+          height={1200}
+          width={1200}
           className="w-full h-64 object-cover"
         />
         <div className="p-6">
