@@ -149,7 +149,7 @@ const CreateRecipe = () => {
             <input
               type="text"
               inputMode="decimal"
-              pattern="^\d+$"
+              pattern="^\d*\.?\d+|\d+\s*/\s*\d+$"
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
@@ -173,7 +173,7 @@ const CreateRecipe = () => {
                   placeholder="Qty"
                   value={ingredient.amount}
                   inputMode="decimal"
-                  pattern="^\d+$"
+                  pattern="^\d*\.?\d+|\d+\s*/\s*\d+$"
                   onChange={(e) =>
                     handleIngredientChange(index, "amount", e.target.value)
                   }
