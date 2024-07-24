@@ -165,8 +165,8 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
             <input
               type="text"
               value={cookTime}
-              inputMode="numeric"
-              pattern="^\d+$"
+              inputMode="decimal"
+              pattern="^\d*\.?\d+|\d+\s*/\s*\d+$"
               onChange={(e) => setCookTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
               required
@@ -177,12 +177,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               Image URL
             </label>
             <ImageUpload setImage={setImage} />
-            {/* <input
-              type="text"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            /> */}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
@@ -194,7 +188,9 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                   <input
                     type="text"
                     value={ingredient.amount}
-                    placeholder="Amount"
+                    placeholder="Qty"
+                    inputMode="decimal"
+                    pattern="^\d*\.?\d+|\d+\s*/\s*\d+$"
                     onChange={(e) =>
                       handleIngredientChange(index, "amount", e.target.value)
                     }
