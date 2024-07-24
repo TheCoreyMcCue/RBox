@@ -61,7 +61,7 @@ const Dashboard = () => {
             <p className="text-lg md:text-xl mb-8">Sign in to get started!</p>
 
             <div className="inline-block bg-blue-500 text-white py-3 px-6 rounded-full text-lg font-semibold hover:bg-blue-600 transition duration-300 cursor-pointer">
-              <SignInButton>Get Started!</SignInButton>
+              <SignInButton>Sign Up</SignInButton>
             </div>
           </div>
         </div>
