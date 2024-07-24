@@ -170,12 +170,14 @@ const CreateRecipe = () => {
               <div key={index} className="flex flex-wrap mb-2">
                 <input
                   type="text"
-                  placeholder="Amount"
+                  placeholder="Qty"
                   value={ingredient.amount}
+                  inputMode="numeric"
+                  pattern="^\d+$"
                   onChange={(e) =>
                     handleIngredientChange(index, "amount", e.target.value)
                   }
-                  className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
+                  className="w-1/5 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
                   required
                 />
                 <input
@@ -185,7 +187,7 @@ const CreateRecipe = () => {
                   onChange={(e) =>
                     handleIngredientChange(index, "unit", e.target.value)
                   }
-                  className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
+                  className="w-1/4 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
                   required
                 />
                 <input
