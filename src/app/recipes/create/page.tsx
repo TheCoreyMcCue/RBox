@@ -12,7 +12,28 @@ type Ingredient = {
   name: string;
 };
 
+// List of measurement units for the dropdown
+const unitOptions = [
+  "cups",
+  "teaspoons",
+  "tablespoons",
+  "pounds",
+  "ounces",
+  "grams",
+  "milligrams",
+  "liters",
+  "milliliters",
+  "kilograms",
+  "whole",
+  "half",
+  "quarter",
+  "pinch",
+  "large",
+  "small",
+];
+
 const CreateRecipe = () => {
+  // State variables for managing form inputs
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [cookTime, setCookTime] = useState("");
@@ -27,6 +48,7 @@ const CreateRecipe = () => {
   const { user } = useUser();
   const router = useRouter();
 
+  // Function to handle changes in the ingredients list
   const handleIngredientChange = (
     index: number,
     field: keyof Ingredient,
@@ -37,49 +59,59 @@ const CreateRecipe = () => {
     setIngredients(newIngredients);
   };
 
+  // Function to handle changes in the steps list
   const handleStepChange = (index: number, value: string) => {
     const newSteps = [...steps];
     newSteps[index] = value;
     setSteps(newSteps);
   };
 
+  // Function to handle changes in the categories list
   const handleCategoryChange = (index: number, value: string) => {
     const newCategories = [...categories];
     newCategories[index] = value;
     setCategories(newCategories);
   };
 
+  // Add a new ingredient input
   const handleAddIngredient = () => {
     setIngredients([...ingredients, { amount: "", unit: "", name: "" }]);
   };
 
+  // Add a new step input
   const handleAddStep = () => {
     setSteps([...steps, ""]);
   };
 
+  // Add a new category input
   const handleAddCategory = () => {
     setCategories([...categories, ""]);
   };
 
+  // Remove an ingredient input by index
   const handleRemoveIngredient = (index: number) => {
     const newIngredients = ingredients.filter((_, i) => i !== index);
     setIngredients(newIngredients);
   };
 
+  // Remove a step input by index
   const handleRemoveStep = (index: number) => {
     const newSteps = steps.filter((_, i) => i !== index);
     setSteps(newSteps);
   };
 
+  // Remove a category input by index
   const handleRemoveCategory = (index: number) => {
     const newCategories = categories.filter((_, i) => i !== index);
     setCategories(newCategories);
   };
 
+  // Submit the form and create a new recipe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      // Call the createRecipe action with the form data
       const newRecipe = await createRecipe({
         creator: user?.id,
         title,
@@ -92,7 +124,7 @@ const CreateRecipe = () => {
       });
 
       if (newRecipe) {
-        // Reset form fields
+        // Reset form fields after successful submission
         setTitle("");
         setDescription("");
         setCookTime("");
@@ -102,7 +134,7 @@ const CreateRecipe = () => {
         setCategories([""]);
         setError(null);
 
-        // Redirect to the new recipe page
+        // Redirect to the dashboard or another page
         router.push(`/dashboard`);
       }
     } catch (error) {
@@ -121,6 +153,7 @@ const CreateRecipe = () => {
           onSubmit={handleSubmit}
           className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md"
         >
+          {/* Title Input */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">Title</label>
             <input
@@ -131,6 +164,8 @@ const CreateRecipe = () => {
               required
             />
           </div>
+
+          {/* Description Input */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Description
@@ -142,6 +177,8 @@ const CreateRecipe = () => {
               required
             />
           </div>
+
+          {/* Cook Time Input */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Cook Time (minutes)
@@ -156,12 +193,16 @@ const CreateRecipe = () => {
               required
             />
           </div>
+
+          {/* Image Upload */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Image URL
             </label>
             <ImageUpload setImage={setImage} />
           </div>
+
+          {/* Ingredients Section */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Ingredients
@@ -180,16 +221,23 @@ const CreateRecipe = () => {
                   className="w-1/5 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
                   required
                 />
-                <input
-                  type="text"
-                  placeholder="Unit"
+                <select
                   value={ingredient.unit}
                   onChange={(e) =>
                     handleIngredientChange(index, "unit", e.target.value)
                   }
                   className="w-1/4 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
                   required
-                />
+                >
+                  <option value="" disabled>
+                    Select Unit
+                  </option>
+                  {unitOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="text"
                   placeholder="Name"
@@ -217,6 +265,8 @@ const CreateRecipe = () => {
               Add Ingredient
             </button>
           </div>
+
+          {/* Steps Section */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">Steps</label>
             {steps.map((step, index) => (
@@ -245,6 +295,8 @@ const CreateRecipe = () => {
               Add Step
             </button>
           </div>
+
+          {/* Categories Section */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Categories
@@ -275,7 +327,11 @@ const CreateRecipe = () => {
               Add Category
             </button>
           </div>
+
+          {/* Error Message */}
           {error && <div className="mb-4 text-red-500">{error}</div>}
+
+          {/* Form Actions */}
           <div className="w-full flex justify-around">
             <button
               type="submit"
