@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Use next/router instead of next/navigation
+import { useRouter } from "next/navigation";
 import { updateRecipe } from "@/lib/actions/recipe.action";
-
 import { useUser } from "@clerk/nextjs";
 import ImageUpload from "./ImageUpload";
 
@@ -20,7 +19,7 @@ interface Recipe {
   cookTime: string;
   ingredients: Ingredient[];
   steps: string[];
-  category: string[]; // Update to categories
+  category: string[];
 }
 
 interface EditModalProps {
@@ -35,19 +34,35 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const [description, setDescription] = useState(recipe.description);
   const [cookTime, setCookTime] = useState(recipe.cookTime);
   const [image, setImage] = useState(recipe.image);
-
-  // Update the type to Ingredient[]
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     recipe.ingredients
   );
-
   const [steps, setSteps] = useState<string[]>(recipe.steps);
   const [categories, setCategories] = useState<string[]>(recipe.category);
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
 
-  // Handle changes to individual ingredient fields
+  // Unit options for the dropdown
+  const unitOptions = [
+    "cups",
+    "teaspoons",
+    "tablespoons",
+    "pounds",
+    "ounces",
+    "grams",
+    "milligrams",
+    "liters",
+    "milliliters",
+    "kilograms",
+    "whole",
+    "half",
+    "quarter",
+    "pinch",
+    "large",
+    "small",
+  ];
+
   const handleIngredientChange = (
     index: number,
     field: keyof Ingredient,
@@ -74,7 +89,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   };
 
   const handleAddIngredient = () => {
-    // Add an empty ingredient object
     setIngredients([...ingredients, { amount: "", unit: "", name: "" }]);
   };
 
@@ -117,7 +131,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
           category: categories,
         });
 
-        // Handle success message or any additional logic here
         console.log("Recipe updated successfully:", updatedRecipe);
       } catch (error) {
         console.error("Error updating recipe:", error);
@@ -185,28 +198,38 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
             {ingredients.map((ingredient, index) => (
               <div key={index} className="mb-2">
                 <div className="flex items-center mb-2">
+                  {/* Amount Input */}
                   <input
                     type="text"
                     value={ingredient.amount}
-                    placeholder="Qty"
-                    inputMode="decimal"
-                    pattern="^(?:\d+(?:[.,]?\d*)?|\d+\s*\/\s*\d+)$"
+                    placeholder="Amount"
                     onChange={(e) =>
                       handleIngredientChange(index, "amount", e.target.value)
                     }
                     className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
                   />
-                  <input
-                    type="text"
+
+                  {/* Unit Dropdown */}
+                  <select
                     value={ingredient.unit}
-                    placeholder="Unit"
                     onChange={(e) =>
                       handleIngredientChange(index, "unit", e.target.value)
                     }
-                    className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                    className="w-1/2 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
-                  />
+                  >
+                    <option value="" disabled>
+                      Select Unit
+                    </option>
+                    {unitOptions.map((option, idx) => (
+                      <option key={idx} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Ingredient Name Input */}
                   <input
                     type="text"
                     value={ingredient.name}
@@ -217,6 +240,8 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
                   />
+
+                  {/* Remove Ingredient Button */}
                   <button
                     type="button"
                     onClick={() => handleRemoveIngredient(index)}
