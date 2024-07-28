@@ -31,7 +31,7 @@ const Hero = () => {
             Welcome to Our Box
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white mb-8 max-w-2xl mx-auto">
-            We help you pick what's for dinner tonight!
+            We help you pick what&apos;s for dinner tonight!
           </p>
           <Link href={isSignedIn ? "/recipes/create" : "/dashboard"}>
             <div className="inline-block bg-blue-500 text-white py-3 px-8 rounded-full text-lg font-semibold hover:bg-blue-600 hover:scale-105 transition duration-300 cursor-pointer shadow-lg transform-gpu hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50">
