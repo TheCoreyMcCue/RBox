@@ -15,13 +15,11 @@ interface Recipe {
   description: string;
   image: string;
   cookTime: string;
-  // add other necessary fields
 }
 
 const Dashboard = () => {
   const { user, isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  console.log("🚀 ~ Dashboard ~ recipes:", recipes);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +54,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 text-center md:text-left">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Welcome to AreBox
+              New to Our Box?
             </h1>
             <p className="text-lg md:text-xl mb-8">Sign in to get started!</p>
 
