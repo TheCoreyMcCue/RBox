@@ -149,7 +149,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                   <input
                     type="text"
                     value={ingredient.amount}
-                    placeholder="Amount"
+                    placeholder="Qty"
                     onChange={
                       (e) =>
                         handleIngredientChange(
@@ -213,9 +213,23 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                   <button
                     type="button"
                     onClick={() => handleRemoveIngredient(index)}
-                    className="ml-2 text-red-500 hover:text-red-700"
+                    className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                    aria-label="Remove Ingredient"
                   >
-                    &minus;
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -223,8 +237,22 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
             <button
               type="button"
               onClick={handleAddIngredient}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Add Ingredient
             </button>
           </div>
@@ -244,17 +272,45 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                 <button
                   type="button"
                   onClick={() => handleRemoveStep(index)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+                  className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                  aria-label="Remove Step"
                 >
-                  &minus;
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddStep}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Add Step
             </button>
           </div>
@@ -274,31 +330,60 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                 <button
                   type="button"
                   onClick={() => handleRemoveCategory(index)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+                  className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                  aria-label="Remove Category"
                 >
-                  &minus;
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddCategory}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Add Category
             </button>
           </div>
           {error && <div className="mb-4 text-red-500">{error}</div>}
-          <div className="w-full flex justify-around">
+          <div className="flex justify-between space-x-4">
             <button
               type="submit"
-              className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 focus:outline-none"
             >
               Update Recipe
             </button>
             <button
               onClick={() => onClose()}
-              className="bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-red-600 transition duration-300"
+              type="button"
+              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300 focus:outline-none"
             >
               Cancel
             </button>
