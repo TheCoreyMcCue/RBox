@@ -29,7 +29,7 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Error fetching recipes:", error);
         } finally {
-          // setLoading(false);
+          setLoading(false);
         }
       } else {
         // setLoading(false);
@@ -37,7 +37,6 @@ const Dashboard = () => {
     };
 
     fetchRecipes();
-    setLoading(false);
   }, [user]);
 
   // Scroll event listener
@@ -135,34 +134,34 @@ const Dashboard = () => {
           </button>
         </Link>
       </div>
-      {recipes.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {recipes.map((recipe) => (
-            <div key={recipe._id} className="flex flex-col justify-between">
-              <Link href={`/recipes/${recipe._id}`}>
-                <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
-                  <Image
-                    src={recipe.image || Placeholder}
-                    alt={recipe.title}
-                    height={700}
-                    width={700}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h2 className="text-2xl font-semibold mb-2">
-                      {recipe.title}
-                    </h2>
-                    <p className="text-gray-700">{recipe.description}</p>
-                    <p className="text-gray-500 mt-2">
-                      Cook Time: {recipe.cookTime} minutes
-                    </p>
-                  </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {recipes.map((recipe) => (
+          <div key={recipe._id} className="flex flex-col justify-between">
+            <Link href={`/recipes/${recipe._id}`}>
+              <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
+                <Image
+                  src={recipe.image || Placeholder}
+                  alt={recipe.title}
+                  height={700}
+                  width={700}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h2 className="text-2xl font-semibold mb-2">
+                    {recipe.title}
+                  </h2>
+                  <p className="text-gray-700">{recipe.description}</p>
+                  <p className="text-gray-500 mt-2">
+                    Cook Time: {recipe.cookTime} minutes
+                  </p>
                 </div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      ) : (
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {recipes.length < 1 && (
         <p className="text-center text-gray-700">No recipes found.</p>
       )}
 
