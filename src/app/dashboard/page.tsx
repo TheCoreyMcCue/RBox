@@ -15,7 +15,10 @@ const Dashboard = () => {
   const { user, isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
-  const [rolling, setRolling] = useState(false);
+  const [showButton, setShowButton] = useState(true); // State to manage button visibility
+  const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -35,6 +38,39 @@ const Dashboard = () => {
 
     fetchRecipes();
   }, [user]);
+
+  // Scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      // Hide button when scrolling
+      setShowButton(false);
+
+      // Clear the previous timeout if there is one
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+
+      // Set a timeout to show the button after 250ms of no scrolling
+      setScrollTimeout(
+        setTimeout(() => {
+          setShowButton(true);
+        }, 250)
+      );
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [scrollTimeout]); // Dependency on scrollTimeout
+
+  // Random Recipe Navigation
+  const handleRandomRecipe = () => {
+    if (recipes.length > 0) {
+      const randomIndex = Math.floor(Math.random() * recipes.length);
+      const randomRecipe = recipes[randomIndex];
+      window.location.href = `/recipes/${randomRecipe._id}`;
+    }
+  };
 
   if (loading) {
     return (
@@ -69,16 +105,8 @@ const Dashboard = () => {
     );
   }
 
-  if (rolling) {
-    return (
-      <div className="min-h-[90vh] flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[90vh] container mx-auto px-4 py-8">
+    <div className="min-h-[90vh] container mx-auto px-4 py-8 relative">
       <div className="flex flex-col items-center justify-between mb-8 sm:flex-row">
         <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center">
           Your Recipes
@@ -135,6 +163,21 @@ const Dashboard = () => {
         </div>
       ) : (
         <p className="text-center text-gray-700">No recipes found.</p>
+      )}
+
+      {/* Overlay Button */}
+      {showButton && (
+        <div
+          className="fixed bottom-4 left-0 right-0 flex justify-center items-center pointer-events-none"
+          style={{ zIndex: 1000 }}
+        >
+          <button
+            onClick={handleRandomRecipe}
+            className="pointer-events-auto bg-gradient-to-r from-pink-500 to-orange-500 text-white py-3 px-6 rounded-full text-lg font-semibold shadow-lg hover:from-orange-500 hover:to-pink-500 transition-transform duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-300"
+          >
+            Discover a Random Recipe
+          </button>
+        </div>
       )}
     </div>
   );
