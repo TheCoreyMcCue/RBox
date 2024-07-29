@@ -16,13 +16,13 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, handleDelete }) => {
         </h4>
         <div className="w-full flex justify-around">
           <button
-            className="bg-red-500 text-white px-2 py-2 rounded-lg hover:bg-red-600"
+            className="bg-red-500 text-white px-2 py-2 shadow-lg rounded-xl hover:bg-red-600"
             onClick={() => handleDelete()}
           >
             Delete
           </button>
           <button
-            className="bg-green-500 text-white px-2 py-2 rounded-lg hover:bg-green-600"
+            className="bg-green-500 text-white px-2 py-2 shadow-lg rounded-xl hover:bg-green-600"
             onClick={() => onClose()}
           >
             Cancel
