@@ -149,6 +149,9 @@ const AllRecipes = () => {
                   <p className="text-gray-500 mt-2">
                     Cook Time: {recipe.cookTime} minutes
                   </p>
+                  <p className="text-gray-500 mt-2">
+                    Added by: {user.firstName}
+                  </p>
                 </div>
               </div>
             </Link>
