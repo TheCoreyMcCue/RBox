@@ -168,81 +168,116 @@ const CreateRecipe = () => {
               Ingredients
             </label>
             {ingredients.map((ingredient, index) => (
-              <div key={index} className="flex flex-wrap mb-2">
-                <input
-                  type="text"
-                  placeholder="Qty"
-                  value={ingredient.amount}
-                  inputMode="decimal"
-                  pattern="^(?:\d+(?:[.,]?\d*)?|\d+\s*\/\s*\d+)$"
-                  onChange={
-                    (e) =>
-                      handleIngredientChange(
-                        ingredients,
-                        setIngredients,
-                        index,
-                        "amount",
-                        e.target.value
-                      ) // Use the refactored function
-                  }
-                  className="w-1/5 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
-                  required
-                />
-                <select
-                  value={ingredient.unit}
-                  onChange={
-                    (e) =>
-                      handleIngredientChange(
-                        ingredients,
-                        setIngredients,
-                        index,
-                        "unit",
-                        e.target.value
-                      ) // Use the refactored function
-                  }
-                  className="w-1/4 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
-                  required
-                >
-                  <option value="" disabled>
-                    Select Unit
-                  </option>
-                  {unitOptions.map((option, idx) => (
-                    <option key={idx} value={option}>
-                      {option}
+              <div key={index} className="mb-2">
+                <div className="flex items-center mb-2">
+                  {/* Amount Input */}
+                  <input
+                    type="text"
+                    value={ingredient.amount}
+                    placeholder="Qty"
+                    onChange={
+                      (e) =>
+                        handleIngredientChange(
+                          ingredients,
+                          setIngredients,
+                          index,
+                          "amount",
+                          e.target.value
+                        ) // Use the refactored function
+                    }
+                    className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                    required
+                  />
+
+                  {/* Unit Dropdown */}
+                  <select
+                    value={ingredient.unit}
+                    onChange={
+                      (e) =>
+                        handleIngredientChange(
+                          ingredients,
+                          setIngredients,
+                          index,
+                          "unit",
+                          e.target.value
+                        ) // Use the refactored function
+                    }
+                    className="w-1/2 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select Unit
                     </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={ingredient.name}
-                  onChange={
-                    (e) =>
-                      handleIngredientChange(
-                        ingredients,
-                        setIngredients,
-                        index,
-                        "name",
-                        e.target.value
-                      ) // Use the refactored function
-                  }
-                  className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-2"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveIngredient(index)}
-                  className="ml-2 text-red-500 hover:text-red-700"
-                >
-                  &minus;
-                </button>
+                    {unitOptions.map((option, idx) => (
+                      <option key={idx} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Ingredient Name Input */}
+                  <input
+                    type="text"
+                    value={ingredient.name}
+                    placeholder="Ingredient"
+                    onChange={
+                      (e) =>
+                        handleIngredientChange(
+                          ingredients,
+                          setIngredients,
+                          index,
+                          "name",
+                          e.target.value
+                        ) // Use the refactored function
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                    required
+                  />
+
+                  {/* Remove Ingredient Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveIngredient(index)}
+                    className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                    aria-label="Remove Ingredient"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddIngredient}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Add Ingredient
             </button>
           </div>
@@ -264,17 +299,45 @@ const CreateRecipe = () => {
                 <button
                   type="button"
                   onClick={() => handleRemoveStep(index)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+                  className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                  aria-label="Remove Step"
                 >
-                  &minus;
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddStep}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Add Step
             </button>
           </div>
@@ -296,17 +359,45 @@ const CreateRecipe = () => {
                 <button
                   type="button"
                   onClick={() => handleRemoveCategory(index)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+                  className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                  aria-label="Remove Category"
                 >
-                  &minus;
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddCategory}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
               Add Category
             </button>
           </div>
@@ -315,16 +406,16 @@ const CreateRecipe = () => {
           {error && <div className="mb-4 text-red-500">{error}</div>}
 
           {/* Form Actions */}
-          <div className="w-full flex justify-around">
+          <div className="flex justify-between space-x-4">
             <button
               type="submit"
-              className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 focus:outline-none"
             >
               Create Recipe
             </button>
             <button
               onClick={() => router.push("/")}
-              className="bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300 focus:outline-none"
             >
               Cancel
             </button>

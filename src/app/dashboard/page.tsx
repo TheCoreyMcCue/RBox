@@ -29,13 +29,15 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Error fetching recipes:", error);
         } finally {
+          // setLoading(false);
         }
       } else {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
     fetchRecipes();
+    setLoading(false);
   }, [user]);
 
   // Scroll event listener
