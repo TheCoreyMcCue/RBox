@@ -4,23 +4,8 @@ import { updateRecipe } from "@/lib/actions/recipe.action";
 import { useUser } from "@clerk/nextjs";
 import ImageUpload from "./ImageUpload";
 
-interface Ingredient {
-  amount: string;
-  unit: string;
-  name: string;
-}
-
-interface Recipe {
-  _id: string;
-  title: string;
-  creator: string;
-  description: string;
-  image: string;
-  cookTime: string;
-  ingredients: Ingredient[];
-  steps: string[];
-  category: string[];
-}
+import { Ingredient, Recipe } from "../utils/interface";
+import { unitOptions } from "../utils/data";
 
 interface EditModalProps {
   onClose: () => void;
@@ -42,26 +27,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
-
-  // Unit options for the dropdown
-  const unitOptions = [
-    "cups",
-    "teaspoons",
-    "tablespoons",
-    "pounds",
-    "ounces",
-    "grams",
-    "milligrams",
-    "liters",
-    "milliliters",
-    "kilograms",
-    "whole",
-    "half",
-    "quarter",
-    "pinch",
-    "large",
-    "small",
-  ];
 
   const handleIngredientChange = (
     index: number,

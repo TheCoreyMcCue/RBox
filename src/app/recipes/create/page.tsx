@@ -6,31 +6,8 @@ import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import ImageUpload from "@/app/components/ImageUpload";
 
-type Ingredient = {
-  amount: string;
-  unit: string;
-  name: string;
-};
-
-// List of measurement units for the dropdown
-const unitOptions = [
-  "cups",
-  "teaspoons",
-  "tablespoons",
-  "pounds",
-  "ounces",
-  "grams",
-  "milligrams",
-  "liters",
-  "milliliters",
-  "kilograms",
-  "whole",
-  "half",
-  "quarter",
-  "pinch",
-  "large",
-  "small",
-];
+import { Ingredient } from "@/app/utils/interface";
+import { unitOptions } from "@/app/utils/data";
 
 const CreateRecipe = () => {
   // State variables for managing form inputs
@@ -151,7 +128,7 @@ const CreateRecipe = () => {
         </h1>
         <form
           onSubmit={handleSubmit}
-          className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md"
+          className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-md"
         >
           {/* Title Input */}
           <div className="mb-4">

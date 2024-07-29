@@ -4,28 +4,11 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { getRecipeById, deleteRecipe } from "@/lib/actions/recipe.action";
-import EditModal from "@/app/components/EditModal";
-import DeleteModal from "@/app/components/DeleteModal";
 import Image from "next/image";
+import DeleteModal from "@/app/components/DeleteModal";
+import EditModal from "@/app/components/EditModal";
+import { Recipe } from "@/app/utils/interface";
 import Placeholder from "../../../../public/placeholder.png";
-
-interface Ingredient {
-  amount: string;
-  unit: string;
-  name: string;
-}
-
-interface Recipe {
-  _id: string;
-  title: string;
-  creator: string;
-  description: string;
-  image: string;
-  cookTime: string;
-  ingredients: Ingredient[];
-  steps: string[];
-  category: string[];
-}
 
 const RecipeDetails = () => {
   const router = useRouter();
@@ -93,7 +76,7 @@ const RecipeDetails = () => {
           <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce delay-150"></div>
           <div className="w-4 h-4 rounded-full bg-blue-700 animate-bounce delay-300"></div>
         </div>
-        <span className="mt-4 text-gray-600 text-lg">Loading Recipes...</span>
+        <span className="mt-4 text-gray-600 text-lg">Loading Recipe...</span>
       </div>
     );
   }
