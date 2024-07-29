@@ -9,6 +9,7 @@ import DeleteModal from "@/app/components/DeleteModal";
 import EditModal from "@/app/components/EditModal";
 import { Recipe } from "@/app/utils/types";
 import Placeholder from "../../../../public/placeholder.png";
+import { useUser } from "@clerk/nextjs";
 
 const RecipeDetails = () => {
   const router = useRouter();
@@ -18,6 +19,8 @@ const RecipeDetails = () => {
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -58,13 +61,15 @@ const RecipeDetails = () => {
   };
 
   const handleDelete = async () => {
-    if (recipe) {
+    if (recipe && user?.id == recipe.creator) {
       try {
         await deleteRecipe(recipe._id, recipe.creator);
         router.push("/dashboard"); // Navigate back to the dashboard after deletion
       } catch (error) {
         console.error("Error deleting recipe:", error);
       }
+    } else {
+      alert("This isn't your recipe, silly");
     }
   };
 
