@@ -11,7 +11,7 @@ import Image from "next/image";
 
 import Placeholder from "../../../../public/placeholder.png";
 
-const allRecipes = () => {
+const AllRecipes = () => {
   const { user, isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +66,6 @@ const allRecipes = () => {
       window.location.href = `/recipes/${randomRecipe._id}`;
     }
   };
-
-  console.log("🚀 ~ allRecipes ~ recipes:", recipes);
 
   if (loading) {
     return (
@@ -180,4 +178,4 @@ const allRecipes = () => {
   );
 };
 
-export default allRecipes;
+export default AllRecipes;
