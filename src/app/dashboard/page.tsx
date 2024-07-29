@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
-import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
+import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -26,9 +26,11 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Error fetching recipes:", error);
         } finally {
+          setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchRecipes();
@@ -77,11 +79,37 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-[90vh] container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Your Recipes</h1>
+      <div className="flex flex-col items-center justify-between mb-8 sm:flex-row">
+        <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center">
+          Your Recipes
+        </h1>
+        <Link href="/recipes/create">
+          <button
+            type="button"
+            className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-5 h-5 mr-1"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Add Recipe
+          </button>
+        </Link>
+      </div>
       {recipes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => (
-            <div key={recipe._id}>
+            <div key={recipe._id} className="flex flex-col justify-between">
               <Link href={`/recipes/${recipe._id}`}>
                 <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
                   <Image
