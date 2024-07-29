@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import heroImage from "../../../public/family_dinner2.png";
+import heroImage from "../../../public/final_image2.png";
 import Image from "next/image";
 import { SignInButton, useUser } from "@clerk/nextjs";
 
