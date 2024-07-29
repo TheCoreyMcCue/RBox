@@ -175,7 +175,7 @@ const Dashboard = () => {
             onClick={handleRandomRecipe}
             className="pointer-events-auto bg-gradient-to-r from-pink-500 to-orange-500 text-white py-3 px-6 rounded-full text-lg font-semibold shadow-lg hover:from-orange-500 hover:to-pink-500 transition-transform duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-300"
           >
-            Discover a Random Recipe
+            Choose a Random Recipe
           </button>
         </div>
       )}
