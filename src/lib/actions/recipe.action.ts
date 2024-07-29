@@ -22,6 +22,17 @@ export async function createRecipe(recipe: any) {
   }
 }
 
+export const getAllRecipes = async () => {
+  try {
+    await connect(); // Ensure database connection
+    const allRecipes = await Recipe.find().lean().exec(); // Fetch all recipes as plain objects
+    return JSON.parse(JSON.stringify(allRecipes)); // Return recipes in JSON format
+  } catch (error) {
+    console.error("Error fetching all recipes:", error);
+    throw error;
+  }
+};
+
 export const getRecipesByUser = async (userId: string) => {
   try {
     await connect();

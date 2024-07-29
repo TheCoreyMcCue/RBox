@@ -51,12 +51,20 @@ const Navbar = () => {
                 Home
               </Link>
               {signedIn && (
-                <Link
-                  href="/dashboard"
-                  className="text-gray-700 hover:text-gray-900"
-                >
-                  My Dashboard
-                </Link>
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-700 hover:text-gray-900"
+                  >
+                    My Dashboard
+                  </Link>
+                  <Link
+                    href="/recipes/all"
+                    className="text-gray-700 hover:text-gray-900"
+                  >
+                    Discover Recipes
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -116,13 +124,22 @@ const Navbar = () => {
               Home
             </Link>
             {signedIn && (
-              <Link
-                href="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
-              >
-                My Dashboard
-              </Link>
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                >
+                  My Dashboard
+                </Link>
+                <Link
+                  href="/recipes/all"
+                  onClick={() => setIsOpen(false)}
+                  className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Discover Recipes
+                </Link>
+              </>
             )}
           </div>
         </div>

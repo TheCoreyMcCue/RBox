@@ -15,4 +15,6 @@ export const unitOptions = [
   "pinch",
   "large",
   "small",
+  "cloves",
+  "packet",
 ];
