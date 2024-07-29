@@ -7,7 +7,7 @@ import { getRecipeById, deleteRecipe } from "@/lib/actions/recipe.action";
 import Image from "next/image";
 import DeleteModal from "@/app/components/DeleteModal";
 import EditModal from "@/app/components/EditModal";
-import { Recipe } from "@/app/utils/interface";
+import { Recipe } from "@/app/utils/types";
 import Placeholder from "../../../../public/placeholder.png";
 
 const RecipeDetails = () => {
