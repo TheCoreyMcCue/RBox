@@ -29,7 +29,6 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Error fetching recipes:", error);
         } finally {
-          setLoading(false);
         }
       } else {
         setLoading(false);
@@ -166,7 +165,7 @@ const Dashboard = () => {
       )}
 
       {/* Overlay Button */}
-      {showButton && (
+      {showButton && recipes.length > 0 && (
         <div
           className="fixed bottom-4 left-0 right-0 flex justify-center items-center pointer-events-none"
           style={{ zIndex: 1000 }}
