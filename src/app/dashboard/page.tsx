@@ -7,7 +7,7 @@ import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
 
-import { Recipe } from "../utils/interface";
+import { Recipe } from "../utils/types";
 
 import Placeholder from "../../../public/placeholder.png";
 

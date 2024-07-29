@@ -6,7 +6,8 @@ import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import ImageUpload from "@/app/components/ImageUpload";
 
-import { Ingredient } from "@/app/utils/interface";
+import { Ingredient } from "@/app/utils/types";
+import { handleStepChange, handleIngredientChange } from "@/app/utils/helper";
 import { unitOptions } from "@/app/utils/data";
 
 const CreateRecipe = () => {
@@ -24,24 +25,6 @@ const CreateRecipe = () => {
 
   const { user } = useUser();
   const router = useRouter();
-
-  // Function to handle changes in the ingredients list
-  const handleIngredientChange = (
-    index: number,
-    field: keyof Ingredient,
-    value: string
-  ) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index] = { ...newIngredients[index], [field]: value };
-    setIngredients(newIngredients);
-  };
-
-  // Function to handle changes in the steps list
-  const handleStepChange = (index: number, value: string) => {
-    const newSteps = [...steps];
-    newSteps[index] = value;
-    setSteps(newSteps);
-  };
 
   // Function to handle changes in the categories list
   const handleCategoryChange = (index: number, value: string) => {
@@ -192,16 +175,30 @@ const CreateRecipe = () => {
                   value={ingredient.amount}
                   inputMode="decimal"
                   pattern="^(?:\d+(?:[.,]?\d*)?|\d+\s*\/\s*\d+)$"
-                  onChange={(e) =>
-                    handleIngredientChange(index, "amount", e.target.value)
+                  onChange={
+                    (e) =>
+                      handleIngredientChange(
+                        ingredients,
+                        setIngredients,
+                        index,
+                        "amount",
+                        e.target.value
+                      ) // Use the refactored function
                   }
                   className="w-1/5 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
                   required
                 />
                 <select
                   value={ingredient.unit}
-                  onChange={(e) =>
-                    handleIngredientChange(index, "unit", e.target.value)
+                  onChange={
+                    (e) =>
+                      handleIngredientChange(
+                        ingredients,
+                        setIngredients,
+                        index,
+                        "unit",
+                        e.target.value
+                      ) // Use the refactored function
                   }
                   className="w-1/4 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mr-2 mb-2"
                   required
@@ -219,8 +216,15 @@ const CreateRecipe = () => {
                   type="text"
                   placeholder="Name"
                   value={ingredient.name}
-                  onChange={(e) =>
-                    handleIngredientChange(index, "name", e.target.value)
+                  onChange={
+                    (e) =>
+                      handleIngredientChange(
+                        ingredients,
+                        setIngredients,
+                        index,
+                        "name",
+                        e.target.value
+                      ) // Use the refactored function
                   }
                   className="w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-2"
                   required
@@ -251,7 +255,9 @@ const CreateRecipe = () => {
                 <input
                   type="text"
                   value={step}
-                  onChange={(e) => handleStepChange(index, e.target.value)}
+                  onChange={(e) =>
+                    handleStepChange(steps, setSteps, index, e.target.value)
+                  }
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                   required
                 />

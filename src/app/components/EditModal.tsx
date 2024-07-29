@@ -4,7 +4,8 @@ import { updateRecipe } from "@/lib/actions/recipe.action";
 import { useUser } from "@clerk/nextjs";
 import ImageUpload from "./ImageUpload";
 
-import { Ingredient, Recipe } from "../utils/interface";
+import { Ingredient, Recipe } from "../utils/types";
+import { handleStepChange, handleIngredientChange } from "@/app/utils/helper";
 import { unitOptions } from "../utils/data";
 
 interface EditModalProps {
@@ -27,25 +28,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
-
-  const handleIngredientChange = (
-    index: number,
-    field: keyof Ingredient,
-    value: string
-  ) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index] = {
-      ...newIngredients[index],
-      [field]: value,
-    };
-    setIngredients(newIngredients);
-  };
-
-  const handleStepChange = (index: number, value: string) => {
-    const newSteps = [...steps];
-    newSteps[index] = value;
-    setSteps(newSteps);
-  };
 
   const handleCategoryChange = (index: number, value: string) => {
     const newCategories = [...categories];
@@ -168,8 +150,15 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                     type="text"
                     value={ingredient.amount}
                     placeholder="Amount"
-                    onChange={(e) =>
-                      handleIngredientChange(index, "amount", e.target.value)
+                    onChange={
+                      (e) =>
+                        handleIngredientChange(
+                          ingredients,
+                          setIngredients,
+                          index,
+                          "amount",
+                          e.target.value
+                        ) // Use the refactored function
                     }
                     className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
@@ -178,8 +167,15 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                   {/* Unit Dropdown */}
                   <select
                     value={ingredient.unit}
-                    onChange={(e) =>
-                      handleIngredientChange(index, "unit", e.target.value)
+                    onChange={
+                      (e) =>
+                        handleIngredientChange(
+                          ingredients,
+                          setIngredients,
+                          index,
+                          "unit",
+                          e.target.value
+                        ) // Use the refactored function
                     }
                     className="w-1/2 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
@@ -199,8 +195,15 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                     type="text"
                     value={ingredient.name}
                     placeholder="Ingredient"
-                    onChange={(e) =>
-                      handleIngredientChange(index, "name", e.target.value)
+                    onChange={
+                      (e) =>
+                        handleIngredientChange(
+                          ingredients,
+                          setIngredients,
+                          index,
+                          "name",
+                          e.target.value
+                        ) // Use the refactored function
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
@@ -232,7 +235,9 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                 <input
                   type="text"
                   value={step}
-                  onChange={(e) => handleStepChange(index, e.target.value)}
+                  onChange={(e) =>
+                    handleStepChange(steps, setSteps, index, e.target.value)
+                  }
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                   required
                 />
