@@ -7,15 +7,9 @@ import { getRecipesByUser, deleteRecipe } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
 
-import Placeholder from "../../../public/placeholder.png";
+import { Recipe } from "../utils/interface";
 
-interface Recipe {
-  _id: string;
-  title: string;
-  description: string;
-  image: string;
-  cookTime: string;
-}
+import Placeholder from "../../../public/placeholder.png";
 
 const Dashboard = () => {
   const { user, isSignedIn } = useUser();
