@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 
 import { Recipe } from "@/app/utils/types";
 import { getAllRecipes } from "@/lib/actions/recipe.action";
+import { fetchUserByClerkId } from "@/lib/actions/user.action"; // Import the fetchUserById function
 import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,17 +13,51 @@ import Image from "next/image";
 import Placeholder from "../../../../public/placeholder.png";
 
 const AllRecipes = () => {
-  const { user, isSignedIn } = useUser();
+  const { isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [showButton, setShowButton] = useState(true); // State to manage button visibility
+  const [creators, setCreators] = useState<{ [key: string]: string }>({}); // State to store recipe creators
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         const fetchedRecipes = await getAllRecipes();
+
+        // Create a mapping of recipeId to creator name
+        const creatorPromises = fetchedRecipes.map(async (recipe: Recipe) => {
+          try {
+            const creator = await fetchUserByClerkId(recipe.creator);
+            return {
+              recipeId: recipe._id,
+              creatorName: creator
+                ? `${creator.firstName} ${creator.lastName}`
+                : "Unknown",
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching creator for recipe ${recipe._id}:`,
+              error
+            );
+            return {
+              recipeId: recipe._id,
+              creatorName: "Unknown",
+            };
+          }
+        });
+
+        const creatorsArray = await Promise.all(creatorPromises);
+
+        // Convert array to object for quick access
+        const creatorsMap: { [key: string]: string } = {};
+        creatorsArray.forEach(({ recipeId, creatorName }) => {
+          creatorsMap[recipeId] = creatorName;
+        });
+
+        setCreators(creatorsMap);
         setRecipes(fetchedRecipes);
       } catch (error) {
         console.error("Error fetching recipes:", error);
@@ -149,8 +184,9 @@ const AllRecipes = () => {
                   <p className="text-gray-500 mt-2">
                     Cook Time: {recipe.cookTime} minutes
                   </p>
+                  {/* Display the creator's name */}
                   <p className="text-gray-500 mt-2">
-                    Added by: {user.firstName}
+                    Added by: {creators[recipe._id] || "Unknown"}
                   </p>
                 </div>
               </div>
