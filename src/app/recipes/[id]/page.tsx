@@ -73,6 +73,13 @@ const RecipeDetails = () => {
     }
   };
 
+  const handleCopyUrl = () => {
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      alert("Recipe copied to clipboard!");
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-[90vh] flex flex-col items-center justify-center">
@@ -127,9 +134,31 @@ const RecipeDetails = () => {
             className="w-full h-72 object-cover transition-transform duration-300 ease-in-out transform hover:scale-105"
           />
           <div className="p-6">
-            <h1 className="text-4xl font-bold mb-4 text-center text-gray-800 animate-fadeIn">
-              {recipe.title}
-            </h1>
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-4xl font-bold text-gray-800 animate-fadeIn">
+                {recipe.title}
+              </h1>
+              <button
+                onClick={handleCopyUrl}
+                className="ml-4 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 9V3.75A2.25 2.25 0 0013.5 1.5h-9A2.25 2.25 0 002.25 3.75v9a2.25 2.25 0 002.25 2.25H9M7.5 7.5h9m3 3V20.25A2.25 2.25 0 0117.25 22.5h-9A2.25 2.25 0 016 20.25v-9A2.25 2.25 0 018.25 9H15"
+                  />
+                </svg>
+                <p className="text-xs">Share Recipe</p>
+              </button>
+            </div>
             <p className="text-lg text-gray-700 mb-6">{recipe.description}</p>
             <div className="flex justify-between items-center mb-6">
               <p className="text-sm font-semibold text-gray-500">
@@ -165,7 +194,6 @@ const RecipeDetails = () => {
                 </li>
               ))}
             </ul>
-            <div className="flex justify-center"></div>
             <div className=" w-full flex justify-between">
               <button
                 onClick={openDeleteModal}
