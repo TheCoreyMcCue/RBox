@@ -1,15 +1,6 @@
-import { Schema, model, models, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
-interface IUser extends Document {
-  clerkId: string;
-  email: string;
-  photo?: string;
-  firstName?: string;
-  lastName?: string;
-  friends: Schema.Types.ObjectId[];
-}
-
-const UserSchema = new Schema<IUser>({
+const UserSchema = new Schema({
   clerkId: {
     type: String,
     required: true,
@@ -29,14 +20,8 @@ const UserSchema = new Schema<IUser>({
   lastName: {
     type: String,
   },
-  friends: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
 });
 
-const User = models?.User || model<IUser>("User", UserSchema);
+const User = models?.User || model("User", UserSchema);
 
 export default User;
