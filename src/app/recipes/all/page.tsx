@@ -156,20 +156,7 @@ const AllRecipes = () => {
         <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center">
           All Recipes
         </h1>
-        <div className="flex items-center">
-          {/* Category Filter Dropdown */}
-          <select
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            className="border border-gray-300 rounded-md py-2 px-4 mr-4"
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col items-center">
           <Link href="/recipes/create">
             <button
               type="button"
@@ -192,6 +179,19 @@ const AllRecipes = () => {
               Add Recipe
             </button>
           </Link>
+          {/* Category Filter Dropdown */}
+          <select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="border border-gray-300 rounded-md mt-6 py-2 px-4 mr-4"
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
