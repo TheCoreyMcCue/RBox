@@ -13,6 +13,8 @@ import Image from "next/image";
 import Placeholder from "../../../../public/placeholder.png";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
+const RECIPES_PER_PAGE = 4; // Set the number of recipes per page
+
 const AllRecipes = () => {
   const { isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -24,6 +26,9 @@ const AllRecipes = () => {
   );
   const [selectedCategory, setSelectedCategory] = useState<string>(""); // State for category filtering
   const [categories, setCategories] = useState<string[]>([]); // State for available categories
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Function to standardize the category string (capitalize the first letter and lowercase the rest)
   const formatCategory = (category: string) =>
@@ -113,6 +118,7 @@ const AllRecipes = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setSelectedCategory(event.target.value);
+    setCurrentPage(1); // Reset to the first page when the category changes
   };
 
   // Filter recipes based on the selected category
@@ -125,6 +131,28 @@ const AllRecipes = () => {
           )
       )
     : recipes;
+
+  // Pagination logic
+  const indexOfLastRecipe = currentPage * RECIPES_PER_PAGE;
+  const indexOfFirstRecipe = indexOfLastRecipe - RECIPES_PER_PAGE;
+  const currentRecipes = filteredRecipes.slice(
+    indexOfFirstRecipe,
+    indexOfLastRecipe
+  );
+
+  const totalPages = Math.ceil(filteredRecipes.length / RECIPES_PER_PAGE);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   if (loading) {
     return <LoadingScreen />;
@@ -195,15 +223,15 @@ const AllRecipes = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredRecipes.map((recipe) => (
+        {currentRecipes.map((recipe) => (
           <div key={recipe._id} className="flex flex-col justify-between">
             <Link href={`/recipes/${recipe._id}`}>
               <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
                 <Image
                   src={recipe.image || Placeholder}
                   alt={recipe.title}
-                  height={700}
-                  width={700}
+                  height={400}
+                  width={400}
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
@@ -224,9 +252,29 @@ const AllRecipes = () => {
         ))}
       </div>
 
-      {filteredRecipes.length < 1 && (
+      {currentRecipes.length < 1 && (
         <p className="text-center text-gray-700">No recipes found.</p>
       )}
+
+      <div className="flex justify-center items-center mt-8 space-x-4">
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-blue-500 text-white rounded-full disabled:bg-gray-400"
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-blue-500 text-white rounded-full disabled:bg-gray-400"
+        >
+          Next
+        </button>
+      </div>
 
       {showButton && filteredRecipes.length > 0 && (
         <div

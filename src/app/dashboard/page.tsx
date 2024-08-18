@@ -134,8 +134,8 @@ const Dashboard = () => {
                 <Image
                   src={recipe.image || Placeholder}
                   alt={recipe.title}
-                  height={700}
-                  width={700}
+                  height={500}
+                  width={500}
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
