@@ -5,7 +5,7 @@ import { useUser } from "@clerk/nextjs";
 
 import { Recipe } from "@/app/utils/types";
 import { getAllRecipes } from "@/lib/actions/recipe.action";
-import { fetchUserByClerkId } from "@/lib/actions/user.action"; // Import the fetchUserById function
+import { fetchUserByClerkId } from "@/lib/actions/user.action";
 import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,18 +17,18 @@ const AllRecipes = () => {
   const { isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showButton, setShowButton] = useState(true); // State to manage button visibility
-  const [creators, setCreators] = useState<{ [key: string]: string }>({}); // State to store recipe creators
+  const [showButton, setShowButton] = useState(true);
+  const [creators, setCreators] = useState<{ [key: string]: string }>({});
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [selectedCategory, setSelectedCategory] = useState<string>(""); // State for category filtering
 
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         const fetchedRecipes = await getAllRecipes();
 
-        // Create a mapping of recipeId to creator name
         const creatorPromises = fetchedRecipes.map(async (recipe: Recipe) => {
           try {
             const creator = await fetchUserByClerkId(recipe.creator);
@@ -52,7 +52,6 @@ const AllRecipes = () => {
 
         const creatorsArray = await Promise.all(creatorPromises);
 
-        // Convert array to object for quick access
         const creatorsMap: { [key: string]: string } = {};
         creatorsArray.forEach(({ recipeId, creatorName }) => {
           creatorsMap[recipeId] = creatorName;
@@ -70,16 +69,11 @@ const AllRecipes = () => {
     fetchRecipes();
   }, []);
 
-  // Scroll event listener
   useEffect(() => {
     const handleScroll = () => {
-      // Hide button when scrolling
       setShowButton(false);
-
-      // Clear the previous timeout if there is one
       if (scrollTimeout) clearTimeout(scrollTimeout);
 
-      // Set a timeout to show the button after 250ms of no scrolling
       setScrollTimeout(
         setTimeout(() => {
           setShowButton(true);
@@ -92,9 +86,8 @@ const AllRecipes = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [scrollTimeout]); // Dependency on scrollTimeout
+  }, [scrollTimeout]);
 
-  // Random Recipe Navigation
   const handleRandomRecipe = () => {
     if (recipes.length > 0) {
       const randomIndex = Math.floor(Math.random() * recipes.length);
@@ -102,6 +95,21 @@ const AllRecipes = () => {
       window.location.href = `/recipes/${randomRecipe._id}`;
     }
   };
+
+  const handleCategoryChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSelectedCategory(event.target.value);
+  };
+
+  // Filter recipes based on the selected category
+  const filteredRecipes = selectedCategory
+    ? recipes.filter(
+        (recipe) =>
+          Array.isArray(recipe.category) &&
+          recipe.category.includes(selectedCategory)
+      )
+    : recipes;
 
   if (loading) {
     return <LoadingScreen />;
@@ -133,31 +141,46 @@ const AllRecipes = () => {
         <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center">
           All Recipes
         </h1>
-        <Link href="/recipes/create">
-          <button
-            type="button"
-            className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+        <div className="flex items-center">
+          {/* Category Filter Dropdown */}
+          <select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="border border-gray-300 rounded-md py-2 px-4 mr-4"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-5 h-5 mr-1"
+            <option value="">All Categories</option>
+            <option value="Breakfast">Breakfast</option>
+            <option value="Lunch">Lunch</option>
+            <option value="Dinner">Dinner</option>
+            <option value="healthy">Healthy</option>
+            {/* Add more categories as needed */}
+          </select>
+          <Link href="/recipes/create">
+            <button
+              type="button"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Recipe
-          </button>
-        </Link>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 mr-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add Recipe
+            </button>
+          </Link>
+        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {recipes.map((recipe) => (
+        {filteredRecipes.map((recipe) => (
           <div key={recipe._id} className="flex flex-col justify-between">
             <Link href={`/recipes/${recipe._id}`}>
               <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
@@ -176,7 +199,6 @@ const AllRecipes = () => {
                   <p className="text-gray-500 mt-2">
                     Cook Time: {recipe.cookTime} minutes
                   </p>
-                  {/* Display the creator's name */}
                   <p className="text-gray-500 mt-2">
                     Added by: {creators[recipe._id] || "Unknown"}
                   </p>
@@ -187,12 +209,11 @@ const AllRecipes = () => {
         ))}
       </div>
 
-      {recipes.length < 1 && (
+      {filteredRecipes.length < 1 && (
         <p className="text-center text-gray-700">No recipes found.</p>
       )}
 
-      {/* Overlay Button */}
-      {showButton && recipes.length > 0 && (
+      {showButton && filteredRecipes.length > 0 && (
         <div
           className="fixed bottom-4 left-0 right-0 flex justify-center items-center pointer-events-none"
           style={{ zIndex: 1000 }}
