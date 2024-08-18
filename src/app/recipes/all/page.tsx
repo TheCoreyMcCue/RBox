@@ -25,6 +25,10 @@ const AllRecipes = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(""); // State for category filtering
   const [categories, setCategories] = useState<string[]>([]); // State for available categories
 
+  // Function to standardize the category string (capitalize the first letter and lowercase the rest)
+  const formatCategory = (category: string) =>
+    category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
@@ -61,9 +65,10 @@ const AllRecipes = () => {
         setCreators(creatorsMap);
         setRecipes(fetchedRecipes);
 
-        // Extract unique categories from the fetched recipes
+        // Extract unique categories from the fetched recipes, standardizing the format
         const allCategories: string[] = fetchedRecipes.flatMap(
-          (recipe: Recipe) => recipe.category
+          (recipe: Recipe) =>
+            recipe.category.map((category) => formatCategory(category))
         );
         const uniqueCategories = Array.from(new Set(allCategories));
         setCategories(uniqueCategories);
@@ -115,7 +120,9 @@ const AllRecipes = () => {
     ? recipes.filter(
         (recipe) =>
           Array.isArray(recipe.category) &&
-          recipe.category.includes(selectedCategory)
+          recipe.category.some(
+            (cat) => formatCategory(cat) === selectedCategory
+          )
       )
     : recipes;
 
@@ -149,11 +156,24 @@ const AllRecipes = () => {
         <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center">
           All Recipes
         </h1>
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex items-center">
+          {/* Category Filter Dropdown */}
+          <select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="border border-gray-300 rounded-md py-2 px-4 mr-4"
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
           <Link href="/recipes/create">
             <button
               type="button"
-              className="flex items-center mt-2 mb-4 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -172,19 +192,6 @@ const AllRecipes = () => {
               Add Recipe
             </button>
           </Link>
-          {/* Category Filter Dropdown */}
-          <select
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            className="border border-gray-300 rounded-md py-2 px-4 mr-4"
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
