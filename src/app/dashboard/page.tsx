@@ -12,6 +12,8 @@ import { Recipe } from "../utils/types";
 import Placeholder from "../../../public/placeholder.png";
 import LoadingScreen from "../components/LoadingScreen";
 
+const RECIPES_PER_PAGE = 4; // Number of recipes per page
+
 const Dashboard = () => {
   const { user, isSignedIn } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -20,6 +22,9 @@ const Dashboard = () => {
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -32,8 +37,6 @@ const Dashboard = () => {
         } finally {
           setLoading(false);
         }
-      } else {
-        // setLoading(false);
       }
     };
 
@@ -43,13 +46,10 @@ const Dashboard = () => {
   // Scroll event listener
   useEffect(() => {
     const handleScroll = () => {
-      // Hide button when scrolling
       setShowButton(false);
 
-      // Clear the previous timeout if there is one
       if (scrollTimeout) clearTimeout(scrollTimeout);
 
-      // Set a timeout to show the button after 250ms of no scrolling
       setScrollTimeout(
         setTimeout(() => {
           setShowButton(true);
@@ -62,7 +62,7 @@ const Dashboard = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [scrollTimeout]); // Dependency on scrollTimeout
+  }, [scrollTimeout]);
 
   // Random Recipe Navigation
   const handleRandomRecipe = () => {
@@ -70,6 +70,25 @@ const Dashboard = () => {
       const randomIndex = Math.floor(Math.random() * recipes.length);
       const randomRecipe = recipes[randomIndex];
       window.location.href = `/recipes/${randomRecipe._id}`;
+    }
+  };
+
+  // Pagination logic
+  const indexOfLastRecipe = currentPage * RECIPES_PER_PAGE;
+  const indexOfFirstRecipe = indexOfLastRecipe - RECIPES_PER_PAGE;
+  const currentRecipes = recipes.slice(indexOfFirstRecipe, indexOfLastRecipe);
+
+  const totalPages = Math.ceil(recipes.length / RECIPES_PER_PAGE);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -127,7 +146,7 @@ const Dashboard = () => {
         </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {recipes.map((recipe) => (
+        {currentRecipes.map((recipe) => (
           <div key={recipe._id} className="flex flex-col justify-between">
             <Link href={`/recipes/${recipe._id}`}>
               <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
@@ -156,6 +175,27 @@ const Dashboard = () => {
       {recipes.length < 1 && (
         <p className="text-center text-gray-700">No recipes found.</p>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center mt-8 space-x-4">
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-blue-500 text-white rounded-full disabled:bg-gray-400"
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-blue-500 text-white rounded-full disabled:bg-gray-400"
+        >
+          Next
+        </button>
+      </div>
 
       {/* Overlay Button */}
       {showButton && recipes.length > 0 && (
