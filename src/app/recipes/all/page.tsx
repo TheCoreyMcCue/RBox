@@ -157,6 +157,63 @@ const AllRecipes = () => {
     }
   };
 
+  const jumpToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Generate simplified page numbers for pagination
+  const generatePageNumbers = () => {
+    const pages = [];
+
+    // Always show the first page
+    if (currentPage !== 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => jumpToPage(1)}
+          className="px-4 py-2 rounded-full bg-gray-300"
+        >
+          1
+        </button>
+      );
+    }
+
+    // Show the current page
+    pages.push(
+      <button
+        key={currentPage}
+        onClick={() => jumpToPage(currentPage)}
+        className="px-4 py-2 rounded-full bg-blue-500 text-white"
+      >
+        {currentPage}
+      </button>
+    );
+
+    // Show ellipsis and the last page if necessary
+    if (currentPage < totalPages - 1) {
+      pages.push(
+        <span key="ellipsis" className="px-3 py-2">
+          ...
+        </span>
+      );
+    }
+
+    // Always show the last page
+    if (currentPage !== totalPages) {
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => jumpToPage(totalPages)}
+          className="px-4 py-2 rounded-full bg-gray-300"
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return pages;
+  };
+
   // Show loading screen if loading
   if (loading) {
     return <LoadingScreen />;
@@ -175,7 +232,7 @@ const AllRecipes = () => {
           </p>
           <div className="inline-block">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-10 rounded-full text-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg cursor-pointer">
-              <SignInButton>Sign Up Now</SignInButton>
+              <SignInButton />
             </div>
           </div>
         </div>
@@ -184,39 +241,14 @@ const AllRecipes = () => {
   }
 
   return (
-    <div className="min-h-[90vh] container mx-auto px-4 py-8 relative">
-      <div className="flex flex-col items-center justify-between mb-8 sm:flex-row">
-        <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center">
-          All Recipes
-        </h1>
-        <div className="flex flex-col items-center">
-          <Link href="/recipes/create">
-            <button
-              type="button"
-              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Add Recipe
-            </button>
-          </Link>
-          {/* Category Filter Dropdown */}
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-gray-800">All Recipes</h1>
+        <div>
           <select
             value={selectedCategory}
             onChange={handleCategoryChange}
-            className="border border-gray-300 rounded-md mt-6 py-2 px-4 mr-4"
+            className="px-4 py-2 border rounded-full"
           >
             <option value="">All Categories</option>
             {categories.map((category) => (
@@ -228,11 +260,11 @@ const AllRecipes = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {filteredRecipes.map((recipe) => (
-          <div key={recipe._id} className="flex flex-col justify-between">
+          <div key={recipe._id}>
             <Link href={`/recipes/${recipe._id}`}>
-              <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
+              <div className="rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 cursor-pointer">
                 <Image
                   src={recipe.image || Placeholder}
                   alt={recipe.title}
@@ -270,9 +302,8 @@ const AllRecipes = () => {
         >
           Previous
         </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
+        {/* Render the simplified pagination buttons */}
+        <div className="flex space-x-2">{generatePageNumbers()}</div>
         <button
           onClick={nextPage}
           disabled={currentPage === totalPages}
