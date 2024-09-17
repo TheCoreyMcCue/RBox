@@ -29,15 +29,22 @@ const AllRecipes = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Total number of pages, calculated from total recipes
 
   // Function to standardize the category string (capitalize the first letter and lowercase the rest)
   const formatCategory = (category: string) =>
     category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
+  // Fetch paginated recipes from the backend
   useEffect(() => {
     const fetchRecipes = async () => {
+      setLoading(true); // Set loading to true while fetching data
       try {
-        const fetchedRecipes = await getAllRecipes();
+        // Pass the current page and recipes per page to the backend for pagination
+        const response = await getAllRecipes(currentPage, RECIPES_PER_PAGE);
+
+        const fetchedRecipes = response.recipes;
+        const totalRecipes = response.totalRecipes;
 
         const creatorPromises = fetchedRecipes.map(async (recipe: Recipe) => {
           try {
@@ -61,7 +68,6 @@ const AllRecipes = () => {
         });
 
         const creatorsArray = await Promise.all(creatorPromises);
-
         const creatorsMap: { [key: string]: string } = {};
         creatorsArray.forEach(({ recipeId, creatorName }) => {
           creatorsMap[recipeId] = creatorName;
@@ -69,6 +75,9 @@ const AllRecipes = () => {
 
         setCreators(creatorsMap);
         setRecipes(fetchedRecipes);
+
+        // Calculate total pages from the total number of recipes
+        setTotalPages(Math.ceil(totalRecipes / RECIPES_PER_PAGE));
 
         // Extract unique categories from the fetched recipes, standardizing the format
         const allCategories: string[] = fetchedRecipes.flatMap(
@@ -85,8 +94,9 @@ const AllRecipes = () => {
     };
 
     fetchRecipes();
-  }, []);
+  }, [currentPage]);
 
+  // Handle scroll to show or hide buttons
   useEffect(() => {
     const handleScroll = () => {
       setShowButton(false);
@@ -106,6 +116,7 @@ const AllRecipes = () => {
     };
   }, [scrollTimeout]);
 
+  // Handle random recipe button
   const handleRandomRecipe = () => {
     if (recipes.length > 0) {
       const randomIndex = Math.floor(Math.random() * recipes.length);
@@ -114,6 +125,7 @@ const AllRecipes = () => {
     }
   };
 
+  // Handle category change and reset pagination
   const handleCategoryChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -132,16 +144,7 @@ const AllRecipes = () => {
       )
     : recipes;
 
-  // Pagination logic
-  const indexOfLastRecipe = currentPage * RECIPES_PER_PAGE;
-  const indexOfFirstRecipe = indexOfLastRecipe - RECIPES_PER_PAGE;
-  const currentRecipes = filteredRecipes.slice(
-    indexOfFirstRecipe,
-    indexOfLastRecipe
-  );
-
-  const totalPages = Math.ceil(filteredRecipes.length / RECIPES_PER_PAGE);
-
+  // Pagination navigation
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -154,10 +157,12 @@ const AllRecipes = () => {
     }
   };
 
+  // Show loading screen if loading
   if (loading) {
     return <LoadingScreen />;
   }
 
+  // Show sign-in prompt if user is not signed in
   if (!isSignedIn) {
     return (
       <div className="bg-gradient-to-br from-red-500 via-white-500 to-blue-600 min-h-[90vh] text-white flex flex-col items-center justify-center">
@@ -222,8 +227,9 @@ const AllRecipes = () => {
           </select>
         </div>
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {currentRecipes.map((recipe) => (
+        {filteredRecipes.map((recipe) => (
           <div key={recipe._id} className="flex flex-col justify-between">
             <Link href={`/recipes/${recipe._id}`}>
               <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
@@ -252,7 +258,7 @@ const AllRecipes = () => {
         ))}
       </div>
 
-      {currentRecipes.length < 1 && (
+      {filteredRecipes.length < 1 && (
         <p className="text-center text-gray-700">No recipes found.</p>
       )}
 

@@ -22,11 +22,30 @@ export async function createRecipe(recipe: any) {
   }
 }
 
-export const getAllRecipes = async () => {
+export const getAllRecipes = async (page = 1, limit = 4) => {
   try {
     await connect(); // Ensure database connection
-    const allRecipes = await Recipe.find().lean().exec(); // Fetch all recipes as plain objects
-    return JSON.parse(JSON.stringify(allRecipes)); // Return recipes in JSON format
+
+    const skip = (page - 1) * limit; // Calculate how many recipes to skip based on page and limit
+    console.log(`Fetching recipes for page ${page}, skipping ${skip} recipes`); // Debugging log
+
+    // Fetch the paginated recipes
+    const allRecipes = await Recipe.find()
+      .skip(skip)
+      .limit(limit)
+      .lean()
+      .exec();
+    console.log(`Fetched recipes:`, allRecipes); // Debugging log
+
+    // Fetch the total count of recipes for pagination
+    const totalRecipes = await Recipe.countDocuments().exec();
+
+    console.log(`Total recipes count: ${totalRecipes}`); // Debugging log
+
+    return {
+      recipes: JSON.parse(JSON.stringify(allRecipes)), // Recipes for the current page
+      totalRecipes, // Total number of recipes for pagination
+    };
   } catch (error) {
     console.error("Error fetching all recipes:", error);
     throw error;
