@@ -11,6 +11,8 @@ import { Recipe } from "../utils/types";
 import Placeholder from "../../../public/placeholder.png";
 import LoadingScreen from "../components/LoadingScreen";
 
+import { lasagnaRecipe } from "./exampleRecipe";
+
 const RECIPES_PER_PAGE = 4;
 
 const Dashboard = () => {
@@ -35,7 +37,7 @@ const Dashboard = () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              recipeText: `Ingredients: 1 pack ramen noodles, 2 eggs, 1 tablespoon soy sauce. Method: Boil noodles, add eggs and soy sauce, cook for 3 minutes.`,
+              recipeText: lasagnaRecipe,
             }),
           });
 

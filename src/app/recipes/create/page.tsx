@@ -1,27 +1,137 @@
 "use client";
 
+import { useState } from "react";
 import { Formik, Field, Form, FieldArray } from "formik";
-import { createRecipe } from "@/lib/actions/recipe.action";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { createRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "@/app/components/ImageUpload";
 import { unitOptions } from "@/app/utils/data";
+
+// Define types for the recipe form
+interface Ingredient {
+  amount: string;
+  unit: string;
+  name: string;
+}
+
+interface RecipeFormValues {
+  title: string;
+  description: string;
+  cookTime: string;
+  image: string;
+  ingredients: Ingredient[];
+  steps: string[];
+  categories: string[];
+}
+
+const defaultInitialValues: RecipeFormValues = {
+  title: "",
+  description: "",
+  cookTime: "",
+  image: "",
+  ingredients: [{ amount: "", unit: "", name: "" }],
+  steps: [""],
+  categories: [""],
+};
 
 const CreateRecipe = () => {
   const { user } = useUser();
   const router = useRouter();
 
-  return (
-    <Formik
-      initialValues={{
-        title: "",
-        description: "",
-        cookTime: "",
+  const [showManualForm, setShowManualForm] = useState<boolean>(false);
+  const [recipeText, setRecipeText] = useState<string>("");
+  const [parsing, setParsing] = useState<boolean>(false);
+  const [parseError, setParseError] = useState<string>("");
+  const [parsedValues, setParsedValues] = useState<RecipeFormValues | null>(
+    null
+  );
+
+  const toggleFormView = () => {
+    setShowManualForm((prev) => !prev);
+    setParseError("");
+    setRecipeText("");
+    setParsedValues(null);
+  };
+
+  const handleParse = async () => {
+    setParsing(true);
+    setParseError("");
+
+    try {
+      const res = await fetch("/api/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipeText }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to parse recipe");
+      }
+
+      // Set values with fallback/defaults
+      const parsed: RecipeFormValues = {
+        title: data.title || "",
+        description: data.description || "",
+        cookTime: data.cookTime?.toString() || "",
         image: "",
-        ingredients: [{ amount: "", unit: "", name: "" }],
-        steps: [""],
-        categories: [""],
-      }}
+        ingredients: Array.isArray(data.ingredients)
+          ? data.ingredients
+          : defaultInitialValues.ingredients,
+        steps: Array.isArray(data.steps)
+          ? data.steps
+          : defaultInitialValues.steps,
+        categories: defaultInitialValues.categories,
+      };
+
+      setParsedValues(parsed);
+      setShowManualForm(true);
+    } catch (err: any) {
+      setParseError(err.message || "Something went wrong while parsing.");
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  if (!showManualForm) {
+    return (
+      <div className="max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Paste a Recipe or URL
+        </h2>
+        <textarea
+          value={recipeText}
+          onChange={(e) => setRecipeText(e.target.value)}
+          placeholder="Paste a recipe or URL here..."
+          rows={8}
+          className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:border-blue-500"
+        />
+        {parseError && <p className="text-red-500 mb-2">{parseError}</p>}
+        <div className="flex justify-between gap-4">
+          <button
+            onClick={handleParse}
+            disabled={parsing || !recipeText.trim()}
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            {parsing ? "Parsing..." : "Parse Recipe"}
+          </button>
+          <button
+            onClick={toggleFormView}
+            className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
+          >
+            Enter Manually
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Formik<RecipeFormValues>
+      initialValues={parsedValues || defaultInitialValues}
+      enableReinitialize
       onSubmit={async (values, { setSubmitting, resetForm }) => {
         try {
           const newRecipe = await createRecipe({
@@ -39,8 +149,18 @@ const CreateRecipe = () => {
       }}
     >
       {({ values, setFieldValue }) => (
-        <Form className="max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
-          {/* Title Input */}
+        <Form className="min-h-screen overflow-y-auto max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
+          <div className="flex justify-end mb-4">
+            <button
+              type="button"
+              onClick={toggleFormView}
+              className="text-blue-500 hover:underline"
+            >
+              Back to Text Input
+            </button>
+          </div>
+
+          {/* Title */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">Title</label>
             <Field
@@ -50,7 +170,7 @@ const CreateRecipe = () => {
             />
           </div>
 
-          {/* Description Input */}
+          {/* Description */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Description
@@ -63,16 +183,16 @@ const CreateRecipe = () => {
             />
           </div>
 
-          {/* Cook Time Input */}
+          {/* Cook Time */}
           <div className="mb-4">
             <label className="block text-gray-700 font-bold mb-2">
               Cook Time (minutes)
             </label>
             <Field
               name="cookTime"
-              type="text"
+              type="number"
               inputMode="decimal"
-              pattern="^(?:\d+(?:[.,]?\d*)?|\d+\s*\/\s*\d+)$"
+              pattern="^\\d+(\\.\\d+)?$"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
               required
             />
@@ -86,7 +206,7 @@ const CreateRecipe = () => {
             <ImageUpload setImage={(url) => setFieldValue("image", url)} />
           </div>
 
-          {/* Ingredients Section */}
+          {/* Ingredients */}
           <FieldArray name="ingredients">
             {({ push, remove }) => (
               <div className="mb-4">
@@ -98,13 +218,13 @@ const CreateRecipe = () => {
                     <Field
                       name={`ingredients.${index}.amount`}
                       placeholder="Qty"
-                      className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-1/3 px-3 py-2 mr-2 border rounded-lg"
                       required
                     />
                     <Field
                       as="select"
                       name={`ingredients.${index}.unit`}
-                      className="w-1/2 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-1/2 px-3 py-2 mr-2 border rounded-lg"
                       required
                     >
                       <option value="" disabled>
@@ -119,13 +239,13 @@ const CreateRecipe = () => {
                     <Field
                       name={`ingredients.${index}.name`}
                       placeholder="Ingredient"
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                      className="p-2 text-red-500"
                     >
                       -
                     </button>
@@ -134,7 +254,7 @@ const CreateRecipe = () => {
                 <button
                   type="button"
                   onClick={() => push({ amount: "", unit: "", name: "" })}
-                  className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+                  className="text-blue-500 hover:underline mt-2"
                 >
                   Add Ingredient
                 </button>
@@ -142,7 +262,7 @@ const CreateRecipe = () => {
             )}
           </FieldArray>
 
-          {/* Steps Section */}
+          {/* Steps */}
           <FieldArray name="steps">
             {({ push, remove }) => (
               <div className="mb-4">
@@ -153,13 +273,13 @@ const CreateRecipe = () => {
                   <div key={index} className="flex items-center mb-2">
                     <Field
                       name={`steps.${index}`}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                      className="p-2 text-red-500"
                     >
                       -
                     </button>
@@ -168,7 +288,7 @@ const CreateRecipe = () => {
                 <button
                   type="button"
                   onClick={() => push("")}
-                  className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+                  className="text-blue-500 hover:underline mt-2"
                 >
                   Add Step
                 </button>
@@ -176,7 +296,7 @@ const CreateRecipe = () => {
             )}
           </FieldArray>
 
-          {/* Categories Section */}
+          {/* Categories */}
           <FieldArray name="categories">
             {({ push, remove }) => (
               <div className="mb-4">
@@ -187,13 +307,12 @@ const CreateRecipe = () => {
                   <div key={index} className="flex items-center mb-2">
                     <Field
                       name={`categories.${index}`}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                      required
+                      className="w-full px-3 py-2 border rounded-lg"
                     />
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
+                      className="p-2 text-red-500"
                     >
                       -
                     </button>
@@ -202,7 +321,7 @@ const CreateRecipe = () => {
                 <button
                   type="button"
                   onClick={() => push("")}
-                  className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+                  className="text-blue-500 hover:underline mt-2"
                 >
                   Add Category
                 </button>
@@ -210,18 +329,18 @@ const CreateRecipe = () => {
             )}
           </FieldArray>
 
-          {/* Form Actions */}
+          {/* Submit */}
           <div className="flex justify-between space-x-4">
             <button
               type="submit"
-              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 focus:outline-none"
+              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
             >
               Create Recipe
             </button>
             <button
               type="button"
               onClick={() => router.push("/")}
-              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300 focus:outline-none"
+              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
             >
               Cancel
             </button>
