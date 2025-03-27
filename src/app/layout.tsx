@@ -17,12 +17,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body>
-          <div className="min-h-screen bg-gray-100">
-            <Header />
-            {children}
-            <Footer />
-          </div>
+        <body className="min-h-screen flex flex-col bg-gray-100">
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
         </body>
       </html>
     </ClerkProvider>
