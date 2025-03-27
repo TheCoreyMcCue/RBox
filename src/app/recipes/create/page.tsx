@@ -8,7 +8,7 @@ import { createRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "@/app/components/ImageUpload";
 import { unitOptions } from "@/app/utils/data";
 
-// Define types for the recipe form
+// Define types
 interface Ingredient {
   amount: string;
   unit: string;
@@ -39,10 +39,11 @@ const CreateRecipe = () => {
   const { user } = useUser();
   const router = useRouter();
 
-  const [showManualForm, setShowManualForm] = useState<boolean>(false);
-  const [recipeText, setRecipeText] = useState<string>("");
-  const [parsing, setParsing] = useState<boolean>(false);
-  const [parseError, setParseError] = useState<string>("");
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [useImageUrl, setUseImageUrl] = useState(false);
+  const [recipeText, setRecipeText] = useState("");
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState("");
   const [parsedValues, setParsedValues] = useState<RecipeFormValues | null>(
     null
   );
@@ -71,7 +72,6 @@ const CreateRecipe = () => {
         throw new Error(data.error || "Failed to parse recipe");
       }
 
-      // Set values with fallback/defaults
       const parsed: RecipeFormValues = {
         title: data.title || "",
         description: data.description || "",
@@ -104,7 +104,7 @@ const CreateRecipe = () => {
         <textarea
           value={recipeText}
           onChange={(e) => setRecipeText(e.target.value)}
-          placeholder="Add a recipe or URL here..."
+          placeholder="Paste a recipe or URL here..."
           rows={8}
           className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:border-blue-500"
         />
@@ -138,17 +138,19 @@ const CreateRecipe = () => {
             creator: user?.id,
             ...values,
           });
+
           if (newRecipe) {
             resetForm();
-            router.push(`/dashboard`);
+            router.push("/dashboard");
           }
         } catch (error) {
           console.error("Error creating recipe:", error);
+        } finally {
+          setSubmitting(false);
         }
-        setSubmitting(false);
       }}
     >
-      {({ values, setFieldValue }) => (
+      {({ values, setFieldValue, isSubmitting }) => (
         <Form className="min-h-screen overflow-y-auto max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
           <div className="flex justify-end mb-4">
             <button
@@ -162,7 +164,7 @@ const CreateRecipe = () => {
 
           {/* Title */}
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Title</label>
+            <label className="block font-bold mb-2 text-gray-700">Title</label>
             <Field
               name="title"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
@@ -172,7 +174,7 @@ const CreateRecipe = () => {
 
           {/* Description */}
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
+            <label className="block font-bold mb-2 text-gray-700">
               Description
             </label>
             <Field
@@ -185,32 +187,61 @@ const CreateRecipe = () => {
 
           {/* Cook Time */}
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
+            <label className="block font-bold mb-2 text-gray-700">
               Cook Time (minutes)
             </label>
             <Field
               name="cookTime"
               type="number"
               inputMode="decimal"
-              pattern="^\\d+(\\.\\d+)?$"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
               required
             />
           </div>
 
-          {/* Image Upload */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
-              Image URL
+          {/* Image Input Toggle */}
+          <div className="mb-6">
+            <label className="block font-bold mb-2 text-gray-700">
+              Recipe Image
             </label>
-            <ImageUpload setImage={(url) => setFieldValue("image", url)} />
+            <div className="flex items-center gap-4 mb-2">
+              <button
+                type="button"
+                className={`px-4 py-2 rounded ${
+                  !useImageUrl ? "bg-blue-500 text-white" : "bg-gray-200"
+                }`}
+                onClick={() => setUseImageUrl(false)}
+              >
+                Upload
+              </button>
+              <button
+                type="button"
+                className={`px-4 py-2 rounded ${
+                  useImageUrl ? "bg-blue-500 text-white" : "bg-gray-200"
+                }`}
+                onClick={() => setUseImageUrl(true)}
+              >
+                Use URL
+              </button>
+            </div>
+
+            {!useImageUrl ? (
+              <ImageUpload setImage={(url) => setFieldValue("image", url)} />
+            ) : (
+              <Field
+                name="image"
+                type="url"
+                placeholder="Enter image URL"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              />
+            )}
           </div>
 
           {/* Ingredients */}
           <FieldArray name="ingredients">
             {({ push, remove }) => (
               <div className="mb-4">
-                <label className="block text-gray-700 font-bold mb-2">
+                <label className="block font-bold mb-2 text-gray-700">
                   Ingredients
                 </label>
                 {values.ingredients.map((_, index) => (
@@ -266,7 +297,7 @@ const CreateRecipe = () => {
           <FieldArray name="steps">
             {({ push, remove }) => (
               <div className="mb-4">
-                <label className="block text-gray-700 font-bold mb-2">
+                <label className="block font-bold mb-2 text-gray-700">
                   Steps
                 </label>
                 {values.steps.map((_, index) => (
@@ -300,7 +331,7 @@ const CreateRecipe = () => {
           <FieldArray name="categories">
             {({ push, remove }) => (
               <div className="mb-4">
-                <label className="block text-gray-700 font-bold mb-2">
+                <label className="block font-bold mb-2 text-gray-700">
                   Categories
                 </label>
                 {values.categories.map((_, index) => (
@@ -330,10 +361,11 @@ const CreateRecipe = () => {
           </FieldArray>
 
           {/* Submit */}
-          <div className="flex justify-between space-x-4">
+          <div className="flex justify-between space-x-4 mt-6">
             <button
               type="submit"
-              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+              disabled={isSubmitting}
+              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
             >
               Create Recipe
             </button>
