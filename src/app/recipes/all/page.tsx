@@ -2,18 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-
 import { Recipe } from "@/app/utils/types";
 import { getAllRecipes } from "@/lib/actions/recipe.action";
 import { fetchUserByClerkId } from "@/lib/actions/user.action";
 import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
-
 import Placeholder from "../../../../public/placeholder.png";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
-const RECIPES_PER_PAGE = 4; // Set the number of recipes per page
+const RECIPES_PER_PAGE = 6;
 
 const AllRecipes = () => {
   const { isSignedIn } = useUser();
@@ -24,29 +22,23 @@ const AllRecipes = () => {
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-  const [selectedCategory, setSelectedCategory] = useState<string>(""); // State for category filtering
-  const [categories, setCategories] = useState<string[]>([]); // State for available categories
-
-  // Pagination state
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [categories, setCategories] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1); // Total number of pages, calculated from total recipes
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Function to standardize the category string (capitalize the first letter and lowercase the rest)
   const formatCategory = (category: string) =>
     category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
-  // Fetch paginated recipes from the backend
   useEffect(() => {
     const fetchRecipes = async () => {
-      setLoading(true); // Set loading to true while fetching data
+      setLoading(true);
       try {
-        // Pass the current page and recipes per page to the backend for pagination
         const response = await getAllRecipes(currentPage, RECIPES_PER_PAGE);
-
         const fetchedRecipes = response.recipes;
         const totalRecipes = response.totalRecipes;
 
-        const creatorPromises = fetchedRecipes.map(async (recipe: Recipe) => {
+        const creatorPromises = fetchedRecipes.map(async (recipe: any) => {
           try {
             const creator = await fetchUserByClerkId(recipe.creator);
             return {
@@ -55,11 +47,7 @@ const AllRecipes = () => {
                 ? `${creator.firstName} ${creator.lastName}`
                 : "Unknown",
             };
-          } catch (error) {
-            console.error(
-              `Error fetching creator for recipe ${recipe._id}:`,
-              error
-            );
+          } catch {
             return {
               recipeId: recipe._id,
               creatorName: "Unknown",
@@ -75,19 +63,17 @@ const AllRecipes = () => {
 
         setCreators(creatorsMap);
         setRecipes(fetchedRecipes);
-
-        // Calculate total pages from the total number of recipes
         setTotalPages(Math.ceil(totalRecipes / RECIPES_PER_PAGE));
 
-        // Extract unique categories from the fetched recipes, standardizing the format
-        const allCategories: string[] = fetchedRecipes.flatMap(
-          (recipe: Recipe) =>
-            recipe.category.map((category) => formatCategory(category))
+        // ✅ FIX: Safely map categories
+        const allCategories = fetchedRecipes.flatMap((r: any) =>
+          Array.isArray(r.category)
+            ? r.category.map((c: any) => formatCategory(c))
+            : []
         );
-        const uniqueCategories = Array.from(new Set(allCategories));
-        setCategories(uniqueCategories);
-      } catch (error) {
-        console.error("Error fetching recipes:", error);
+        setCategories(Array.from(new Set(allCategories)));
+      } catch (err) {
+        console.error("Error fetching recipes:", err);
       } finally {
         setLoading(false);
       }
@@ -96,44 +82,30 @@ const AllRecipes = () => {
     fetchRecipes();
   }, [currentPage]);
 
-  // Handle scroll to show or hide buttons
   useEffect(() => {
     const handleScroll = () => {
       setShowButton(false);
       if (scrollTimeout) clearTimeout(scrollTimeout);
-
-      setScrollTimeout(
-        setTimeout(() => {
-          setShowButton(true);
-        }, 250)
-      );
+      setScrollTimeout(setTimeout(() => setShowButton(true), 250));
     };
 
     window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [scrollTimeout]);
 
-  // Handle random recipe button
   const handleRandomRecipe = () => {
     if (recipes.length > 0) {
-      const randomIndex = Math.floor(Math.random() * recipes.length);
-      const randomRecipe = recipes[randomIndex];
+      const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
       window.location.href = `/recipes/${randomRecipe._id}`;
     }
   };
 
-  // Handle category change and reset pagination
-  const handleCategoryChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setSelectedCategory(event.target.value);
-    setCurrentPage(1); // Reset to the first page when the category changes
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(e.target.value);
+    setCurrentPage(1);
   };
 
-  // Filter recipes based on the selected category
+  // ✅ FIX: Safely check for array before filtering
   const filteredRecipes = selectedCategory
     ? recipes.filter(
         (recipe) =>
@@ -144,28 +116,14 @@ const AllRecipes = () => {
       )
     : recipes;
 
-  // Pagination navigation
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const nextPage = () =>
+    currentPage < totalPages && setCurrentPage((p) => p + 1);
+  const prevPage = () => currentPage > 1 && setCurrentPage((p) => p - 1);
+  const jumpToPage = (page: number) => setCurrentPage(page);
 
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const jumpToPage = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // Generate simplified page numbers for pagination
   const generatePageNumbers = () => {
     const pages = [];
 
-    // Always show the first page
     if (currentPage !== 1) {
       pages.push(
         <button
@@ -178,18 +136,15 @@ const AllRecipes = () => {
       );
     }
 
-    // Show the current page
     pages.push(
       <button
         key={currentPage}
-        onClick={() => jumpToPage(currentPage)}
         className="px-4 py-2 rounded-full bg-blue-500 text-white"
       >
         {currentPage}
       </button>
     );
 
-    // Show ellipsis and the last page if necessary
     if (currentPage < totalPages - 1) {
       pages.push(
         <span key="ellipsis" className="px-3 py-2">
@@ -198,7 +153,6 @@ const AllRecipes = () => {
       );
     }
 
-    // Always show the last page
     if (currentPage !== totalPages) {
       pages.push(
         <button
@@ -214,12 +168,8 @@ const AllRecipes = () => {
     return pages;
   };
 
-  // Show loading screen if loading
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  if (loading) return <LoadingScreen />;
 
-  // Show sign-in prompt if user is not signed in
   if (!isSignedIn) {
     return (
       <div className="bg-gradient-to-br from-red-500 via-white-500 to-blue-600 min-h-[90vh] text-white flex flex-col items-center justify-center">
@@ -244,27 +194,25 @@ const AllRecipes = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-4xl font-bold text-gray-800">All Recipes</h1>
-        <div>
-          <select
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            className="px-4 py-2 border rounded-full"
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          value={selectedCategory}
+          onChange={handleCategoryChange}
+          className="px-4 py-2 border rounded-full"
+        >
+          <option value="">All Categories</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredRecipes.map((recipe) => (
-          <div key={recipe._id}>
+          <div key={recipe._id} className="h-full">
             <Link href={`/recipes/${recipe._id}`}>
-              <div className="rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 cursor-pointer">
+              <div className="h-full flex flex-col rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 cursor-pointer bg-white">
                 <Image
                   src={recipe.image || Placeholder}
                   alt={recipe.title}
@@ -272,15 +220,17 @@ const AllRecipes = () => {
                   width={400}
                   className="w-full h-48 object-cover"
                 />
-                <div className="p-4">
+                <div className="flex-1 p-4 flex flex-col">
                   <h2 className="text-2xl font-semibold mb-2">
                     {recipe.title}
                   </h2>
-                  <p className="text-gray-700">{recipe.description}</p>
+                  <p className="text-gray-700 flex-grow">
+                    {recipe.description}
+                  </p>
                   <p className="text-gray-500 mt-2">
                     Cook Time: {recipe.cookTime} minutes
                   </p>
-                  <p className="text-gray-500 mt-2">
+                  <p className="text-gray-500 mt-1">
                     Added by: {creators[recipe._id] || "Unknown"}
                   </p>
                 </div>
@@ -291,7 +241,7 @@ const AllRecipes = () => {
       </div>
 
       {filteredRecipes.length < 1 && (
-        <p className="text-center text-gray-700">No recipes found.</p>
+        <p className="text-center text-gray-700 mt-8">No recipes found.</p>
       )}
 
       <div className="flex justify-center items-center mt-8 space-x-4">
@@ -302,7 +252,6 @@ const AllRecipes = () => {
         >
           Previous
         </button>
-        {/* Render the simplified pagination buttons */}
         <div className="flex space-x-2">{generatePageNumbers()}</div>
         <button
           onClick={nextPage}

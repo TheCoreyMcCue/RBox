@@ -104,7 +104,7 @@ const CreateRecipe = () => {
         <textarea
           value={recipeText}
           onChange={(e) => setRecipeText(e.target.value)}
-          placeholder="Paste a recipe or URL here..."
+          placeholder="Add a recipe or URL here..."
           rows={8}
           className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:border-blue-500"
         />

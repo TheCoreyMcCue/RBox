@@ -13,7 +13,7 @@ import LoadingScreen from "../components/LoadingScreen";
 
 import { lasagnaRecipe } from "./exampleRecipe";
 
-const RECIPES_PER_PAGE = 4;
+const RECIPES_PER_PAGE = 6;
 
 const Dashboard = () => {
   const { user, isSignedIn } = useUser();
@@ -32,7 +32,7 @@ const Dashboard = () => {
           const fetchedRecipes = await getRecipesByUser(user.id);
           setRecipes(fetchedRecipes);
 
-          // 🔐 Call secure API route to test parsing
+          // Optional test parse
           const res = await fetch("/api/parse", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -62,14 +62,8 @@ const Dashboard = () => {
   useEffect(() => {
     const handleScroll = () => {
       setShowButton(false);
-
       if (scrollTimeout) clearTimeout(scrollTimeout);
-
-      setScrollTimeout(
-        setTimeout(() => {
-          setShowButton(true);
-        }, 250)
-      );
+      setScrollTimeout(setTimeout(() => setShowButton(true), 250));
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -78,8 +72,7 @@ const Dashboard = () => {
 
   const handleRandomRecipe = () => {
     if (recipes.length > 0) {
-      const randomIndex = Math.floor(Math.random() * recipes.length);
-      const randomRecipe = recipes[randomIndex];
+      const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
       window.location.href = `/recipes/${randomRecipe._id}`;
     }
   };
@@ -147,9 +140,9 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {currentRecipes.map((recipe) => (
-          <div key={recipe._id} className="flex flex-col justify-between">
+          <div key={recipe._id} className="h-full">
             <Link href={`/recipes/${recipe._id}`}>
-              <div className="block bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
+              <div className="h-full flex flex-col bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform hover:scale-105 cursor-pointer">
                 <Image
                   src={recipe.image || Placeholder}
                   alt={recipe.title}
@@ -157,11 +150,13 @@ const Dashboard = () => {
                   width={500}
                   className="w-full h-48 object-cover"
                 />
-                <div className="p-4">
+                <div className="flex-1 p-4 flex flex-col">
                   <h2 className="text-2xl font-semibold mb-2">
                     {recipe.title}
                   </h2>
-                  <p className="text-gray-700">{recipe.description}</p>
+                  <p className="text-gray-700 flex-grow">
+                    {recipe.description}
+                  </p>
                   <p className="text-gray-500 mt-2">
                     Cook Time: {recipe.cookTime} minutes
                   </p>
@@ -173,7 +168,7 @@ const Dashboard = () => {
       </div>
 
       {recipes.length < 1 && (
-        <p className="text-center text-gray-700">No recipes found.</p>
+        <p className="text-center text-gray-700 mt-8">No recipes found.</p>
       )}
 
       <div className="flex justify-center items-center mt-8 space-x-4">
