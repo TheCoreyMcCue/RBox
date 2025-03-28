@@ -10,7 +10,7 @@ const Footer = () => {
           <Image src={logo} alt="logo" className="h-auto w-[1.5rem] rounded" />
 
           <p className="text-gray-400">
-            © {new Date().getFullYear()} Our Box. All rights reserved.
+            © {new Date().getFullYear()} Recipe Nest. All rights reserved.
           </p>
         </div>
       </div>

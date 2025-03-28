@@ -5,7 +5,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
-  title: "Are Box",
+  title: "Recipe Nest",
   description: "We help you decide whats for dinner tonight!",
 };
 

@@ -28,7 +28,7 @@ const Hero = () => {
       <div className="relative z-20 flex items-center justify-center h-full">
         <div className="text-center px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6">
-            Welcome to Our Box
+            Welcome to Recipe Nest
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white mb-8 max-w-2xl mx-auto">
             We help you pick what&apos;s for dinner tonight!
