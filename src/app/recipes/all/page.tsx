@@ -11,6 +11,9 @@ import Image from "next/image";
 import Placeholder from "../../../../public/placeholder.png";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
+import { fetchRecipesUtil } from "./util";
+import { navigateToRandomRecipe } from "./util";
+
 const RECIPES_PER_PAGE = 6;
 
 const AllRecipes = () => {
@@ -31,55 +34,26 @@ const AllRecipes = () => {
     category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
   useEffect(() => {
-    const fetchRecipes = async () => {
+    const fetch = async () => {
       setLoading(true);
       try {
-        const response = await getAllRecipes(currentPage, RECIPES_PER_PAGE);
-        const fetchedRecipes = response.recipes;
-        const totalRecipes = response.totalRecipes;
-
-        const creatorPromises = fetchedRecipes.map(async (recipe: any) => {
-          try {
-            const creator = await fetchUserByClerkId(recipe.creator);
-            return {
-              recipeId: recipe._id,
-              creatorName: creator
-                ? `${creator.firstName} ${creator.lastName}`
-                : "Unknown",
-            };
-          } catch {
-            return {
-              recipeId: recipe._id,
-              creatorName: "Unknown",
-            };
-          }
-        });
-
-        const creatorsArray = await Promise.all(creatorPromises);
-        const creatorsMap: { [key: string]: string } = {};
-        creatorsArray.forEach(({ recipeId, creatorName }) => {
-          creatorsMap[recipeId] = creatorName;
-        });
-
-        setCreators(creatorsMap);
-        setRecipes(fetchedRecipes);
-        setTotalPages(Math.ceil(totalRecipes / RECIPES_PER_PAGE));
-
-        // ✅ FIX: Safely map categories
-        const allCategories = fetchedRecipes.flatMap((r: any) =>
-          Array.isArray(r.category)
-            ? r.category.map((c: any) => formatCategory(c))
-            : []
+        const result = await fetchRecipesUtil(
+          currentPage,
+          RECIPES_PER_PAGE,
+          formatCategory
         );
-        setCategories(Array.from(new Set(allCategories)));
-      } catch (err) {
-        console.error("Error fetching recipes:", err);
+        setCreators(result.creatorsMap);
+        setRecipes(result.fetchedRecipes);
+        setTotalPages(Math.ceil(result.totalRecipes / RECIPES_PER_PAGE));
+        setCategories(result.uniqueCategories);
+      } catch (error) {
+        console.error("Failed to fetch recipes:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecipes();
+    fetch();
   }, [currentPage]);
 
   useEffect(() => {
@@ -94,10 +68,7 @@ const AllRecipes = () => {
   }, [scrollTimeout]);
 
   const handleRandomRecipe = () => {
-    if (recipes.length > 0) {
-      const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
-      window.location.href = `/recipes/${randomRecipe._id}`;
-    }
+    navigateToRandomRecipe(recipes);
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -105,7 +76,6 @@ const AllRecipes = () => {
     setCurrentPage(1);
   };
 
-  // ✅ FIX: Safely check for array before filtering
   const filteredRecipes = selectedCategory
     ? recipes.filter(
         (recipe) =>
