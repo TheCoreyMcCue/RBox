@@ -93,7 +93,7 @@ const Dashboard = () => {
       <div className="bg-gradient-to-br from-red-500 via-white-500 to-blue-600 min-h-[90vh] text-white flex flex-col items-center justify-center">
         <div className="text-center max-w-xl p-8 bg-white/10 backdrop-blur-md rounded-lg shadow-2xl">
           <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-orange-500">
-            Welcome to Our Box!
+            Welcome to Recipe Nest!
           </h1>
           <p className="text-lg md:text-xl mb-6 font-light">
             Sign in to discover and manage your favorite recipes effortlessly.
