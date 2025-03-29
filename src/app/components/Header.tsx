@@ -2,21 +2,20 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+
 import logo from "../../../public/dinnerlogo.png";
-import { useUser } from "@clerk/nextjs";
+import AuthButtons from "../components/AuthButtons";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null); // Ref to the menu
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const user = useUser();
-  const signedIn = user.isSignedIn;
+  const { data: session, status } = useSession();
+  const signedIn = status === "authenticated";
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleClickOutside = (event: MouseEvent) => {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -26,9 +25,7 @@ const Navbar = () => {
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -45,7 +42,6 @@ const Navbar = () => {
                 />
               </Link>
             </div>
-
             <div className="hidden md:flex items-center space-x-8 ml-10">
               <Link href="/" className="text-gray-700 hover:text-gray-900">
                 Home
@@ -68,21 +64,18 @@ const Navbar = () => {
               )}
             </div>
           </div>
-          <SignedOut>
-            <SignInButton>
-              <button className="text-gray-700 hover:text-gray-900">
-                Sign in
-              </button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
+
+          {/* Auth Controls */}
+          <div className="flex items-center">
+            <AuthButtons />
+          </div>
+
+          {/* Mobile Menu Button */}
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={toggleMenu}
               type="button"
-              className="bg-gray-100 inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 focus:text-gray-900"
+              className="bg-gray-100 inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-200"
             >
               <svg
                 className="h-6 w-6"
@@ -92,7 +85,6 @@ const Navbar = () => {
               >
                 {isOpen ? (
                   <path
-                    className="block"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
@@ -100,7 +92,6 @@ const Navbar = () => {
                   />
                 ) : (
                   <path
-                    className="block"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
