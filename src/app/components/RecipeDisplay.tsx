@@ -6,7 +6,9 @@ import { Recipe } from "@/app/utils/types";
 import DeleteModal from "@/app/components/DeleteModal";
 import EditModal from "@/app/components/EditModal";
 import { useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { deleteRecipe } from "@/lib/actions/recipe.action"; // ✅ server action import
 
 interface RecipeDisplayProps {
   recipe: Recipe;
@@ -19,30 +21,35 @@ const RecipeDisplay = ({
   onGoBack,
   onDeleteSuccess,
 }: RecipeDisplayProps) => {
-  const { user } = useUser();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const clerkId = session?.user?.clerkId;
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const handleDelete = async () => {
-    if (recipe && user?.id === recipe.creator) {
-      try {
-        const res = await fetch("/api/recipe/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recipeId: recipe._id,
-            creatorId: recipe.creator,
-          }),
-        });
+  const isOwner =
+    typeof clerkId === "string" &&
+    typeof recipe.creator === "string" &&
+    clerkId.trim().toLowerCase() === recipe.creator.trim().toLowerCase();
 
-        if (res.ok && onDeleteSuccess) {
-          onDeleteSuccess();
-        }
-      } catch (error) {
-        console.error("Error deleting recipe:", error);
+  const handleDelete = async () => {
+    if (!isOwner) {
+      alert("You are not the owner of this recipe.");
+      return;
+    }
+
+    try {
+      await deleteRecipe(recipe._id); // ✅ direct call to server action
+
+      if (onDeleteSuccess) {
+        onDeleteSuccess();
+      } else {
+        router.push("/dashboard");
       }
-    } else {
-      alert("This isn't your recipe, silly.");
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      alert("Something went wrong while deleting.");
     }
   };
 
@@ -55,28 +62,31 @@ const RecipeDisplay = ({
   return (
     <div className="min-h-[90vh] bg-gray-50 py-8">
       {onGoBack && (
-        <button
-          type="button"
-          onClick={onGoBack}
-          className="w-full flex items-center justify-center px-5 py-5 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 sm:w-auto hover:bg-gray-100"
-        >
-          <svg
-            className="w-5 h-5 rtl:rotate-180"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
+        <div className="container mx-auto px-4 mb-4">
+          <button
+            type="button"
+            onClick={onGoBack}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"
-            />
-          </svg>
-          <span>Go back</span>
-        </button>
+            <svg
+              className="w-5 h-5 rtl:rotate-180"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"
+              />
+            </svg>
+            <span>Go back</span>
+          </button>
+        </div>
       )}
+
       <div className="container mx-auto px-4">
         <div className="bg-white shadow-lg rounded-2xl overflow-hidden transition-all duration-300 ease-in-out transform hover:shadow-2xl">
           <Image
@@ -112,10 +122,12 @@ const RecipeDisplay = ({
                 <p className="text-xs">Share Recipe</p>
               </button>
             </div>
+
             <p className="text-lg text-gray-700 mb-6">{recipe.description}</p>
             <p className="text-sm font-semibold text-gray-500 mb-6">
               Cook Time: {recipe.cookTime} minutes
             </p>
+
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">
               Ingredients
             </h2>
@@ -127,12 +139,14 @@ const RecipeDisplay = ({
                 </li>
               ))}
             </ul>
+
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Steps</h2>
             <ol className="list-decimal list-inside mb-6 text-gray-700 space-y-2">
               {recipe.steps.map((step, index) => (
                 <li key={index}>{step}</li>
               ))}
             </ol>
+
             <h2 className="text-xl font-semibold mb-2 text-gray-800">
               Categories
             </h2>
@@ -146,20 +160,23 @@ const RecipeDisplay = ({
                 </li>
               ))}
             </ul>
-            <div className="w-full flex justify-between">
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-700 text-white hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
-              >
-                🗑️ Delete
-              </button>
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="px-4 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-purple-500 hover:to-blue-500 transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-              >
-                ✎ Edit
-              </button>
-            </div>
+
+            {isOwner && (
+              <div className="w-full flex justify-between">
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-700 text-white hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
+                >
+                  🗑️ Delete
+                </button>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="px-4 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-purple-500 hover:to-blue-500 transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                >
+                  ✎ Edit
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

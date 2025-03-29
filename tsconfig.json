@@ -19,7 +19,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "typeRoots": ["./types", "./node_modules/@types"] // ✅ ADD THIS LINE
   },
   "include": [
     "next-env.d.ts",

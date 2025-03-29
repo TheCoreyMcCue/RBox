@@ -1,12 +1,20 @@
-import { useRouter } from "next/navigation"; // Use next/router instead of next/navigation
+"use client";
 
-interface EditModalProps {
+interface DeleteModalProps {
   onClose: () => void;
   handleDelete: () => Promise<void>;
 }
 
-const EditModal: React.FC<EditModalProps> = ({ onClose, handleDelete }) => {
-  const router = useRouter();
+const DeleteModal: React.FC<DeleteModalProps> = ({ onClose, handleDelete }) => {
+  const confirmAndDelete = async () => {
+    try {
+      await handleDelete(); // ✅ Calls the server action directly
+      onClose(); // ✅ Close the modal on success
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      alert("Something went wrong while deleting the recipe.");
+    }
+  };
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -16,14 +24,14 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, handleDelete }) => {
         </h4>
         <div className="w-full flex justify-around">
           <button
-            className="bg-red-500 text-white px-2 py-2 shadow-lg rounded-xl hover:bg-red-600"
-            onClick={() => handleDelete()}
+            className="bg-red-500 text-white px-4 py-2 shadow-lg rounded-xl hover:bg-red-600 transition"
+            onClick={confirmAndDelete}
           >
             Delete
           </button>
           <button
-            className="bg-green-500 text-white px-2 py-2 shadow-lg rounded-xl hover:bg-green-600"
-            onClick={() => onClose()}
+            className="bg-green-500 text-white px-4 py-2 shadow-lg rounded-xl hover:bg-green-600 transition"
+            onClick={onClose}
           >
             Cancel
           </button>
@@ -33,4 +41,4 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, handleDelete }) => {
   );
 };
 
-export default EditModal;
+export default DeleteModal;

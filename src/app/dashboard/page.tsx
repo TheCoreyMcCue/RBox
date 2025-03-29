@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,12 +11,14 @@ import Placeholder from "../../../public/placeholder.png";
 import LoadingScreen from "../components/LoadingScreen";
 import NotSigned from "../components/NotSigned";
 
-import { lasagnaRecipe } from "./exampleRecipe";
-
 const RECIPES_PER_PAGE = 6;
 
 const Dashboard = () => {
-  const { user, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const clerkId = session?.user?.clerkId;
+  const loadingSession = status === "loading";
+  const isSignedIn = status === "authenticated";
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [showButton, setShowButton] = useState(true);
@@ -27,38 +28,20 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const fetchRecipesAndTestParse = async () => {
-      if (user) {
-        try {
-          const fetchedRecipes = await getRecipesByUser(user.id);
-          setRecipes(fetchedRecipes);
-
-          // Optional test parse
-          const res = await fetch("/api/parse", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              recipeText: lasagnaRecipe,
-            }),
-          });
-
-          if (res.ok) {
-            const parsed = await res.json();
-            console.log("Parsed recipe via API:", parsed);
-          } else {
-            const err = await res.json();
-            console.error("Error parsing recipe:", err);
-          }
-        } catch (error) {
-          console.error("Error loading dashboard:", error);
-        } finally {
-          setLoading(false);
-        }
+    const fetchRecipes = async () => {
+      if (!clerkId) return;
+      try {
+        const fetchedRecipes = await getRecipesByUser(clerkId);
+        setRecipes(fetchedRecipes);
+      } catch (error) {
+        console.error("Error loading dashboard:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchRecipesAndTestParse();
-  }, [user]);
+    fetchRecipes();
+  }, [clerkId]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,8 +70,7 @@ const Dashboard = () => {
     currentPage < totalPages && setCurrentPage((p) => p + 1);
   const prevPage = () => currentPage > 1 && setCurrentPage((p) => p - 1);
 
-  if (loading) return <LoadingScreen />;
-
+  if (loading || loadingSession) return <LoadingScreen />;
   if (!isSignedIn) return <NotSigned />;
 
   return (

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+
+import SessionWrapper from "./components/SessionWrapper";
 
 export const metadata: Metadata = {
   title: "Recipe Nest",
@@ -15,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <SessionWrapper>
       <html lang="en">
         <body className="min-h-screen flex flex-col bg-gray-100">
           <Header />
@@ -23,6 +24,6 @@ export default function RootLayout({
           <Footer />
         </body>
       </html>
-    </ClerkProvider>
+    </SessionWrapper>
   );
 }

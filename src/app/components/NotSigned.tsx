@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
+import { signIn } from "next-auth/react";
 
 const NotSigned = () => {
   return (
@@ -12,11 +12,12 @@ const NotSigned = () => {
         <p className="text-lg md:text-xl mb-6 font-light">
           Sign in to discover and manage your favorite recipes effortlessly.
         </p>
-        <div className="inline-block">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-10 rounded-full text-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg cursor-pointer">
-            <SignInButton>Sign Up Now</SignInButton>
-          </div>
-        </div>
+        <button
+          onClick={() => signIn("google")}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-10 rounded-full text-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+        >
+          Sign In with Google
+        </button>
       </div>
     </div>
   );
