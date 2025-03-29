@@ -36,3 +36,14 @@ export const getAllUsers = async () => {
     throw error;
   }
 };
+
+export async function fetchUserByEmail(email: string) {
+  try {
+    await connect();
+    const user = await User.findOne({ email }).lean().exec();
+    return JSON.parse(JSON.stringify(user));
+  } catch (error) {
+    console.error(`Error fetching user by email ${email}:`, error);
+    return null;
+  }
+}
