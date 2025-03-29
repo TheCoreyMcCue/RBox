@@ -1,23 +1,21 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useSession, signIn } from "next-auth/react";
 import { Recipe } from "@/app/utils/types";
-import { getAllRecipes } from "@/lib/actions/recipe.action";
-import { fetchUserByClerkId } from "@/lib/actions/user.action";
-import { SignInButton } from "@clerk/nextjs";
+import { fetchRecipesUtil } from "./util";
+import { navigateToRandomRecipe } from "./util";
 import Link from "next/link";
 import Image from "next/image";
 import Placeholder from "../../../../public/placeholder.png";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
-import { fetchRecipesUtil } from "./util";
-import { navigateToRandomRecipe } from "./util";
-
 const RECIPES_PER_PAGE = 6;
 
 const AllRecipes = () => {
-  const { isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === "authenticated";
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [showButton, setShowButton] = useState(true);
@@ -150,11 +148,12 @@ const AllRecipes = () => {
           <p className="text-lg md:text-xl mb-6 font-light">
             Sign in to discover and manage your favorite recipes effortlessly.
           </p>
-          <div className="inline-block">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-10 rounded-full text-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg cursor-pointer">
-              <SignInButton />
-            </div>
-          </div>
+          <button
+            onClick={() => signIn("google")}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-10 rounded-full text-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+          >
+            Sign In with Google
+          </button>
         </div>
       </div>
     );

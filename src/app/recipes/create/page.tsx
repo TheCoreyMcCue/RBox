@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Formik, Field, Form, FieldArray } from "formik";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
+import { Formik, Field, Form, FieldArray } from "formik";
 import { createRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "@/app/components/ImageUpload";
 import { unitOptions } from "@/app/utils/data";
 
-// Define types
+// Types
 interface Ingredient {
   amount: string;
   unit: string;
@@ -36,8 +36,11 @@ const defaultInitialValues: RecipeFormValues = {
 };
 
 const CreateRecipe = () => {
-  const { user } = useUser();
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const clerkId = session?.user?.clerkId;
+  const isSignedIn = status === "authenticated";
+  const isLoading = status === "loading";
 
   const [showManualForm, setShowManualForm] = useState(false);
   const [useImageUrl, setUseImageUrl] = useState(false);
@@ -95,6 +98,21 @@ const CreateRecipe = () => {
     }
   };
 
+  // ✅ Handle loading state
+  if (isLoading) {
+    return <div className="text-center mt-10 text-gray-600">Loading...</div>;
+  }
+
+  // ✅ Handle not signed in
+  if (!isSignedIn || !clerkId) {
+    return (
+      <div className="text-center mt-10 text-red-600 font-semibold">
+        You must be signed in to create a recipe.
+      </div>
+    );
+  }
+
+  // ✅ Show recipe parsing input UI first
   if (!showManualForm) {
     return (
       <div className="max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
@@ -128,6 +146,7 @@ const CreateRecipe = () => {
     );
   }
 
+  // ✅ Main recipe form
   return (
     <Formik<RecipeFormValues>
       initialValues={parsedValues || defaultInitialValues}
@@ -135,7 +154,7 @@ const CreateRecipe = () => {
       onSubmit={async (values, { setSubmitting, resetForm }) => {
         try {
           const newRecipe = await createRecipe({
-            creator: user?.id,
+            creator: clerkId,
             ...values,
           });
 
@@ -199,7 +218,7 @@ const CreateRecipe = () => {
             />
           </div>
 
-          {/* Image Input Toggle */}
+          {/* Image */}
           <div className="mb-6">
             <label className="block font-bold mb-2 text-gray-700">
               Recipe Image

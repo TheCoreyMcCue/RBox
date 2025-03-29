@@ -71,7 +71,7 @@ const Dashboard = () => {
   const prevPage = () => currentPage > 1 && setCurrentPage((p) => p - 1);
 
   if (loading || loadingSession) return <LoadingScreen />;
-  // if (!isSignedIn) return <NotSigned />;
+  if (!isSignedIn) return <NotSigned />;
 
   return (
     <div className="min-h-[90vh] container mx-auto px-4 py-8 relative">

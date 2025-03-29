@@ -1,7 +1,9 @@
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { updateRecipe } from "@/lib/actions/recipe.action";
-import { useUser } from "@clerk/nextjs";
 import ImageUpload from "./ImageUpload";
 
 import { Ingredient, Recipe } from "../utils/types";
@@ -15,6 +17,8 @@ interface EditModalProps {
 
 const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const router = useRouter();
+  const { data: session } = useSession();
+  const clerkId = session?.user?.clerkId;
 
   const [title, setTitle] = useState(recipe.title);
   const [description, setDescription] = useState(recipe.description);
@@ -26,8 +30,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const [steps, setSteps] = useState<string[]>(recipe.steps);
   const [categories, setCategories] = useState<string[]>(recipe.category);
   const [error, setError] = useState<string | null>(null);
-
-  const { user } = useUser();
 
   const handleCategoryChange = (index: number, value: string) => {
     const newCategories = [...categories];
@@ -65,26 +67,32 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (user?.id == recipe?.creator) {
+    if (!clerkId) {
+      setError("You must be signed in to update a recipe.");
+      return;
+    }
+
+    if (clerkId === recipe.creator) {
       try {
         const updatedRecipe = await updateRecipe(recipe._id, {
-          creator: user?.id,
-          title: title,
-          description: description,
-          cookTime: cookTime,
-          image: image,
-          ingredients: ingredients,
-          steps: steps,
+          creator: clerkId,
+          title,
+          description,
+          cookTime,
+          image,
+          ingredients,
+          steps,
           category: categories,
         });
 
         console.log("Recipe updated successfully:", updatedRecipe);
+        router.push("/dashboard");
       } catch (error) {
         console.error("Error updating recipe:", error);
         setError("Failed to update recipe. Please try again.");
       }
-      router.push("/dashboard");
     } else {
+      setError("You do not have permission to edit this recipe.");
       onClose();
     }
   };
@@ -145,37 +153,32 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
             {ingredients.map((ingredient, index) => (
               <div key={index} className="mb-2">
                 <div className="flex items-center mb-2">
-                  {/* Amount Input */}
                   <input
                     type="text"
                     value={ingredient.amount}
                     placeholder="Qty"
-                    onChange={
-                      (e) =>
-                        handleIngredientChange(
-                          ingredients,
-                          setIngredients,
-                          index,
-                          "amount",
-                          e.target.value
-                        ) // Use the refactored function
+                    onChange={(e) =>
+                      handleIngredientChange(
+                        ingredients,
+                        setIngredients,
+                        index,
+                        "amount",
+                        e.target.value
+                      )
                     }
                     className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
                   />
-
-                  {/* Unit Dropdown */}
                   <select
                     value={ingredient.unit}
-                    onChange={
-                      (e) =>
-                        handleIngredientChange(
-                          ingredients,
-                          setIngredients,
-                          index,
-                          "unit",
-                          e.target.value
-                        ) // Use the refactored function
+                    onChange={(e) =>
+                      handleIngredientChange(
+                        ingredients,
+                        setIngredients,
+                        index,
+                        "unit",
+                        e.target.value
+                      )
                     }
                     className="w-1/2 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
@@ -189,27 +192,22 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                       </option>
                     ))}
                   </select>
-
-                  {/* Ingredient Name Input */}
                   <input
                     type="text"
                     value={ingredient.name}
                     placeholder="Ingredient"
-                    onChange={
-                      (e) =>
-                        handleIngredientChange(
-                          ingredients,
-                          setIngredients,
-                          index,
-                          "name",
-                          e.target.value
-                        ) // Use the refactored function
+                    onChange={(e) =>
+                      handleIngredientChange(
+                        ingredients,
+                        setIngredients,
+                        index,
+                        "name",
+                        e.target.value
+                      )
                     }
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                     required
                   />
-
-                  {/* Remove Ingredient Button */}
                   <button
                     type="button"
                     onClick={() => handleRemoveIngredient(index)}
@@ -381,7 +379,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               Update Recipe
             </button>
             <button
-              onClick={() => onClose()}
+              onClick={onClose}
               type="button"
               className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300 focus:outline-none"
             >

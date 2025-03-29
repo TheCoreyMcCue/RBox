@@ -73,10 +73,10 @@ export const getRecipeById = async (id: string) => {
   }
 };
 
-export const deleteRecipe = async (recipeId: string, userId: string) => {
+export const deleteRecipe = async (recipeId: string) => {
   try {
     await connect();
-    await Recipe.deleteOne({ _id: recipeId, creator: userId }).exec();
+    await Recipe.deleteOne({ _id: recipeId }).exec();
   } catch (error) {
     console.error("Error deleting recipe:", error);
     throw error;
