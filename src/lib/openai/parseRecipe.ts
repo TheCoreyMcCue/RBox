@@ -40,7 +40,7 @@ export const parseRecipe = async (
     const response = await axios.post<RecipeResponse>(
       OPENAI_API_URL,
       {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4-turbo",
         messages: [
           {
             role: "system",
@@ -53,7 +53,7 @@ export const parseRecipe = async (
           },
         ],
         temperature: 0.2,
-        max_tokens: 1500,
+        max_tokens: 1700,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,

@@ -67,7 +67,8 @@ module.exports = withUt({
         },
       },
       fontFamily: {
-        poppins: ["var(--font-poppins)"],
+        handwritten: ['"Dancing Script"', "cursive"],
+        serif: ["Georgia", "serif"],
       },
       backgroundImage: {
         "dotted-pattern": "url('/assets/images/dotted-pattern.png')",
