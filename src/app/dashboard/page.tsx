@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
-
 import { Recipe } from "../utils/types";
 import Placeholder from "../../../public/placeholder.png";
 import LoadingScreen from "../components/LoadingScreen";
@@ -14,6 +14,8 @@ import NotSigned from "../components/NotSigned";
 const RECIPES_PER_PAGE = 6;
 
 const Dashboard = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const clerkId = session?.user?.clerkId;
   const loadingSession = status === "loading";
@@ -25,8 +27,12 @@ const Dashboard = () => {
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const initialSearch = searchParams.get("search") || "";
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
+
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [currentPage, setCurrentPage] = useState(initialPage);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -77,9 +83,25 @@ const Dashboard = () => {
   );
   const totalPages = Math.ceil(filteredRecipes.length / RECIPES_PER_PAGE);
 
-  const nextPage = () =>
-    currentPage < totalPages && setCurrentPage((p) => p + 1);
-  const prevPage = () => currentPage > 1 && setCurrentPage((p) => p - 1);
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      router.replace(
+        `?page=${newPage}&search=${encodeURIComponent(searchTerm)}`
+      );
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      router.replace(
+        `?page=${newPage}&search=${encodeURIComponent(searchTerm)}`
+      );
+    }
+  };
 
   if (loading || loadingSession) return <LoadingScreen />;
   if (!isSignedIn) return <NotSigned />;
@@ -119,7 +141,12 @@ const Dashboard = () => {
           type="text"
           placeholder="Search your recipes..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            router.replace(
+              `?page=1&search=${encodeURIComponent(e.target.value)}`
+            );
+          }}
           className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
         />
         <svg
@@ -143,6 +170,14 @@ const Dashboard = () => {
           <Link
             key={recipe._id}
             href={`/recipes/${recipe._id}`}
+            onClick={() =>
+              sessionStorage.setItem(
+                "lastVisitedPath",
+                `/dashboard?page=${currentPage}&search=${encodeURIComponent(
+                  searchTerm
+                )}`
+              )
+            }
             className="group"
           >
             <div className="h-full bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-2xl duration-300">

@@ -30,9 +30,17 @@ export default function RecipePage() {
         setLoading(false);
       }
     };
-
     fetchRecipe();
   }, [id, router]);
+
+  const handleGoBack = () => {
+    const lastVisited = sessionStorage.getItem("lastVisitedPath");
+    if (lastVisited && lastVisited !== pathname) {
+      router.push(lastVisited);
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   if (loading) return <LoadingScreen />;
   if (!recipe) return null;
@@ -40,7 +48,7 @@ export default function RecipePage() {
   return (
     <RecipeDisplay
       recipe={recipe}
-      onGoBack={() => router.push("/dashboard")}
+      onGoBack={handleGoBack}
       onDeleteSuccess={() => router.push("/dashboard")}
     />
   );
