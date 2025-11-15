@@ -23,7 +23,7 @@ const Hero = () => {
         <div className="flex justify-center mb-6">
           <Image
             src={logo}
-            alt="Nana's Recipe Box Logo"
+            alt="Nana's Cookbook Logo"
             width={180}
             height={180}
             priority

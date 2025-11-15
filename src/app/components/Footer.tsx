@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="flex items-center gap-2 mb-2 md:mb-0">
           <Image
             src="/icon.png"
-            alt="Nana's Recipe Box Logo"
+            alt="Nana's Cookbook Logo"
             width={28}
             height={28}
             className="h-auto w-[1.75rem]"
@@ -40,7 +40,7 @@ const Footer = () => {
 
         {/* Right: Copyright */}
         <div className="text-amber-600">
-          © {new Date().getFullYear()} Nana’s Recipe Box
+          © {new Date().getFullYear()} Nana’s Cookbook
         </div>
       </div>
     </footer>
