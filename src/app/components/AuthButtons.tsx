@@ -25,22 +25,24 @@ export default function AuthButtons() {
 
   if (status === "loading") return null;
 
+  // 🔸 SIGN IN BUTTON (when user not signed in)
   if (!session) {
     return (
       <button
         onClick={() => signIn("google")}
-        className="text-sm px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded transition"
+        className="text-base font-semibold font-serif px-5 py-2 rounded-full text-white bg-amber-700 hover:bg-amber-800 shadow-sm hover:shadow-md transition duration-300"
       >
         Sign In
       </button>
     );
   }
 
+  // 🔸 PROFILE DROPDOWN (when user is signed in)
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 transition duration-300 border border-amber-300"
       >
         {session.user?.image && (
           <Image
@@ -48,19 +50,24 @@ export default function AuthButtons() {
             alt="User avatar"
             width={32}
             height={32}
-            className="rounded-full"
+            className="rounded-full border border-amber-200"
           />
         )}
-        <span className="hidden md:inline text-sm text-gray-700">
-          {session.user?.name || session.user?.email}
+        <span className="hidden md:inline text-sm text-amber-800 font-serif">
+          {session.user?.name?.split(" ")[0] || session.user?.email}
         </span>
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-sm border border-amber-200 rounded-lg shadow-md z-50">
+          <div className="px-4 py-3 border-b border-amber-100 text-amber-800 text-sm font-serif">
+            Signed in as
+            <br />
+            <span className="font-medium">{session.user?.email}</span>
+          </div>
           <button
             onClick={() => signOut()}
-            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+            className="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 hover:text-amber-800 transition duration-200 font-serif"
           >
             Sign Out
           </button>

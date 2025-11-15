@@ -4,9 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-
-import logo from "../../../public/dinnerlogo.png";
 import AuthButtons from "../components/AuthButtons";
+import logo from "../icon.png"; // updated to your new cozy logo
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,88 +28,97 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="bg-light-600 shadow-lg">
+    <header className="bg-amber-50/90 backdrop-blur-md border-b border-amber-200 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-xl font-bold text-gray-900">
-                <Image
-                  src={logo}
-                  alt="logo"
-                  className="h-auto w-[2rem] rounded"
-                />
-              </Link>
-            </div>
-            <div className="hidden md:flex items-center space-x-8 ml-10">
-              <Link href="/" className="text-gray-700 hover:text-gray-900">
-                Home
-              </Link>
-              {signedIn && (
-                <>
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    My Dashboard
-                  </Link>
-                  <Link
-                    href="/recipes/all"
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    Discover Recipes
-                  </Link>
-                </>
-              )}
-            </div>
+        <div className="flex justify-between items-center h-16 sm:h-20">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src={logo}
+                alt="logo"
+                className="h-auto w-[3rem] rounded"
+              />
+              <span className="hidden sm:inline text-2xl font-[Homemade Apple] text-amber-800 tracking-wide">
+                Nana’s Recipe Box
+              </span>
+            </Link>
           </div>
 
-          {/* Auth Controls */}
-          <div className="flex items-center">
+          {/* Desktop Links */}
+          <nav className="hidden md:flex items-center space-x-8 font-serif text-amber-800">
+            <Link
+              href="/"
+              className="hover:text-amber-600 transition-colors duration-200"
+            >
+              Home
+            </Link>
+            {signedIn && (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="hover:text-amber-600 transition-colors duration-200"
+                >
+                  My Dashboard
+                </Link>
+                <Link
+                  href="/recipes/all"
+                  className="hover:text-amber-600 transition-colors duration-200"
+                >
+                  Discover Recipes
+                </Link>
+              </>
+            )}
+          </nav>
+
+          {/* Auth Buttons (Desktop) */}
+          <div className="hidden md:flex items-center">
             <AuthButtons />
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="-mr-2 flex md:hidden">
-            <button
-              onClick={toggleMenu}
-              type="button"
-              className="bg-gray-100 inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-200"
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={toggleMenu}
+            type="button"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-amber-800 hover:text-amber-900 hover:bg-amber-100 transition"
+          >
+            <svg
+              className="h-6 w-6"
+              stroke="currentColor"
+              fill="none"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="h-6 w-6"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                {isOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
+              {isOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
 
+      {/* Mobile Dropdown */}
       {isOpen && (
-        <div ref={menuRef} className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div
+          ref={menuRef}
+          className="md:hidden bg-white/90 border-t border-amber-200 backdrop-blur-md shadow-md"
+        >
+          <div className="px-4 py-4 space-y-2 text-amber-800 font-serif">
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+              className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
             >
               Home
             </Link>
@@ -119,23 +127,26 @@ const Navbar = () => {
                 <Link
                   href="/dashboard"
                   onClick={() => setIsOpen(false)}
-                  className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                  className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
                 >
                   My Dashboard
                 </Link>
                 <Link
                   href="/recipes/all"
                   onClick={() => setIsOpen(false)}
-                  className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                  className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
                 >
                   Discover Recipes
                 </Link>
               </>
             )}
+            <div className="pt-3 border-t border-amber-200">
+              <AuthButtons />
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
+import logo from "../icon.png"; // Replace with the correct path to your new logo file
 
 const Hero = () => {
   const { data: session, status } = useSession();
@@ -19,9 +20,16 @@ const Hero = () => {
 
       {/* Main content box */}
       <div className="relative z-10 bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl shadow-2xl w-[90%] max-w-2xl p-6 sm:p-10 text-center transform transition duration-500 hover:scale-[1.02]">
-        <h1 className="text-4xl sm:text-5xl font-[Homemade Apple] text-amber-800 mb-3 sm:mb-4 leading-tight">
-          Nana’s Recipe Box
-        </h1>
+        <div className="flex justify-center mb-6">
+          <Image
+            src={logo}
+            alt="Nana's Recipe Box Logo"
+            width={160}
+            height={160}
+            priority
+            className="rounded-md" // removed shadow-md
+          />
+        </div>
 
         <p className="text-base sm:text-lg md:text-xl text-amber-700 font-serif mb-6 sm:mb-8 leading-relaxed">
           A cozy digital recipe box that feels like home. Keep your family

@@ -16,9 +16,8 @@ const RECIPES_PER_PAGE = 6;
 const Dashboard = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const clerkId = session?.user?.clerkId;
-  const loadingSession = status === "loading";
   const isSignedIn = status === "authenticated";
+  const clerkId: string | undefined = (session?.user as any)?.clerkId;
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,11 +25,9 @@ const Dashboard = () => {
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // ✅ Read query params manually once client-side
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -111,19 +108,19 @@ const Dashboard = () => {
     }
   };
 
-  if (loading || loadingSession) return <LoadingScreen />;
+  if (loading || status === "loading") return <LoadingScreen />;
   if (!isSignedIn) return <NotSigned />;
 
   return (
-    <div className="min-h-[90vh] container mx-auto px-4 py-8 relative">
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold mb-4 sm:mb-0 text-center sm:text-left">
+    <div className="min-h-[90vh] bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center container mx-auto px-4 py-12 relative">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-10">
+        <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4 sm:mb-0 text-center sm:text-left drop-shadow-sm">
           Your Recipes
         </h1>
         <Link href="/recipes/create">
           <button
             type="button"
-            className="flex items-center text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+            className="flex items-center bg-amber-700 text-white py-2 px-5 rounded-full text-base font-semibold hover:bg-amber-800 transition duration-300 shadow-sm hover:shadow-md"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -144,7 +141,7 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <div className="relative w-full max-w-md mx-auto mb-6">
+      <div className="relative w-full max-w-md mx-auto mb-10">
         <input
           type="text"
           placeholder="Search your recipes..."
@@ -155,11 +152,11 @@ const Dashboard = () => {
             setCurrentPage(1);
             updateURL(1, val);
           }}
-          className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+          className="w-full pl-10 pr-4 py-3 rounded-full border border-amber-300 shadow-sm focus:ring-2 focus:ring-amber-400 focus:outline-none transition-all bg-white/80 backdrop-blur-sm text-amber-800 placeholder:text-amber-400"
         />
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="w-5 h-5 absolute left-3 top-3.5 text-gray-500"
+          className="w-5 h-5 absolute left-3 top-3.5 text-amber-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -173,7 +170,7 @@ const Dashboard = () => {
         </svg>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {currentRecipes.map((recipe) => (
           <Link
             key={recipe._id}
@@ -188,7 +185,7 @@ const Dashboard = () => {
             }
             className="group"
           >
-            <div className="h-full bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-2xl duration-300">
+            <div className="h-full bg-amber-50/80 backdrop-blur-md rounded-2xl shadow-md overflow-hidden border border-amber-200 transition-transform transform hover:-translate-y-1 hover:shadow-xl duration-300">
               <Image
                 src={recipe.image || Placeholder}
                 alt={recipe.title}
@@ -196,16 +193,18 @@ const Dashboard = () => {
                 width={600}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="p-4 flex flex-col">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white group-hover:text-blue-500 transition">
+              <div className="p-5 flex flex-col">
+                <h2 className="text-xl font-semibold text-amber-800 group-hover:text-amber-700 transition">
                   {recipe.title}
                 </h2>
-                <p className="text-gray-600 dark:text-gray-300 line-clamp-2 mt-2">
+                <p className="text-amber-700/80 line-clamp-2 mt-2 font-serif">
                   {recipe.description}
                 </p>
-                <div className="flex justify-between items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex justify-between items-center mt-4 text-sm text-amber-600">
                   <span>Cook Time: {recipe.cookTime}m</span>
-                  <span className="text-blue-500 font-medium">View →</span>
+                  <span className="text-amber-700 font-medium group-hover:underline">
+                    View →
+                  </span>
                 </div>
               </div>
             </div>
@@ -214,25 +213,27 @@ const Dashboard = () => {
       </div>
 
       {filteredRecipes.length < 1 && (
-        <p className="text-center text-gray-700 mt-8">No recipes found.</p>
+        <p className="text-center text-amber-700 mt-8 font-serif">
+          No recipes found.
+        </p>
       )}
 
       {filteredRecipes.length > 0 && (
-        <div className="flex justify-center items-center mt-10 space-x-3">
+        <div className="flex justify-center items-center mt-12 space-x-3">
           <button
             onClick={prevPage}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white disabled:opacity-40 transition hover:scale-105"
+            className="px-5 py-2 rounded-full bg-amber-600 text-white disabled:opacity-40 transition hover:scale-105 shadow-sm hover:shadow-md"
           >
             ← Prev
           </button>
-          <span className="font-medium text-gray-700">
+          <span className="font-medium text-amber-700 font-serif">
             Page {currentPage} / {totalPages}
           </span>
           <button
             onClick={nextPage}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white disabled:opacity-40 transition hover:scale-105"
+            className="px-5 py-2 rounded-full bg-amber-600 text-white disabled:opacity-40 transition hover:scale-105 shadow-sm hover:shadow-md"
           >
             Next →
           </button>
@@ -241,12 +242,12 @@ const Dashboard = () => {
 
       {showButton && recipes.length > 0 && (
         <div
-          className="fixed bottom-4 left-0 right-0 flex justify-center items-center pointer-events-none"
+          className="fixed left-0 right-0 flex justify-center items-center pointer-events-none bottom-16 sm:bottom-24 md:bottom-28 lg:bottom-32"
           style={{ zIndex: 1000 }}
         >
           <button
             onClick={handleRandomRecipe}
-            className="pointer-events-auto bg-gradient-to-r from-pink-500 to-orange-500 text-white py-3 px-6 rounded-full text-lg font-semibold shadow-lg hover:from-orange-500 hover:to-pink-500 transition-transform duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-300"
+            className="pointer-events-auto bg-gradient-to-r from-amber-700 to-amber-600 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-lg hover:from-amber-800 hover:to-amber-700 transition-transform duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-300"
           >
             Choose a Random Recipe
           </button>
