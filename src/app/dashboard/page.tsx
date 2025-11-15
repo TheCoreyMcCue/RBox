@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +15,6 @@ const RECIPES_PER_PAGE = 6;
 
 const Dashboard = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const clerkId = session?.user?.clerkId;
   const loadingSession = status === "loading";
@@ -28,11 +27,19 @@ const Dashboard = () => {
     null
   );
 
-  const initialSearch = searchParams.get("search") || "";
-  const initialPage = parseInt(searchParams.get("page") || "1", 10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  // ✅ Read query params manually once client-side
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = parseInt(params.get("page") || "1", 10);
+      const searchParam = params.get("search") || "";
+      setCurrentPage(pageParam);
+      setSearchTerm(searchParam);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -83,13 +90,16 @@ const Dashboard = () => {
   );
   const totalPages = Math.ceil(filteredRecipes.length / RECIPES_PER_PAGE);
 
+  const updateURL = (page: number, search: string) => {
+    const newUrl = `?page=${page}&search=${encodeURIComponent(search)}`;
+    window.history.replaceState(null, "", newUrl);
+  };
+
   const nextPage = () => {
     if (currentPage < totalPages) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
-      router.replace(
-        `?page=${newPage}&search=${encodeURIComponent(searchTerm)}`
-      );
+      updateURL(newPage, searchTerm);
     }
   };
 
@@ -97,9 +107,7 @@ const Dashboard = () => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
-      router.replace(
-        `?page=${newPage}&search=${encodeURIComponent(searchTerm)}`
-      );
+      updateURL(newPage, searchTerm);
     }
   };
 
@@ -142,10 +150,10 @@ const Dashboard = () => {
           placeholder="Search your recipes..."
           value={searchTerm}
           onChange={(e) => {
-            setSearchTerm(e.target.value);
-            router.replace(
-              `?page=1&search=${encodeURIComponent(e.target.value)}`
-            );
+            const val = e.target.value;
+            setSearchTerm(val);
+            setCurrentPage(1);
+            updateURL(1, val);
           }}
           className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
         />
