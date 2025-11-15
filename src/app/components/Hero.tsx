@@ -24,8 +24,8 @@ const Hero = () => {
           <Image
             src={logo}
             alt="Nana's Recipe Box Logo"
-            width={160}
-            height={160}
+            width={180}
+            height={180}
             priority
             className="rounded-md" // removed shadow-md
           />

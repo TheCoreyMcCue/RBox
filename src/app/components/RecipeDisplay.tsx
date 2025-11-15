@@ -27,6 +27,7 @@ const RecipeDisplay = ({
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [useMetric, setUseMetric] = useState(false);
 
   const isOwner =
     typeof clerkId === "string" &&
@@ -55,14 +56,72 @@ const RecipeDisplay = ({
     });
   };
 
+  // Conversion helpers
+  const convertToMetric = (amount: number, unit: string) => {
+    switch (unit.toLowerCase()) {
+      case "cup":
+      case "cups":
+        return `${(amount * 240).toFixed(0)} ml`;
+      case "tbsp":
+      case "tablespoon":
+      case "tablespoons":
+        return `${(amount * 15).toFixed(0)} ml`;
+      case "tsp":
+      case "teaspoon":
+      case "teaspoons":
+        return `${(amount * 5).toFixed(0)} ml`;
+      case "oz":
+      case "ounce":
+      case "ounces":
+        return `${(amount * 28.35).toFixed(0)} g`;
+      case "lb":
+      case "pound":
+      case "pounds":
+        return `${(amount * 453.6).toFixed(0)} g`;
+      default:
+        return `${amount} ${unit}`;
+    }
+  };
+
+  const convertToImperial = (amount: number, unit: string) => {
+    switch (unit.toLowerCase()) {
+      case "ml":
+      case "milliliter":
+      case "milliliters":
+        return `${(amount / 240).toFixed(2)} cups`;
+      case "l":
+      case "liter":
+      case "liters":
+        return `${(amount * 4.167).toFixed(2)} cups`;
+      case "g":
+      case "gram":
+      case "grams":
+        return `${(amount / 28.35).toFixed(2)} oz`;
+      case "kg":
+      case "kilogram":
+      case "kilograms":
+        return `${(amount * 2.205).toFixed(2)} lb`;
+      default:
+        return `${amount} ${unit}`;
+    }
+  };
+
+  // Detect the recipe's base system (metric or imperial)
+  const isRecipeMetric = recipe.ingredients.some((ingredient) => {
+    const u = ingredient.unit?.toLowerCase();
+    return ["g", "gram", "grams", "kg", "ml", "l", "liter", "liters"].includes(
+      u || ""
+    );
+  });
+
   return (
-    <div className="from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
+    <div className="from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
       {onGoBack && (
         <div className="max-w-5xl mx-auto mb-6">
           <button
             type="button"
             onClick={onGoBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-amber-800 bg-amber-100 border border-amber-200 rounded-full hover:bg-amber-200 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-amber-800 bg-amber-100/70 border border-amber-200 rounded-full hover:bg-amber-200 transition-colors shadow-sm"
           >
             <svg
               className="w-5 h-5 rtl:rotate-180"
@@ -83,7 +142,7 @@ const RecipeDisplay = ({
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto bg-white/90 backdrop-blur-sm border border-amber-200 rounded-2xl shadow-lg overflow-hidden transition-all duration-300">
+      <div className="max-w-5xl mx-auto bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-2xl shadow-md overflow-hidden transition-all duration-300">
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
@@ -97,49 +156,81 @@ const RecipeDisplay = ({
             <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4 sm:mb-0">
               {recipe.title}
             </h1>
-            <button
-              onClick={handleCopyUrl}
-              className="flex items-center gap-2 text-amber-700 hover:text-amber-900 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="w-6 h-6"
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-amber-700">
+                <span>Imperial</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useMetric}
+                    onChange={() => setUseMetric(!useMetric)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-amber-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+                <span>Metric</span>
+              </div>
+              <button
+                onClick={handleCopyUrl}
+                className="flex items-center gap-2 text-amber-700 hover:text-amber-900 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 9V3.75A2.25 2.25 0 0013.5 1.5h-9A2.25 2.25 0 002.25 3.75v9a2.25 2.25 0 002.25 2.25H9M7.5 7.5h9m3 3V20.25A2.25 2.25 0 0117.25 22.5h-9A2.25 2.25 0 016 20.25v-9A2.25 2.25 0 018.25 9H15"
-                />
-              </svg>
-              <span className="text-sm font-medium">Share Recipe</span>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 9V3.75A2.25 2.25 0 0013.5 1.5h-9A2.25 2.25 0 002.25 3.75v9a2.25 2.25 0 002.25 2.25H9M7.5 7.5h9m3 3V20.25A2.25 2.25 0 0117.25 22.5h-9A2.25 2.25 0 016 20.25v-9A2.25 2.25 0 018.25 9H15"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Share</span>
+              </button>
+            </div>
           </div>
 
-          <p className="text-lg text-amber-800 font-serif mb-6 leading-relaxed">
+          <p className="text-lg text-amber-800/90 font-serif mb-6 leading-relaxed">
             {recipe.description}
           </p>
 
-          <p className="text-sm font-semibold text-amber-600 mb-8">
+          <p className="text-sm font-semibold text-amber-700 mb-8">
             Cook Time: {recipe.cookTime} minutes
           </p>
 
           <h2 className="text-2xl font-semibold mb-3 text-amber-800">
             Ingredients
           </h2>
-          <ul className="list-disc list-inside mb-8 text-amber-700 space-y-1 font-serif">
-            {recipe.ingredients.map((ingredient, index) => (
-              <li key={index}>
-                {ingredient.amount} {ingredient.unit || ""} - {ingredient.name}
-              </li>
-            ))}
+          <ul className="list-disc list-inside mb-8 text-amber-700/90 space-y-1 font-serif">
+            {recipe.ingredients.map((ingredient, index) => {
+              const amount = parseFloat(ingredient.amount as any);
+              const unit = ingredient.unit || "";
+              const lowerUnit = unit.toLowerCase();
+
+              const displayAmount =
+                !isNaN(amount) && useMetric
+                  ? isRecipeMetric
+                    ? `${amount} ${unit}` // already metric
+                    : convertToMetric(amount, unit)
+                  : !isNaN(amount) && !useMetric
+                  ? isRecipeMetric
+                    ? convertToImperial(amount, unit)
+                    : `${amount} ${unit}` // already imperial
+                  : `${ingredient.amount} ${ingredient.unit || ""}`;
+
+              return (
+                <li key={index}>
+                  {displayAmount} - {ingredient.name}
+                </li>
+              );
+            })}
           </ul>
 
           <h2 className="text-2xl font-semibold mb-3 text-amber-800">Steps</h2>
-          <ol className="list-decimal list-inside mb-8 text-amber-700 space-y-2 font-serif">
+          <ol className="list-decimal list-inside mb-8 text-amber-700/90 space-y-2 font-serif">
             {recipe.steps.map((step, index) => (
               <li key={index}>{step}</li>
             ))}
@@ -152,7 +243,7 @@ const RecipeDisplay = ({
             {recipe.category.map((category, index) => (
               <li
                 key={index}
-                className="text-sm bg-amber-100 border border-amber-200 px-3 py-1 rounded-full text-amber-700"
+                className="text-sm bg-amber-100/70 border border-amber-200 px-3 py-1 rounded-full text-amber-700"
               >
                 {category}
               </li>

@@ -40,7 +40,7 @@ const Navbar = () => {
                 className="h-auto w-[3rem] rounded"
               />
               <span className="hidden sm:inline text-2xl font-[Homemade Apple] text-amber-800 tracking-wide">
-                Nana’s Recipe Box
+                Nana’s Cookbook
               </span>
             </Link>
           </div>
