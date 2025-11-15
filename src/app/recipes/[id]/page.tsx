@@ -46,10 +46,14 @@ export default function RecipePage() {
   if (!recipe) return null;
 
   return (
-    <RecipeDisplay
-      recipe={recipe}
-      onGoBack={handleGoBack}
-      onDeleteSuccess={() => router.push("/dashboard")}
-    />
+    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
+      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl shadow-xl p-6 sm:p-10">
+        <RecipeDisplay
+          recipe={recipe}
+          onGoBack={handleGoBack}
+          onDeleteSuccess={() => router.push("/dashboard")}
+        />
+      </div>
+    </div>
   );
 }
