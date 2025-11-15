@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import AuthButtons from "../components/AuthButtons";
-import logo from "../icon.png"; // updated to your new cozy logo
+import logo from "../icon.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,10 +14,14 @@ const Navbar = () => {
   const { data: session, status } = useSession();
   const signedIn = status === "authenticated";
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setIsOpen((prev) => !prev);
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(event.target as Node) &&
+      !(event.target as HTMLElement).closest("#mobileMenuButton")
+    ) {
       setIsOpen(false);
     }
   };
@@ -78,8 +82,10 @@ const Navbar = () => {
 
           {/* Mobile Menu Toggle */}
           <button
+            id="mobileMenuButton"
             onClick={toggleMenu}
             type="button"
+            aria-label="Toggle menu"
             className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-amber-800 hover:text-amber-900 hover:bg-amber-100 transition"
           >
             <svg
@@ -109,43 +115,45 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Dropdown */}
-      {isOpen && (
-        <div
-          ref={menuRef}
-          className="md:hidden bg-white/90 border-t border-amber-200 backdrop-blur-md shadow-md"
-        >
-          <div className="px-4 py-4 space-y-2 text-amber-800 font-serif">
-            <Link
-              href="/"
-              onClick={() => setIsOpen(false)}
-              className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
-            >
-              Home
-            </Link>
-            {signedIn && (
-              <>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
-                >
-                  My Dashboard
-                </Link>
-                <Link
-                  href="/recipes/all"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
-                >
-                  Discover Recipes
-                </Link>
-              </>
-            )}
-            <div className="pt-3 border-t border-amber-200">
-              <AuthButtons />
-            </div>
+      <div
+        ref={menuRef}
+        className={`md:hidden transform transition-all duration-300 ease-in-out ${
+          isOpen
+            ? "max-h-screen opacity-100"
+            : "max-h-0 opacity-0 pointer-events-none"
+        } bg-white/90 border-t border-amber-200 backdrop-blur-md shadow-md overflow-hidden`}
+      >
+        <div className="px-4 py-4 space-y-2 text-amber-800 font-serif">
+          <Link
+            href="/"
+            onClick={() => setIsOpen(false)}
+            className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
+          >
+            Home
+          </Link>
+          {signedIn && (
+            <>
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
+              >
+                My Dashboard
+              </Link>
+              <Link
+                href="/recipes/all"
+                onClick={() => setIsOpen(false)}
+                className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
+              >
+                Discover Recipes
+              </Link>
+            </>
+          )}
+          <div className="pt-3 border-t border-amber-200">
+            <AuthButtons />
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };
