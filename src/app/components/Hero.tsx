@@ -19,13 +19,13 @@ const Hero = () => {
       <div className="absolute bottom-8 right-6 w-28 h-28 bg-[url('/textures/coffee-stain.png')] bg-contain bg-no-repeat opacity-25 -rotate-6 sm:w-40 sm:h-40" />
 
       {/* Main content box */}
-      <div className="relative z-10 bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl shadow-2xl w-[90%] max-w-2xl p-6 sm:p-10 text-center transform transition duration-500 hover:scale-[1.02]">
-        <div className="flex justify-center mb-6">
+      <div className="relative z-10 bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl shadow-2xl w-[90%] max-w-2xl p-5 sm:p-10 text-center transform transition duration-500 hover:scale-[1.02]">
+        <div className="flex justify-center mb-5">
           <Image
             src={logo}
             alt="Nana's Cookbook Logo"
-            width={180}
-            height={180}
+            width={190}
+            height={190}
             priority
             className="rounded-md" // removed shadow-md
           />

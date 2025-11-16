@@ -65,12 +65,12 @@ const Navbar = () => {
                 >
                   My Dashboard
                 </Link>
-                <Link
+                {/* <Link
                   href="/recipes/all"
                   className="hover:text-amber-600 transition-colors duration-200"
                 >
                   Discover Recipes
-                </Link>
+                </Link> */}
               </>
             )}
           </nav>
@@ -140,13 +140,13 @@ const Navbar = () => {
               >
                 My Dashboard
               </Link>
-              <Link
+              {/* <Link
                 href="/recipes/all"
                 onClick={() => setIsOpen(false)}
                 className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
               >
                 Discover Recipes
-              </Link>
+              </Link> */}
             </>
           )}
           <div className="pt-3 border-t border-amber-200">
