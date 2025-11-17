@@ -24,19 +24,21 @@ const RecipeDisplay = ({
   const router = useRouter();
   const { data: session } = useSession();
 
-  // ✅ get both identifiers
+  // Unified identifiers for both Clerk and NextAuth users
   const userId = (session?.user as any)?._id;
   const clerkId = (session?.user as any)?.clerkId;
+
+  const recipeCreator = recipe.creator?.toString?.() ?? "";
+  const recipeClerk = (recipe as any)?.creatorClerkId?.toString?.() ?? "";
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [useMetric, setUseMetric] = useState(false);
 
-  // ✅ New hybrid ownership check
+  // ✅ Strict hybrid ownership check
   const isOwner =
-    recipe.creator === userId || // matches NextAuth _id
-    recipe.creator === clerkId || // matches Clerk ID stored in "creator"
-    (recipe as any).creatorClerkId === clerkId; // matches legacy field if present
+    (!!userId && recipeCreator === userId.toString()) ||
+    (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
 
   const handleDelete = async () => {
     if (!isOwner) {
@@ -59,8 +61,6 @@ const RecipeDisplay = ({
       alert("Recipe link copied to clipboard!");
     });
   };
-
-  // (everything below stays exactly the same)
 
   // Conversion helpers
   const convertToMetric = (amount: number, unit: string) => {
@@ -112,7 +112,6 @@ const RecipeDisplay = ({
     }
   };
 
-  // Detect the recipe's base system (metric or imperial)
   const isRecipeMetric = recipe.ingredients.some((ingredient) => {
     const u = ingredient.unit?.toLowerCase();
     return ["g", "gram", "grams", "kg", "ml", "l", "liter", "liters"].includes(
@@ -214,19 +213,16 @@ const RecipeDisplay = ({
             {recipe.ingredients.map((ingredient, index) => {
               const amount = parseFloat(ingredient.amount as any);
               const unit = ingredient.unit || "";
-              const lowerUnit = unit.toLowerCase();
-
               const displayAmount =
                 !isNaN(amount) && useMetric
                   ? isRecipeMetric
-                    ? `${amount} ${unit}` // already metric
+                    ? `${amount} ${unit}`
                     : convertToMetric(amount, unit)
                   : !isNaN(amount) && !useMetric
                   ? isRecipeMetric
                     ? convertToImperial(amount, unit)
-                    : `${amount} ${unit}` // already imperial
+                    : `${amount} ${unit}`
                   : `${ingredient.amount} ${ingredient.unit || ""}`;
-
               return (
                 <li key={index}>
                   {displayAmount} - {ingredient.name}
@@ -257,7 +253,7 @@ const RecipeDisplay = ({
           </ul>
 
           {isOwner && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-end">
+            <div className="flex flex-col sm:flex-row gap-4 justify-end transition-opacity duration-300 opacity-100">
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-sm hover:shadow-md"
