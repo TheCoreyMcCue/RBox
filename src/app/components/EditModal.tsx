@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { updateRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "./ImageUpload";
-
 import { Ingredient, Recipe } from "../utils/types";
 import { handleStepChange, handleIngredientChange } from "@/app/utils/helper";
 import { unitOptions } from "../utils/data";
@@ -18,7 +17,7 @@ interface EditModalProps {
 const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   const router = useRouter();
   const { data: session } = useSession();
-  const clerkId = session?.user?.clerkId;
+  const userId = (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
   const [title, setTitle] = useState(recipe.title);
   const [description, setDescription] = useState(recipe.description);
@@ -50,270 +49,226 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
   };
 
   const handleRemoveIngredient = (index: number) => {
-    const newIngredients = ingredients.filter((_, i) => i !== index);
-    setIngredients(newIngredients);
+    setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
   const handleRemoveStep = (index: number) => {
-    const newSteps = steps.filter((_, i) => i !== index);
-    setSteps(newSteps);
+    setSteps(steps.filter((_, i) => i !== index));
   };
 
   const handleRemoveCategory = (index: number) => {
-    const newCategories = categories.filter((_, i) => i !== index);
-    setCategories(newCategories);
+    setCategories(categories.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!clerkId) {
+    if (!userId) {
       setError("You must be signed in to update a recipe.");
       return;
     }
 
-    if (clerkId === recipe.creator) {
-      try {
-        const updatedRecipe = await updateRecipe(recipe._id, {
-          creator: clerkId,
-          title,
-          description,
-          cookTime,
-          image,
-          ingredients,
-          steps,
-          category: categories,
-        });
+    try {
+      const updatedRecipe = await updateRecipe(recipe._id, {
+        creator: userId,
+        title,
+        description,
+        cookTime,
+        image,
+        ingredients,
+        steps,
+        category: categories,
+      });
 
-        console.log("Recipe updated successfully:", updatedRecipe);
-        router.push("/dashboard");
-      } catch (error) {
-        console.error("Error updating recipe:", error);
-        setError("Failed to update recipe. Please try again.");
-      }
-    } else {
-      setError("You do not have permission to edit this recipe.");
-      onClose();
+      console.log("✅ Recipe updated successfully:", updatedRecipe);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error updating recipe:", error);
+      setError("Failed to update recipe. Please try again.");
     }
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96 overflow-y-auto max-h-[90vh]">
-        <h2 className="text-2xl font-semibold mb-4">Edit Recipe</h2>
-        <form
-          onSubmit={handleSubmit}
-          className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md"
-        >
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Title</label>
+    <div className="fixed top-0 left-0 w-full h-full bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-2 sm:px-0">
+      <div className="bg-amber-50/95 border border-amber-200 p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh]">
+        <h2 className="text-3xl font-[Homemade Apple] text-amber-800 mb-6 text-center">
+          ✎ Edit Your Recipe
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Title */}
+          <div>
+            <label className="block font-semibold mb-2 text-amber-800">
+              Recipe Title
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400"
+              placeholder="e.g., Grandma’s Famous Pancakes"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
+
+          {/* Description */}
+          <div>
+            <label className="block font-semibold mb-2 text-amber-800">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              rows={3}
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400"
+              placeholder="Write a short description of your recipe..."
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
+
+          {/* Cook Time */}
+          <div>
+            <label className="block font-semibold mb-2 text-amber-800">
               Cook Time (minutes)
             </label>
             <input
-              type="text"
+              type="number"
               value={cookTime}
-              inputMode="decimal"
-              pattern="^(?:\d+(?:[.,]?\d*)?|\d+\s*\/\s*\d+)$"
               onChange={(e) => setCookTime(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
-              Image URL
+
+          {/* Image Upload (with upload + URL toggle) */}
+          <div>
+            <label className="block font-semibold mb-3 text-amber-800">
+              Recipe Image
             </label>
             <ImageUpload setImage={setImage} />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
+
+          {/* Ingredients */}
+          <div>
+            <label className="block font-semibold mb-3 text-amber-800">
               Ingredients
             </label>
             {ingredients.map((ingredient, index) => (
-              <div key={index} className="mb-2">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="text"
-                    value={ingredient.amount}
-                    placeholder="Qty"
-                    onChange={(e) =>
-                      handleIngredientChange(
-                        ingredients,
-                        setIngredients,
-                        index,
-                        "amount",
-                        e.target.value
-                      )
-                    }
-                    className="w-1/3 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                    required
-                  />
-                  <select
-                    value={ingredient.unit}
-                    onChange={(e) =>
-                      handleIngredientChange(
-                        ingredients,
-                        setIngredients,
-                        index,
-                        "unit",
-                        e.target.value
-                      )
-                    }
-                    className="w-1/2 px-3 py-2 mr-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                    required
-                  >
-                    <option value="" disabled>
-                      Select Unit
+              <div
+                key={index}
+                className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2"
+              >
+                <input
+                  type="text"
+                  value={ingredient.amount}
+                  placeholder="Qty"
+                  onChange={(e) =>
+                    handleIngredientChange(
+                      ingredients,
+                      setIngredients,
+                      index,
+                      "amount",
+                      e.target.value
+                    )
+                  }
+                  className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  required
+                />
+                <select
+                  value={ingredient.unit}
+                  onChange={(e) =>
+                    handleIngredientChange(
+                      ingredients,
+                      setIngredients,
+                      index,
+                      "unit",
+                      e.target.value
+                    )
+                  }
+                  className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  required
+                >
+                  <option value="" disabled>
+                    Select Unit
+                  </option>
+                  {unitOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
                     </option>
-                    {unitOptions.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    value={ingredient.name}
-                    placeholder="Ingredient"
-                    onChange={(e) =>
-                      handleIngredientChange(
-                        ingredients,
-                        setIngredients,
-                        index,
-                        "name",
-                        e.target.value
-                      )
-                    }
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveIngredient(index)}
-                    className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
-                    aria-label="Remove Ingredient"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={ingredient.name}
+                  placeholder="Ingredient"
+                  onChange={(e) =>
+                    handleIngredientChange(
+                      ingredients,
+                      setIngredients,
+                      index,
+                      "name",
+                      e.target.value
+                    )
+                  }
+                  className="w-full sm:flex-1 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveIngredient(index)}
+                  className="text-red-600 font-bold hover:text-red-800"
+                >
+                  ✕
+                </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddIngredient}
-              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+              className="mt-3 text-amber-700 hover:underline font-medium"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Add Ingredient
+              ➕ Add Ingredient
             </button>
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Steps</label>
+
+          {/* Steps */}
+          <div>
+            <label className="block font-semibold mb-3 text-amber-800">
+              Steps
+            </label>
             {steps.map((step, index) => (
               <div key={index} className="flex items-center mb-2">
                 <input
                   type="text"
                   value={step}
+                  placeholder="Describe this step..."
                   onChange={(e) =>
                     handleStepChange(steps, setSteps, index, e.target.value)
                   }
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => handleRemoveStep(index)}
-                  className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
-                  aria-label="Remove Step"
+                  className="ml-2 text-red-600 font-bold hover:text-red-800"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  ✕
                 </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddStep}
-              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+              className="mt-3 text-amber-700 hover:underline font-medium"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Add Step
+              ➕ Add Step
             </button>
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">
+
+          {/* Categories */}
+          <div>
+            <label className="block font-semibold mb-3 text-amber-800">
               Categories
             </label>
             {categories.map((category, index) => (
@@ -322,66 +277,40 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                   type="text"
                   value={category}
                   onChange={(e) => handleCategoryChange(index, e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                  required
+                  className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                 />
                 <button
                   type="button"
                   onClick={() => handleRemoveCategory(index)}
-                  className="p-2 text-red-500 hover:text-red-700 transition duration-200 focus:outline-none"
-                  aria-label="Remove Category"
+                  className="ml-2 text-red-600 font-bold hover:text-red-800"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  ✕
                 </button>
               </div>
             ))}
             <button
               type="button"
               onClick={handleAddCategory}
-              className="flex items-center mt-2 text-blue-500 hover:text-blue-700 transition duration-200 focus:outline-none"
+              className="mt-3 text-amber-700 hover:underline font-medium"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Add Category
+              ➕ Add Category
             </button>
           </div>
-          {error && <div className="mb-4 text-red-500">{error}</div>}
-          <div className="flex justify-between space-x-4">
+
+          {error && <div className="text-red-600 font-medium">{error}</div>}
+
+          {/* Action buttons */}
+          <div className="flex justify-between gap-4 mt-8">
             <button
               type="submit"
-              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 focus:outline-none"
+              className="flex-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 rounded-full text-lg font-semibold hover:from-amber-700 hover:to-amber-800 transition-all duration-300 shadow-md hover:shadow-lg"
             >
-              Update Recipe
+              💾 Save Changes
             </button>
             <button
               onClick={onClose}
               type="button"
-              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300 focus:outline-none"
+              className="flex-1 bg-amber-200 text-amber-800 py-3 rounded-full text-lg font-semibold hover:bg-amber-300 transition-all duration-300 shadow-sm"
             >
               Cancel
             </button>
