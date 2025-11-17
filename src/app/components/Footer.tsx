@@ -14,9 +14,7 @@ const Footer = () => {
             height={28}
             className="h-auto w-[1.75rem]"
           />
-          <span className="font-[Homemade Apple] text-lg">
-            Nana’s Recipe Box
-          </span>
+          <span className="font-[Homemade Apple] text-lg">Nana’s Cookbook</span>
         </div>
 
         {/* Center: Links */}

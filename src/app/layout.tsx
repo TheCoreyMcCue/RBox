@@ -5,8 +5,8 @@ import Footer from "./components/Footer";
 import SessionWrapper from "./components/SessionWrapper";
 
 export const metadata: Metadata = {
-  title: "Recipe Nest",
-  description: "We help you decide what's for dinner tonight!",
+  title: "Nana's Cookbook",
+  description: `A cozy digital recipe box that feels like home. Keep your family favorites safe, organized and ready to share — just like the one Grandma used to open on Sunday mornings.`,
 };
 
 export default function RootLayout({
