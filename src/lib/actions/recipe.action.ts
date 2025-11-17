@@ -2,6 +2,8 @@
 
 import Recipe from "@/lib/models/recipe.model";
 import { connect } from "@/lib/db";
+import mongoose from "mongoose";
+import User from "@/lib/models/user.model";
 
 type GetRecipesByUserParams = {
   userId: string;
@@ -15,10 +17,23 @@ const handleError = (error: unknown) => {
 export async function createRecipe(recipe: any) {
   try {
     await connect();
-    const newRecipe = await Recipe.create(recipe);
+
+    // Find the user (to include legacy clerkId if needed)
+    const user = await User.findById(recipe.creator)
+      .lean<{ clerkId?: string }>()
+      .exec();
+
+    const newRecipeData = {
+      ...recipe,
+      creator: recipe.creator, // always the Mongo _id (string)
+      ...(user?.clerkId ? { creatorClerkId: user.clerkId } : {}), // optional legacy reference
+    };
+
+    const newRecipe = await Recipe.create(newRecipeData);
     return JSON.parse(JSON.stringify(newRecipe));
   } catch (error) {
-    console.log(error);
+    console.error("Error creating recipe:", error);
+    throw error;
   }
 }
 
@@ -55,8 +70,25 @@ export const getAllRecipes = async (page = 1, limit = 4) => {
 export const getRecipesByUser = async (userId: string) => {
   try {
     await connect();
-    const recipes = await Recipe.find({ creator: userId }).lean().exec(); // Use lean() to get plain objects
-    return JSON.parse(JSON.stringify(recipes)); // Convert to plain JSON objects
+
+    // Find the user in DB (may contain clerkId)
+    const user = await User.findById(userId)
+      .lean<{ clerkId?: string }>()
+      .exec();
+
+    const conditions: any[] = [{ creator: userId }];
+
+    // If the user has a clerkId, also match those legacy recipes
+    if (user?.clerkId) {
+      conditions.push({ creator: user.clerkId });
+    }
+
+    const recipes = await Recipe.find({ $or: conditions })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+
+    return JSON.parse(JSON.stringify(recipes));
   } catch (error) {
     console.error("Error fetching recipes by user:", error);
     throw error;

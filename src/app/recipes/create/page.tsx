@@ -8,7 +8,6 @@ import { createRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "@/app/components/ImageUpload";
 import { unitOptions } from "@/app/utils/data";
 
-// Types
 interface Ingredient {
   amount: string;
   unit: string;
@@ -38,9 +37,12 @@ const defaultInitialValues: RecipeFormValues = {
 const CreateRecipe = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const clerkId = session?.user?.clerkId;
   const isSignedIn = status === "authenticated";
   const isLoading = status === "loading";
+
+  // ✅ Unified user ID for both NextAuth and Clerk users
+  const userId: string | undefined =
+    (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
   const [showManualForm, setShowManualForm] = useState(false);
   const [useImageUrl, setUseImageUrl] = useState(false);
@@ -98,13 +100,13 @@ const CreateRecipe = () => {
     }
   };
 
-  // ✅ Handle loading state
+  // ✅ Loading state
   if (isLoading) {
     return <div className="text-center mt-10 text-gray-600">Loading...</div>;
   }
 
-  // ✅ Handle not signed in
-  if (!isSignedIn || !clerkId) {
+  // ✅ Must be signed in (supports both _id and clerkId)
+  if (!isSignedIn || !userId) {
     return (
       <div className="text-center mt-10 text-red-600 font-semibold">
         You must be signed in to create a recipe.
@@ -112,7 +114,7 @@ const CreateRecipe = () => {
     );
   }
 
-  // ✅ Show recipe parsing input UI first
+  // ✅ Parsing view
   if (!showManualForm) {
     return (
       <div className="max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
@@ -154,7 +156,7 @@ const CreateRecipe = () => {
       onSubmit={async (values, { setSubmitting, resetForm }) => {
         try {
           const newRecipe = await createRecipe({
-            creator: clerkId,
+            creator: userId, // ✅ Always send _id or clerkId
             ...values,
           });
 

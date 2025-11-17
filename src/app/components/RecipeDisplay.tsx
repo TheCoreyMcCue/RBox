@@ -23,16 +23,20 @@ const RecipeDisplay = ({
 }: RecipeDisplayProps) => {
   const router = useRouter();
   const { data: session } = useSession();
+
+  // ✅ get both identifiers
+  const userId = (session?.user as any)?._id;
   const clerkId = (session?.user as any)?.clerkId;
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [useMetric, setUseMetric] = useState(false);
 
+  // ✅ New hybrid ownership check
   const isOwner =
-    typeof clerkId === "string" &&
-    typeof recipe.creator === "string" &&
-    clerkId.trim().toLowerCase() === recipe.creator.trim().toLowerCase();
+    recipe.creator === userId || // matches NextAuth _id
+    recipe.creator === clerkId || // matches Clerk ID stored in "creator"
+    (recipe as any).creatorClerkId === clerkId; // matches legacy field if present
 
   const handleDelete = async () => {
     if (!isOwner) {
@@ -55,6 +59,8 @@ const RecipeDisplay = ({
       alert("Recipe link copied to clipboard!");
     });
   };
+
+  // (everything below stays exactly the same)
 
   // Conversion helpers
   const convertToMetric = (amount: number, unit: string) => {
