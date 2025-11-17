@@ -1,23 +1,21 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useSession, signIn } from "next-auth/react";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import Link from "next/link";
 import Image from "next/image";
 import { Recipe } from "../utils/types";
 import Placeholder from "../../../public/placeholder.png";
 import LoadingScreen from "../components/LoadingScreen";
-import NotSigned from "../components/NotSigned";
 
 const RECIPES_PER_PAGE = 6;
 
 const Dashboard = () => {
-  const router = useRouter();
   const { data: session, status } = useSession();
   const isSignedIn = status === "authenticated";
-  const clerkId: string | undefined = (session?.user as any)?.clerkId;
+  const userId: string | undefined =
+    (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,9 +38,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchRecipes = async () => {
-      if (!clerkId) return;
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
       try {
-        const fetchedRecipes = await getRecipesByUser(clerkId);
+        const fetchedRecipes = await getRecipesByUser(userId);
         setRecipes(fetchedRecipes);
       } catch (error) {
         console.error("Error loading dashboard:", error);
@@ -51,7 +52,7 @@ const Dashboard = () => {
       }
     };
     fetchRecipes();
-  }, [clerkId]);
+  }, [userId]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -109,8 +110,47 @@ const Dashboard = () => {
   };
 
   if (loading || status === "loading") return <LoadingScreen />;
-  if (!isSignedIn) return <NotSigned />;
 
+  // ✅ Case 1: Not signed in
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-4">
+        <h1 className="text-5xl font-[Homemade Apple] text-amber-800 mb-4">
+          Welcome to Your Cookbook
+        </h1>
+        <p className="text-amber-700 font-serif mb-8">
+          Sign in to start saving your favorite recipes 🍲
+        </p>
+        <button
+          onClick={() => signIn("google")}
+          className="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-md hover:from-amber-700 hover:to-amber-800 transition-all duration-300"
+        >
+          Sign In with Google
+        </button>
+      </div>
+    );
+  }
+
+  // ✅ Case 2: Signed in but no recipes
+  if (isSignedIn && recipes.length === 0) {
+    return (
+      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-4">
+        <h1 className="text-5xl font-[Homemade Apple] text-amber-800 mb-4">
+          Your Cookbook is Empty
+        </h1>
+        <p className="text-amber-700 font-serif mb-8">
+          Start by adding your first recipe and make it your own! 🍳
+        </p>
+        <Link href="/recipes/create">
+          <button className="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-md hover:from-amber-700 hover:to-amber-800 transition-all duration-300">
+            ➕ Add Your First Recipe
+          </button>
+        </Link>
+      </div>
+    );
+  }
+
+  // ✅ Case 3: Signed in & has recipes
   return (
     <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center container mx-auto px-4 py-12 relative">
       {/* Header */}
@@ -122,7 +162,6 @@ const Dashboard = () => {
           <p className="text-amber-700/80 font-serif mt-2">
             A cozy collection of your favorite creations 🍲
           </p>
-          {/* Decorative underline */}
           <div className="absolute -bottom-2 left-1/2 sm:left-0 transform -translate-x-1/2 sm:translate-x-0 w-40 h-[3px] bg-gradient-to-r from-amber-600 to-amber-400 rounded-full opacity-80"></div>
         </div>
 
@@ -231,13 +270,6 @@ const Dashboard = () => {
           </Link>
         ))}
       </div>
-
-      {/* No Recipes Message */}
-      {filteredRecipes.length < 1 && (
-        <p className="text-center text-amber-700 mt-10 font-serif">
-          No recipes found.
-        </p>
-      )}
 
       {/* Pagination */}
       {filteredRecipes.length > 0 && (
