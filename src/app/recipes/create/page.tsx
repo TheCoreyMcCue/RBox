@@ -40,12 +40,10 @@ const CreateRecipe = () => {
   const isSignedIn = status === "authenticated";
   const isLoading = status === "loading";
 
-  // ✅ Unified user ID for both NextAuth and Clerk users
   const userId: string | undefined =
     (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
   const [showManualForm, setShowManualForm] = useState(false);
-  const [useImageUrl, setUseImageUrl] = useState(false);
   const [recipeText, setRecipeText] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState("");
@@ -72,10 +70,7 @@ const CreateRecipe = () => {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to parse recipe");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to parse recipe");
 
       const parsed: RecipeFormValues = {
         title: data.title || "",
@@ -100,46 +95,66 @@ const CreateRecipe = () => {
     }
   };
 
-  // ✅ Loading state
   if (isLoading) {
-    return <div className="text-center mt-10 text-gray-600">Loading...</div>;
+    return <div className="text-center mt-10 text-amber-700">Loading...</div>;
   }
 
-  // ✅ Must be signed in (supports both _id and clerkId)
   if (!isSignedIn || !userId) {
     return (
-      <div className="text-center mt-10 text-red-600 font-semibold">
-        You must be signed in to create a recipe.
+      <div className="min-h-[80vh] flex flex-col items-center justify-center text-center from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center">
+        <h2 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4">
+          You must be signed in to create a recipe
+        </h2>
+        <p className="text-amber-700 font-serif mb-6">
+          Sign in to start adding your family favorites 🍳
+        </p>
+        <button
+          onClick={() => router.push("/")}
+          className="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-md hover:from-amber-700 hover:to-amber-800 transition-all duration-300"
+        >
+          Go Home
+        </button>
       </div>
     );
   }
 
-  // ✅ Parsing view
+  // 🧡 Step 1: Paste or type recipe text
   if (!showManualForm) {
     return (
-      <div className="max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
-        <h2 className="text-2xl font-bold mb-4 text-center">
-          Paste a Recipe or URL
+      <div className="max-w-3xl mx-auto bg-amber-50/90 backdrop-blur-md border border-amber-200 p-12 my-12 rounded-3xl shadow-lg">
+        <h2 className="text-4xl font-[Homemade Apple] text-amber-800 mb-6 text-center">
+          Add Your Recipe ✍️
         </h2>
+        <p className="text-amber-700 text-center font-serif mb-6">
+          Paste or type your full recipe text below. Include the title,
+          ingredients, and steps — we’ll organize it for you.
+        </p>
+
         <textarea
           value={recipeText}
           onChange={(e) => setRecipeText(e.target.value)}
-          placeholder="Paste a recipe or URL here..."
-          rows={8}
-          className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:border-blue-500"
+          placeholder={`Example:\nGrandma’s Apple Pie\n\nIngredients:\n- 3 apples\n- 1 cup sugar\n- 2 tbsp butter\n\nSteps:\n1. Preheat oven to 350°F.\n2. Slice apples...\n3. Bake until golden.`}
+          rows={14}
+          className="w-full p-4 border border-amber-200 rounded-xl mb-6 bg-white/90 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400 shadow-inner resize-none"
         />
-        {parseError && <p className="text-red-500 mb-2">{parseError}</p>}
-        <div className="flex justify-between gap-4">
+
+        {parseError && (
+          <p className="text-red-600 mb-4 text-center font-medium">
+            {parseError}
+          </p>
+        )}
+
+        <div className="flex justify-center gap-4">
           <button
             onClick={handleParse}
             disabled={parsing || !recipeText.trim()}
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+            className="w-full sm:w-auto bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-md hover:from-amber-700 hover:to-amber-800 transition-all duration-300"
           >
-            {parsing ? "Parsing..." : "Parse Recipe"}
+            {parsing ? "Organizing Recipe..." : "Organize Recipe"}
           </button>
           <button
             onClick={toggleFormView}
-            className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
+            className="w-full sm:w-auto bg-amber-200 text-amber-800 py-3 px-8 rounded-full text-lg font-semibold hover:bg-amber-300 transition-all duration-300"
           >
             Enter Manually
           </button>
@@ -148,7 +163,7 @@ const CreateRecipe = () => {
     );
   }
 
-  // ✅ Main recipe form
+  // 🧡 Step 2: Manual or organized form
   return (
     <Formik<RecipeFormValues>
       initialValues={parsedValues || defaultInitialValues}
@@ -156,7 +171,7 @@ const CreateRecipe = () => {
       onSubmit={async (values, { setSubmitting, resetForm }) => {
         try {
           const newRecipe = await createRecipe({
-            creator: userId, // ✅ Always send _id or clerkId
+            creator: userId,
             ...values,
           });
 
@@ -172,111 +187,91 @@ const CreateRecipe = () => {
       }}
     >
       {({ values, setFieldValue, isSubmitting }) => (
-        <Form className="min-h-screen overflow-y-auto max-w-2xl mx-auto bg-white p-8 my-3 rounded-2xl shadow-md">
-          <div className="flex justify-end mb-4">
+        <Form className="min-h-screen overflow-y-auto max-w-3xl mx-auto bg-amber-50/90 backdrop-blur-md border border-amber-200 p-12 my-12 rounded-3xl shadow-lg">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-4xl font-[Homemade Apple] text-amber-800">
+              Review & Save 🍽️
+            </h2>
             <button
               type="button"
               onClick={toggleFormView}
-              className="text-blue-500 hover:underline"
+              className="text-amber-600 hover:text-amber-800 underline"
             >
-              Back to Text Input
+              Back
             </button>
           </div>
 
           {/* Title */}
-          <div className="mb-4">
-            <label className="block font-bold mb-2 text-gray-700">Title</label>
+          <div className="mb-5">
+            <label className="block font-semibold mb-2 text-amber-800">
+              Recipe Title
+            </label>
             <Field
               name="title"
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400"
               required
+              placeholder="e.g., Grandma’s Apple Pie"
             />
           </div>
 
           {/* Description */}
-          <div className="mb-4">
-            <label className="block font-bold mb-2 text-gray-700">
+          <div className="mb-5">
+            <label className="block font-semibold mb-2 text-amber-800">
               Description
             </label>
             <Field
               as="textarea"
               name="description"
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              rows={3}
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400"
               required
+              placeholder="A short note about the recipe..."
             />
           </div>
 
           {/* Cook Time */}
-          <div className="mb-4">
-            <label className="block font-bold mb-2 text-gray-700">
+          <div className="mb-5">
+            <label className="block font-semibold mb-2 text-amber-800">
               Cook Time (minutes)
             </label>
             <Field
               name="cookTime"
               type="number"
-              inputMode="decimal"
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900"
               required
             />
           </div>
 
-          {/* Image */}
-          <div className="mb-6">
-            <label className="block font-bold mb-2 text-gray-700">
+          {/* Image Upload */}
+          <div className="mb-8">
+            <label className="block font-semibold mb-2 text-amber-800">
               Recipe Image
             </label>
-            <div className="flex items-center gap-4 mb-2">
-              <button
-                type="button"
-                className={`px-4 py-2 rounded ${
-                  !useImageUrl ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
-                onClick={() => setUseImageUrl(false)}
-              >
-                Upload
-              </button>
-              <button
-                type="button"
-                className={`px-4 py-2 rounded ${
-                  useImageUrl ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
-                onClick={() => setUseImageUrl(true)}
-              >
-                Use URL
-              </button>
-            </div>
-
-            {!useImageUrl ? (
-              <ImageUpload setImage={(url) => setFieldValue("image", url)} />
-            ) : (
-              <Field
-                name="image"
-                type="url"
-                placeholder="Enter image URL"
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            )}
+            <ImageUpload setImage={(url) => setFieldValue("image", url)} />
           </div>
 
           {/* Ingredients */}
           <FieldArray name="ingredients">
             {({ push, remove }) => (
-              <div className="mb-4">
-                <label className="block font-bold mb-2 text-gray-700">
+              <div className="mb-8">
+                <label className="block font-semibold mb-3 text-amber-800">
                   Ingredients
                 </label>
                 {values.ingredients.map((_, index) => (
-                  <div key={index} className="flex items-center mb-2">
+                  <div
+                    key={index}
+                    className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2"
+                  >
                     <Field
                       name={`ingredients.${index}.amount`}
                       placeholder="Qty"
-                      className="w-1/3 px-3 py-2 mr-2 border rounded-lg"
+                      className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                       required
                     />
                     <Field
                       as="select"
                       name={`ingredients.${index}.unit`}
-                      className="w-1/2 px-3 py-2 mr-2 border rounded-lg"
+                      className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                       required
                     >
                       <option value="" disabled>
@@ -291,24 +286,24 @@ const CreateRecipe = () => {
                     <Field
                       name={`ingredients.${index}.name`}
                       placeholder="Ingredient"
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full sm:flex-1 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="p-2 text-red-500"
+                      className="text-red-600 font-bold hover:text-red-800"
                     >
-                      -
+                      ✕
                     </button>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={() => push({ amount: "", unit: "", name: "" })}
-                  className="text-blue-500 hover:underline mt-2"
+                  className="mt-3 text-amber-700 hover:underline font-medium"
                 >
-                  Add Ingredient
+                  ➕ Add Ingredient
                 </button>
               </div>
             )}
@@ -317,32 +312,33 @@ const CreateRecipe = () => {
           {/* Steps */}
           <FieldArray name="steps">
             {({ push, remove }) => (
-              <div className="mb-4">
-                <label className="block font-bold mb-2 text-gray-700">
+              <div className="mb-8">
+                <label className="block font-semibold mb-3 text-amber-800">
                   Steps
                 </label>
                 {values.steps.map((_, index) => (
                   <div key={index} className="flex items-center mb-2">
                     <Field
                       name={`steps.${index}`}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      placeholder="Describe this step..."
+                      className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="p-2 text-red-500"
+                      className="ml-2 text-red-600 font-bold hover:text-red-800"
                     >
-                      -
+                      ✕
                     </button>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={() => push("")}
-                  className="text-blue-500 hover:underline mt-2"
+                  className="mt-3 text-amber-700 hover:underline font-medium"
                 >
-                  Add Step
+                  ➕ Add Step
                 </button>
               </div>
             )}
@@ -351,49 +347,50 @@ const CreateRecipe = () => {
           {/* Categories */}
           <FieldArray name="categories">
             {({ push, remove }) => (
-              <div className="mb-4">
-                <label className="block font-bold mb-2 text-gray-700">
+              <div className="mb-10">
+                <label className="block font-semibold mb-3 text-amber-800">
                   Categories
                 </label>
                 {values.categories.map((_, index) => (
                   <div key={index} className="flex items-center mb-2">
                     <Field
                       name={`categories.${index}`}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      placeholder="Category"
+                      className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
                     />
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="p-2 text-red-500"
+                      className="ml-2 text-red-600 font-bold hover:text-red-800"
                     >
-                      -
+                      ✕
                     </button>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={() => push("")}
-                  className="text-blue-500 hover:underline mt-2"
+                  className="mt-3 text-amber-700 hover:underline font-medium"
                 >
-                  Add Category
+                  ➕ Add Category
                 </button>
               </div>
             )}
           </FieldArray>
 
           {/* Submit */}
-          <div className="flex justify-between space-x-4 mt-6">
+          <div className="flex justify-between space-x-4 mt-10">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+              className="flex-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 rounded-full text-lg font-semibold hover:from-amber-700 hover:to-amber-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-60"
             >
-              Create Recipe
+              🍽️ Save Recipe
             </button>
             <button
               type="button"
-              onClick={() => router.push("/")}
-              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+              onClick={() => router.push("/dashboard")}
+              className="flex-1 bg-amber-200 text-amber-800 py-3 rounded-full text-lg font-semibold hover:bg-amber-300 transition-all duration-300 shadow-sm"
             >
               Cancel
             </button>
