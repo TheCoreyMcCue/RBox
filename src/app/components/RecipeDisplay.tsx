@@ -35,7 +35,10 @@ const RecipeDisplay = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [useMetric, setUseMetric] = useState(false);
 
-  // ✅ Strict hybrid ownership check
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+
+  // Strict hybrid ownership check
   const isOwner =
     (!!userId && recipeCreator === userId.toString()) ||
     (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
@@ -56,13 +59,15 @@ const RecipeDisplay = ({
     }
   };
 
+  // NEW: Toast-based copy notification
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
-      alert("Recipe link copied to clipboard!");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000); // auto-hide after 2s
     });
   };
 
-  // Conversion helpers
+  // Conversion helpers (unchanged)
   const convertToMetric = (amount: number, unit: string) => {
     switch (unit.toLowerCase()) {
       case "cup":
@@ -120,7 +125,14 @@ const RecipeDisplay = ({
   });
 
   return (
-    <div className="from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
+    <div className="relative from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[5000] bg-amber-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium animate-fade-in-out">
+          📋 Link copied to clipboard!
+        </div>
+      )}
+
       {onGoBack && (
         <div className="max-w-5xl mx-auto mb-6">
           <button
@@ -157,11 +169,14 @@ const RecipeDisplay = ({
         />
 
         <div className="p-8 sm:p-10">
+          {/* Top bar */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
             <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4 sm:mb-0">
               {recipe.title}
             </h1>
+
             <div className="flex items-center gap-4">
+              {/* Imperial/Metric toggle */}
               <div className="flex items-center gap-2 text-sm text-amber-700">
                 <span>Imperial</span>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -171,26 +186,28 @@ const RecipeDisplay = ({
                     onChange={() => setUseMetric(!useMetric)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-amber-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                  <div className="w-11 h-6 bg-amber-200 rounded-full peer peer-checked:bg-amber-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                 </label>
                 <span>Metric</span>
               </div>
+
+              {/* Share button */}
               <button
                 onClick={handleCopyUrl}
                 className="flex items-center gap-2 text-amber-700 hover:text-amber-900 transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-6 h-6"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-5 h-5"
                 >
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 9V3.75A2.25 2.25 0 0013.5 1.5h-9A2.25 2.25 0 002.25 3.75v9a2.25 2.25 0 002.25 2.25H9M7.5 7.5h9m3 3V20.25A2.25 2.25 0 0117.25 22.5h-9A2.25 2.25 0 016 20.25v-9A2.25 2.25 0 018.25 9H15"
+                    d="M12.293 2.293a1 1 0 011.414 0l4 
+                  4a1 1 0 010 1.414l-4 4a1 1 0 11-1.414-1.414L14.586 
+                  8H9a5 5 0 00-5 5v3a1 1 0 11-2 
+                  0v-3a7 7 0 017-7h5.586l-2.293-2.293a1 1 0 
+                  010-1.414z"
                   />
                 </svg>
                 <span className="text-sm font-medium">Share</span>
@@ -198,14 +215,17 @@ const RecipeDisplay = ({
             </div>
           </div>
 
+          {/* Description */}
           <p className="text-lg text-amber-800/90 font-serif mb-6 leading-relaxed">
             {recipe.description}
           </p>
 
+          {/* Cook time */}
           <p className="text-sm font-semibold text-amber-700 mb-8">
             Cook Time: {recipe.cookTime} minutes
           </p>
 
+          {/* Ingredients */}
           <h2 className="text-2xl font-semibold mb-3 text-amber-800">
             Ingredients
           </h2>
@@ -223,14 +243,16 @@ const RecipeDisplay = ({
                     ? convertToImperial(amount, unit)
                     : `${amount} ${unit}`
                   : `${ingredient.amount} ${ingredient.unit || ""}`;
+
               return (
                 <li key={index}>
-                  {displayAmount} - {ingredient.name}
+                  {displayAmount} — {ingredient.name}
                 </li>
               );
             })}
           </ul>
 
+          {/* Steps */}
           <h2 className="text-2xl font-semibold mb-3 text-amber-800">Steps</h2>
           <ol className="list-decimal list-inside mb-8 text-amber-700/90 space-y-2 font-serif">
             {recipe.steps.map((step, index) => (
@@ -238,6 +260,7 @@ const RecipeDisplay = ({
             ))}
           </ol>
 
+          {/* Categories */}
           <h2 className="text-xl font-semibold mb-3 text-amber-800">
             Categories
           </h2>
@@ -252,14 +275,16 @@ const RecipeDisplay = ({
             ))}
           </ul>
 
+          {/* Edit/Delete Buttons */}
           {isOwner && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-end transition-opacity duration-300 opacity-100">
+            <div className="flex flex-col sm:flex-row gap-4 justify-end">
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-sm hover:shadow-md"
               >
                 🗑️ Delete
               </button>
+
               <button
                 onClick={() => setShowEditModal(true)}
                 className="px-6 py-2 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:from-amber-700 hover:to-amber-600 transition-all duration-300 shadow-sm hover:shadow-md"
