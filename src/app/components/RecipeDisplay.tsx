@@ -24,7 +24,6 @@ const RecipeDisplay = ({
   const router = useRouter();
   const { data: session } = useSession();
 
-  // Unified identifiers for both Clerk and NextAuth users
   const userId = (session?.user as any)?._id;
   const clerkId = (session?.user as any)?.clerkId;
 
@@ -35,39 +34,34 @@ const RecipeDisplay = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [useMetric, setUseMetric] = useState(false);
 
-  // Toast state
-  const [showToast, setShowToast] = useState(false);
+  // 🔹 NEW: Copied Animation State
+  const [copied, setCopied] = useState(false);
 
-  // Strict hybrid ownership check
   const isOwner =
     (!!userId && recipeCreator === userId.toString()) ||
     (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
 
   const handleDelete = async () => {
-    if (!isOwner) {
-      alert("You are not the owner of this recipe.");
-      return;
-    }
+    if (!isOwner) return alert("You are not the owner of this recipe.");
 
     try {
       await deleteRecipe(recipe._id);
       if (onDeleteSuccess) onDeleteSuccess();
       else router.push("/dashboard");
-    } catch (error) {
-      console.error("Error deleting recipe:", error);
-      alert("Something went wrong while deleting.");
+    } catch {
+      alert("Something went wrong.");
     }
   };
 
-  // NEW: Toast-based copy notification
+  // 🔹 NEW: Copy animation
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000); // auto-hide after 2s
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
   };
 
-  // Conversion helpers (unchanged)
+  // Unit conversion helpers
   const convertToMetric = (amount: number, unit: string) => {
     switch (unit.toLowerCase()) {
       case "cup":
@@ -126,40 +120,28 @@ const RecipeDisplay = ({
 
   return (
     <div className="relative from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
-      {/* Toast Notification */}
-      {showToast && (
-        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[5000] bg-amber-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium animate-fade-in-out">
-          📋 Link copied to clipboard!
-        </div>
-      )}
-
+      {/* Back button */}
       {onGoBack && (
         <div className="max-w-5xl mx-auto mb-6">
           <button
             type="button"
             onClick={onGoBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-amber-800 bg-amber-100/70 border border-amber-200 rounded-full hover:bg-amber-200 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-amber-800 bg-amber-100/70 border border-amber-200 rounded-full hover:bg-amber-200 transition shadow-sm"
           >
-            <svg
-              className="w-5 h-5 rtl:rotate-180"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-            >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                d="M6.75 15.75 3 12l3.75-3.75M3 12h18"
               />
             </svg>
-            <span>Go back</span>
+            Go back
           </button>
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-2xl shadow-md overflow-hidden transition-all duration-300">
+      <div className="max-w-5xl mx-auto bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-2xl shadow-md overflow-hidden">
+        {/* Image */}
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
@@ -169,71 +151,98 @@ const RecipeDisplay = ({
         />
 
         <div className="p-8 sm:p-10">
-          {/* Top bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4 sm:mb-0">
               {recipe.title}
             </h1>
 
             <div className="flex items-center gap-4">
-              {/* Imperial/Metric toggle */}
+              {/* Unit Toggle */}
               <div className="flex items-center gap-2 text-sm text-amber-700">
                 <span>Imperial</span>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex cursor-pointer">
                   <input
                     type="checkbox"
                     checked={useMetric}
                     onChange={() => setUseMetric(!useMetric)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-amber-200 rounded-full peer peer-checked:bg-amber-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                  <div className="w-11 h-6 bg-amber-200 rounded-full peer-checked:bg-amber-600 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
                 </label>
                 <span>Metric</span>
               </div>
 
-              {/* Share button */}
+              {/* 🔹 NEW Share / Copied Button */}
               <button
                 onClick={handleCopyUrl}
-                className="flex items-center gap-2 text-amber-700 hover:text-amber-900 transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                  copied
+                    ? "bg-green-600 text-white"
+                    : "text-amber-700 hover:text-amber-900"
+                }`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    d="M12.293 2.293a1 1 0 011.414 0l4 
-                  4a1 1 0 010 1.414l-4 4a1 1 0 11-1.414-1.414L14.586 
-                  8H9a5 5 0 00-5 5v3a1 1 0 11-2 
-                  0v-3a7 7 0 017-7h5.586l-2.293-2.293a1 1 0 
-                  010-1.414z"
-                  />
-                </svg>
-                <span className="text-sm font-medium">Share</span>
+                {copied ? (
+                  <>
+                    {/* Checkmark icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086 5.707 9.293A1 1 0 004.293 10.707l3.5 3.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    {/* Share icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        d="M12.293 2.293a1 1 0 011.414 0l4 
+                        4a1 1 0 010 1.414l-4 4a1 1 0 
+                        11-1.414-1.414L14.586 8H9a5 5 0 
+                        00-5 5v3a1 1 0 11-2 
+                        0v-3a7 7 0 017-7h5.586l-2.293-2.293a1 1 0 
+                        010-1.414z"
+                      />
+                    </svg>
+                    Share
+                  </>
+                )}
               </button>
             </div>
           </div>
 
           {/* Description */}
-          <p className="text-lg text-amber-800/90 font-serif mb-6 leading-relaxed">
+          <p className="text-lg font-serif text-amber-800/90 mb-6 leading-relaxed">
             {recipe.description}
           </p>
 
-          {/* Cook time */}
           <p className="text-sm font-semibold text-amber-700 mb-8">
             Cook Time: {recipe.cookTime} minutes
           </p>
 
           {/* Ingredients */}
-          <h2 className="text-2xl font-semibold mb-3 text-amber-800">
+          <h2 className="text-2xl font-semibold text-amber-800 mb-3">
             Ingredients
           </h2>
-          <ul className="list-disc list-inside mb-8 text-amber-700/90 space-y-1 font-serif">
-            {recipe.ingredients.map((ingredient, index) => {
-              const amount = parseFloat(ingredient.amount as any);
-              const unit = ingredient.unit || "";
-              const displayAmount =
+          <ul className="list-disc list-inside text-amber-700/90 font-serif space-y-1 mb-8">
+            {recipe.ingredients.map((ing, i) => {
+              const amount = parseFloat(ing.amount);
+              const unit = ing.unit;
+
+              const finalAmt =
                 !isNaN(amount) && useMetric
                   ? isRecipeMetric
                     ? `${amount} ${unit}`
@@ -242,52 +251,52 @@ const RecipeDisplay = ({
                   ? isRecipeMetric
                     ? convertToImperial(amount, unit)
                     : `${amount} ${unit}`
-                  : `${ingredient.amount} ${ingredient.unit || ""}`;
+                  : `${ing.amount} ${unit || ""}`;
 
               return (
-                <li key={index}>
-                  {displayAmount} — {ingredient.name}
+                <li key={i}>
+                  {finalAmt} — {ing.name}
                 </li>
               );
             })}
           </ul>
 
           {/* Steps */}
-          <h2 className="text-2xl font-semibold mb-3 text-amber-800">Steps</h2>
-          <ol className="list-decimal list-inside mb-8 text-amber-700/90 space-y-2 font-serif">
-            {recipe.steps.map((step, index) => (
-              <li key={index}>{step}</li>
+          <h2 className="text-2xl font-semibold text-amber-800 mb-3">Steps</h2>
+          <ol className="list-decimal list-inside text-amber-700/90 font-serif space-y-2 mb-8">
+            {recipe.steps.map((step, i) => (
+              <li key={i}>{step}</li>
             ))}
           </ol>
 
           {/* Categories */}
-          <h2 className="text-xl font-semibold mb-3 text-amber-800">
+          <h2 className="text-xl font-semibold text-amber-800 mb-3">
             Categories
           </h2>
-          <ul className="flex flex-wrap gap-2 mb-8">
-            {recipe.category.map((category, index) => (
+          <ul className="flex flex-wrap gap-2 mb-10">
+            {recipe.category.map((cat, i) => (
               <li
-                key={index}
-                className="text-sm bg-amber-100/70 border border-amber-200 px-3 py-1 rounded-full text-amber-700"
+                key={i}
+                className="px-3 py-1 bg-amber-100/70 border border-amber-200 rounded-full text-sm text-amber-700"
               >
-                {category}
+                {cat}
               </li>
             ))}
           </ul>
 
-          {/* Edit/Delete Buttons */}
+          {/* Owner buttons */}
           {isOwner && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-end">
+            <div className="flex flex-col sm:flex-row justify-end gap-4">
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-sm hover:shadow-md"
+                className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white shadow-sm hover:from-red-600 hover:to-red-800 transition"
               >
                 🗑️ Delete
               </button>
 
               <button
                 onClick={() => setShowEditModal(true)}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:from-amber-700 hover:to-amber-600 transition-all duration-300 shadow-sm hover:shadow-md"
+                className="px-6 py-2 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm hover:from-amber-700 hover:to-amber-600 transition"
               >
                 ✎ Edit
               </button>
