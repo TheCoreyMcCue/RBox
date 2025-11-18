@@ -73,11 +73,19 @@ const Dashboard = () => {
 
   const filteredRecipes = useMemo(() => {
     if (!searchTerm.trim()) return recipes;
-    return recipes.filter((recipe) =>
-      `${recipe.title} ${recipe.description}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    );
+
+    const lowerSearch = searchTerm.toLowerCase();
+
+    return recipes.filter((recipe) => {
+      const titleMatch = recipe.title?.toLowerCase().includes(lowerSearch);
+      const descMatch = recipe.description?.toLowerCase().includes(lowerSearch);
+
+      const categoryMatch = recipe.categories?.some((cat) =>
+        cat.toLowerCase().includes(lowerSearch)
+      );
+
+      return titleMatch || descMatch || categoryMatch;
+    });
   }, [recipes, searchTerm]);
 
   const indexOfLastRecipe = currentPage * RECIPES_PER_PAGE;

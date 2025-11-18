@@ -8,6 +8,7 @@ import ImageUpload from "./ImageUpload";
 import { Ingredient, Recipe } from "../utils/types";
 import { handleStepChange, handleIngredientChange } from "@/app/utils/helper";
 import { unitOptions } from "../utils/data";
+import { CATEGORY_OPTIONS } from "../utils/data";
 
 interface EditModalProps {
   onClose: () => void;
@@ -27,33 +28,30 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
     recipe.ingredients
   );
   const [steps, setSteps] = useState<string[]>(recipe.steps);
-  const [categories, setCategories] = useState<string[]>(recipe.categories);
+
+  // IMPORTANT: Updated key — recipe now stores recipe.categories
+  const [categories, setCategories] = useState<string[]>(
+    recipe.categories || []
+  );
+
+  const handleRemoveIngredient = (index: number) => {
+    setIngredients((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveStep = (index: number) => {
+    setSteps((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const [error, setError] = useState<string | null>(null);
 
   const handleCategoryChange = (index: number, value: string) => {
-    const newCategories = [...categories];
-    newCategories[index] = value;
-    setCategories(newCategories);
-  };
-
-  const handleAddIngredient = () => {
-    setIngredients([...ingredients, { amount: "", unit: "", name: "" }]);
-  };
-
-  const handleAddStep = () => {
-    setSteps([...steps, ""]);
+    const updated = [...categories];
+    updated[index] = value;
+    setCategories(updated);
   };
 
   const handleAddCategory = () => {
     setCategories([...categories, ""]);
-  };
-
-  const handleRemoveIngredient = (index: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== index));
-  };
-
-  const handleRemoveStep = (index: number) => {
-    setSteps(steps.filter((_, i) => i !== index));
   };
 
   const handleRemoveCategory = (index: number) => {
@@ -77,10 +75,10 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
         image,
         ingredients,
         steps,
-        category: categories,
+        categories, // ✅ FIXED — use correct field name
       });
 
-      console.log("✅ Recipe updated successfully:", updatedRecipe);
+      console.log("Recipe updated:", updatedRecipe);
       router.push("/dashboard");
     } catch (error) {
       console.error("Error updating recipe:", error);
@@ -105,8 +103,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400"
-              placeholder="e.g., Grandma’s Famous Pancakes"
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
               required
             />
           </div>
@@ -120,8 +117,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900 placeholder:text-amber-400"
-              placeholder="Write a short description of your recipe..."
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
               required
             />
           </div>
@@ -135,12 +131,12 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               type="number"
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
-              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400 focus:outline-none text-amber-900"
+              className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
               required
             />
           </div>
 
-          {/* Image Upload (with upload + URL toggle) */}
+          {/* Image Upload */}
           <div>
             <label className="block font-semibold mb-3 text-amber-800">
               Recipe Image
@@ -154,10 +150,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
               Ingredients
             </label>
             {ingredients.map((ingredient, index) => (
-              <div
-                key={index}
-                className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2"
-              >
+              <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                 <input
                   type="text"
                   value={ingredient.amount}
@@ -171,9 +164,10 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                       e.target.value
                     )
                   }
-                  className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg"
                   required
                 />
+
                 <select
                   value={ingredient.unit}
                   onChange={(e) =>
@@ -185,18 +179,19 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                       e.target.value
                     )
                   }
-                  className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg"
                   required
                 >
                   <option value="" disabled>
                     Select Unit
                   </option>
-                  {unitOptions.map((option, idx) => (
-                    <option key={idx} value={option}>
-                      {option}
+                  {unitOptions.map((opt, idx) => (
+                    <option key={idx} value={opt}>
+                      {opt}
                     </option>
                   ))}
                 </select>
+
                 <input
                   type="text"
                   value={ingredient.name}
@@ -210,9 +205,10 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                       e.target.value
                     )
                   }
-                  className="w-full sm:flex-1 px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  className="w-full sm:flex-1 px-3 py-2 border border-amber-200 rounded-lg"
                   required
                 />
+
                 <button
                   type="button"
                   onClick={() => handleRemoveIngredient(index)}
@@ -222,10 +218,16 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                 </button>
               </div>
             ))}
+
             <button
               type="button"
-              onClick={handleAddIngredient}
-              className="mt-3 text-amber-700 hover:underline font-medium"
+              onClick={() =>
+                setIngredients([
+                  ...ingredients,
+                  { amount: "", unit: "", name: "" },
+                ])
+              }
+              className="mt-3 text-amber-700 hover:underline"
             >
               ➕ Add Ingredient
             </button>
@@ -241,11 +243,10 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                 <input
                   type="text"
                   value={step}
-                  placeholder="Describe this step..."
                   onChange={(e) =>
                     handleStepChange(steps, setSteps, index, e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 border border-amber-200 rounded-lg"
                   required
                 />
                 <button
@@ -257,10 +258,11 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                 </button>
               </div>
             ))}
+
             <button
               type="button"
-              onClick={handleAddStep}
-              className="mt-3 text-amber-700 hover:underline font-medium"
+              onClick={() => setSteps([...steps, ""])}
+              className="mt-3 text-amber-700 hover:underline"
             >
               ➕ Add Step
             </button>
@@ -271,46 +273,67 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
             <label className="block font-semibold mb-3 text-amber-800">
               Categories
             </label>
+
             {categories.map((category, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <input
-                  type="text"
+              <div key={index} className="flex items-center gap-3 mb-3">
+                <select
                   value={category}
                   onChange={(e) => handleCategoryChange(index, e.target.value)}
-                  className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
-                />
+                  className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white"
+                >
+                  <option value="">Select a category</option>
+
+                  {Object.entries(CATEGORY_OPTIONS).map(([group, opts]) => (
+                    <optgroup
+                      key={group}
+                      label={group
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (s) => s.toUpperCase())}
+                    >
+                      {opts.map((opt: string) => (
+                        <option key={opt} value={opt}>
+                          {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+
                 <button
                   type="button"
                   onClick={() => handleRemoveCategory(index)}
-                  className="ml-2 text-red-600 font-bold hover:text-red-800"
+                  className="text-red-600 font-bold hover:text-red-800"
                 >
                   ✕
                 </button>
               </div>
             ))}
+
             <button
               type="button"
               onClick={handleAddCategory}
-              className="mt-3 text-amber-700 hover:underline font-medium"
+              className="mt-3 text-amber-700 hover:underline"
             >
               ➕ Add Category
             </button>
           </div>
 
+          {/* Errors */}
           {error && <div className="text-red-600 font-medium">{error}</div>}
 
-          {/* Action buttons */}
+          {/* Buttons */}
           <div className="flex justify-between gap-4 mt-8">
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 rounded-full text-lg font-semibold hover:from-amber-700 hover:to-amber-800 transition-all duration-300 shadow-md hover:shadow-lg"
+              className="flex-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 rounded-full text-lg font-semibold hover:from-amber-700 hover:to-amber-800 shadow-md"
             >
               💾 Save Changes
             </button>
+
             <button
-              onClick={onClose}
               type="button"
-              className="flex-1 bg-amber-200 text-amber-800 py-3 rounded-full text-lg font-semibold hover:bg-amber-300 transition-all duration-300 shadow-sm"
+              onClick={onClose}
+              className="flex-1 bg-amber-200 text-amber-800 py-3 rounded-full text-lg font-semibold hover:bg-amber-300"
             >
               Cancel
             </button>
