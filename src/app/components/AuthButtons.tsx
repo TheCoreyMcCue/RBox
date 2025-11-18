@@ -25,7 +25,7 @@ export default function AuthButtons() {
 
   if (status === "loading") return null;
 
-  // 🔸 SIGN IN BUTTON (when user not signed in)
+  // 🔸 SIGN IN BUTTON
   if (!session) {
     return (
       <button
@@ -37,12 +37,12 @@ export default function AuthButtons() {
     );
   }
 
-  // 🔸 PROFILE DROPDOWN (when user is signed in)
+  // 🔸 WHEN SIGNED IN
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 transition duration-300 border border-amber-300"
+        className="flex items-center gap-2 px-3 py-2 rounded-full bg-amber-100 hover:bg-amber-200 transition duration-300 border border-amber-300"
       >
         {session.user?.image && (
           <Image
@@ -53,9 +53,18 @@ export default function AuthButtons() {
             className="rounded-full border border-amber-200"
           />
         )}
+
+        {/* Show name on desktop */}
         <span className="hidden md:inline text-sm text-amber-800 font-serif">
           {session.user?.name?.split(" ")[0] || session.user?.email}
         </span>
+
+        {/* Show name on mobile when dropdown opens */}
+        {isDropdownOpen && (
+          <span className="md:hidden text-sm text-amber-800 font-serif">
+            {session.user?.name?.split(" ")[0] || session.user?.email}
+          </span>
+        )}
       </button>
 
       {isDropdownOpen && (
@@ -65,6 +74,7 @@ export default function AuthButtons() {
             <br />
             <span className="font-medium">{session.user?.email}</span>
           </div>
+
           <button
             onClick={() => signOut()}
             className="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 hover:text-amber-800 transition duration-200 font-serif"
