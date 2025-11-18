@@ -36,7 +36,9 @@ export const fetchRecipesUtil = async (
     });
 
     const allCategories = fetchedRecipes.flatMap((r: Recipe) =>
-      Array.isArray(r.category) ? r.category.map((c) => formatCategory(c)) : []
+      Array.isArray(r.categories)
+        ? r.categories.map((c) => formatCategory(c))
+        : []
     );
 
     return {
