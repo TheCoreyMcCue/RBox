@@ -7,6 +7,7 @@ import { Formik, Field, Form, FieldArray } from "formik";
 import { createRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "@/app/components/ImageUpload";
 import { unitOptions } from "@/app/utils/data";
+import { CATEGORY_OPTIONS } from "@/app/utils/data";
 
 interface Ingredient {
   amount: string;
@@ -345,38 +346,63 @@ const CreateRecipe = () => {
           </FieldArray>
 
           {/* Categories */}
-          <FieldArray name="categories">
-            {({ push, remove }) => (
-              <div className="mb-10">
-                <label className="block font-semibold mb-3 text-amber-800">
-                  Categories
-                </label>
-                {values.categories.map((_, index) => (
-                  <div key={index} className="flex items-center mb-2">
-                    <Field
-                      name={`categories.${index}`}
-                      placeholder="Category"
-                      className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="ml-2 text-red-600 font-bold hover:text-red-800"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => push("")}
-                  className="mt-3 text-amber-700 hover:underline font-medium"
-                >
-                  ➕ Add Category
-                </button>
-              </div>
-            )}
-          </FieldArray>
+          <div className="mb-10">
+            <label className="block font-semibold mb-3 text-amber-800">
+              Categories
+            </label>
+
+            <FieldArray name="categories">
+              {({ push, remove }) => (
+                <>
+                  {values.categories.map((_, index) => (
+                    <div key={index} className="flex items-center gap-3 mb-3">
+                      <Field
+                        as="select"
+                        name={`categories.${index}`}
+                        className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white/80 focus:ring-2 focus:ring-amber-400"
+                      >
+                        <option value="">Select a category</option>
+
+                        {Object.entries(CATEGORY_OPTIONS).map(
+                          ([groupName, options]) => (
+                            <optgroup
+                              key={groupName}
+                              label={groupName
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (str) => str.toUpperCase())}
+                            >
+                              {options.map((option: string) => (
+                                <option key={option} value={option}>
+                                  {option.charAt(0).toUpperCase() +
+                                    option.slice(1)}
+                                </option>
+                              ))}
+                            </optgroup>
+                          )
+                        )}
+                      </Field>
+
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="text-red-600 font-bold hover:text-red-800"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => push("")}
+                    className="mt-3 text-amber-700 hover:underline font-medium"
+                  >
+                    ➕ Add Category
+                  </button>
+                </>
+              )}
+            </FieldArray>
+          </div>
 
           {/* Submit */}
           <div className="flex justify-between space-x-4 mt-10">

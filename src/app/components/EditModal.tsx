@@ -27,7 +27,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
     recipe.ingredients
   );
   const [steps, setSteps] = useState<string[]>(recipe.steps);
-  const [categories, setCategories] = useState<string[]>(recipe.category);
+  const [categories, setCategories] = useState<string[]>(recipe.categories);
   const [error, setError] = useState<string | null>(null);
 
   const handleCategoryChange = (index: number, value: string) => {

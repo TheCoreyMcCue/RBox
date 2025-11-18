@@ -13,5 +13,5 @@ export interface Recipe {
   cookTime: string;
   ingredients: Ingredient[];
   steps: string[];
-  category: string[];
+  categories: string[];
 }

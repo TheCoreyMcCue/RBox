@@ -13,7 +13,7 @@ export interface IRecipe extends Document {
   image: string;
   ingredients: IIngredient[];
   steps: string[];
-  category: string[];
+  categories: string[];
   createdAt: Date;
   creator: string; // Reference to the user who created the recipe
 }
@@ -57,7 +57,7 @@ const RecipeSchema = new Schema<IRecipe>({
     type: [String],
     required: true,
   },
-  category: {
+  categories: {
     type: [String],
     required: true,
   },

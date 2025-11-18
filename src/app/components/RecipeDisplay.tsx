@@ -274,7 +274,7 @@ const RecipeDisplay = ({
             Categories
           </h2>
           <ul className="flex flex-wrap gap-2 mb-10">
-            {recipe.category.map((cat, i) => (
+            {recipe.categories?.map((cat, i) => (
               <li
                 key={i}
                 className="px-3 py-1 bg-amber-100/70 border border-amber-200 rounded-full text-sm text-amber-700"
