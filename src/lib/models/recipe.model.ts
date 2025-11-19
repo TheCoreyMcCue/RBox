@@ -25,7 +25,7 @@ const IngredientSchema = new Schema<IIngredient>({
   },
   unit: {
     type: String,
-    required: true,
+    required: false,
   },
   name: {
     type: String,

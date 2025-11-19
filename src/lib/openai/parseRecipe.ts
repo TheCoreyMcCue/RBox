@@ -118,7 +118,7 @@ function normalizeUnit(rawUnit: any): string {
     cup: "cup",
     cups: "cup",
 
-    // quarts & conversion
+    // quarts
     quart: "quart",
     quarts: "quart",
     qt: "quart",
@@ -140,7 +140,7 @@ function normalizeUnit(rawUnit: any): string {
     "fluid ounce": "fl oz",
     "fluid ounces": "fl oz",
 
-    // ml / metric small volume
+    // ml
     ml: "ml",
     milliliter: "ml",
     milliliters: "ml",
@@ -171,40 +171,63 @@ function normalizeUnit(rawUnit: any): string {
     pound: "lb",
     pounds: "lb",
 
-    // pieces / generic
-    piece: "piece",
-    pieces: "piece",
-    whole: "piece",
+    // ✅ whole units (intact items)
+    whole: "whole",
+    wholes: "whole",
+    each: "whole",
+    item: "whole",
+    items: "whole",
+    unit: "whole",
+    units: "whole",
+    count: "whole",
+    counts: "whole",
+    head: "whole",
+    heads: "whole",
+    bunch: "whole",
+    bunches: "whole",
+    stalk: "whole",
+    stalks: "whole",
+    ear: "whole",
+    ears: "whole",
 
-    // cooking descriptors mapped to "piece"
-    clove: "piece",
-    cloves: "piece",
-    slice: "piece",
-    slices: "piece",
-    stick: "piece",
-    sticks: "piece",
+    // cooking descriptors that are more like "sub-pieces"
+    clove: "clove",
+    cloves: "clove",
+    slice: "slice",
+    slices: "slice",
+    stick: "stick",
+    sticks: "stick",
 
-    // tiny units mapped to pinch (no conversion)
+    // “tiny” units
     pinch: "pinch",
     pinches: "pinch",
     dash: "pinch",
     dashes: "pinch",
 
     // handful
-    handful: "piece",
-    handfuls: "piece",
+    handful: "handful",
+    handfuls: "handful",
   };
 
-  return map[u] ?? u; // fallback (rare)
+  return map[u] ?? "";
 }
 
 function normalizeCategories(raw: any): string[] {
   if (!Array.isArray(raw)) return [];
+
   const cleaned = raw
     .map((c) => String(c).toLowerCase().trim())
     .filter((c) => ALL_CATEGORIES.includes(c));
 
+  // unique
   return Array.from(new Set(cleaned));
+}
+
+function stripStepNumbering(step: string): string {
+  return step
+    .replace(/^\s*\d+[\).\s-]+/, "")
+    .replace(/^[-•\s]+/, "")
+    .trim();
 }
 
 // ---------------- PARSER ----------------
@@ -218,68 +241,72 @@ export const parseRecipe = async (
 
   try {
     const prompt = `
-You extract structured JSON from recipe text.
+You are a world-class recipe parser. Your ONLY job is to convert ANY recipe text into strictly valid JSON.
 
-Return ONLY valid minified JSON:
+Return ONLY valid, minified JSON:
 
 {
   "title": string,
   "description": string,
   "cookTime": number,
   "ingredients": [
-     { "amount": string, "unit": string, "name": string }
+    { "amount": string, "unit": string, "name": string }
   ],
   "steps": [string],
   "categories": [string]
 }
 
-Rules:
-- cookTime must be an integer number of MINUTES.
-- ingredients.amount must stay human-readable ("1", "1/2", "1 1/4").
-- ingredients.unit must be canonical:
-  ["tsp","tbsp","cup","ml","l","g","kg","oz","lb","piece"]
-- If no unit, use "" and keep the ingredient name intact.
-- steps must not contain numbering ("1.", "2." etc).
-- categories must ONLY be chosen from this list:
+RULES:
+- Use ONLY this list of allowed categories:
 ${ALL_CATEGORIES.map((c) => `"${c}"`).join(", ")}
-- If none apply, return empty array [].
-
-Return STRICT JSON with NO text outside of JSON.
+- If none apply, return [] for categories.
+- cookTime MUST be an integer number of minutes.
+- ingredients.amount must be plain strings ("1", "1/2", "2.5").
+- ingredients.unit must be canonical:
+  ["tsp","tbsp","cup","ml","l","g","kg","oz","lb","piece","pinch","quart","pint","gallon","fl oz"]
+- If a unit is missing, set unit to "".
+- DO NOT include numbering in steps ("1.", "2.", "•").
+- DO NOT invent ingredients or steps—use ONLY what appears in the recipe.
+- DO NOT output any text outside the JSON.
     `.trim();
 
     const response = await axios.post<RecipeResponse>(
       OPENAI_API_URL,
       {
-        model: "gpt-4-turbo",
+        model: "gpt-4.1-mini", // more stable than gpt-4-turbo
         messages: [
           { role: "system", content: prompt },
           { role: "user", content: recipeText },
         ],
-        temperature: 0.1,
-        max_tokens: 900,
+        temperature: 0.0,
+        max_tokens: 1200,
       },
       {
         headers: {
           Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
-        timeout: 20000,
+        timeout: 25000,
       }
     );
 
     const rawString = response.data.choices?.[0]?.message?.content || "";
+
+    // Extract JSON safely
     const start = rawString.indexOf("{");
     const end = rawString.lastIndexOf("}");
     const jsonString = rawString.slice(start, end + 1);
 
+    // Clean formatting issues
     const cleaned = jsonString
-      .replace(/\u201C|\u201D/g, '"')
+      .replace(/\u201C|\u201D/g, '"') // smart quotes
       .replace(/\u2018|\u2019/g, "'")
       .replace(/,\s*}/g, "}")
       .replace(/,\s*]/g, "]");
 
     const raw = JSON.parse(cleaned);
 
+    // ---------- Normalize ingredients ----------
     const ingredients = Array.isArray(raw.ingredients)
       ? raw.ingredients.map((i: any) => ({
           amount: String(i.amount ?? "").trim(),
@@ -288,14 +315,17 @@ Return STRICT JSON with NO text outside of JSON.
         }))
       : [];
 
+    // ---------- Normalize steps ----------
+    const steps = Array.isArray(raw.steps)
+      ? raw.steps.map((s: any) => stripStepNumbering(String(s)))
+      : [];
+
     return {
       title: String(raw.title ?? "").trim(),
       description: String(raw.description ?? "").trim(),
       cookTime: Number(raw.cookTime ?? 0),
       ingredients,
-      steps: Array.isArray(raw.steps)
-        ? raw.steps.map((s: any) => String(s).trim())
-        : [],
+      steps,
       categories: normalizeCategories(raw.categories),
     };
   } catch (err: any) {

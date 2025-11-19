@@ -1,27 +1,31 @@
 export const unitOptions = [
-  // Volume - US customary
+  // Whole / countable items
+  "whole",
+  "clove",
+  "slice",
+  "stick",
+  "handful",
+
+  // Dry volume / powders / spices
   "tsp",
   "tbsp",
   "cup",
+
+  // Liquid volume
   "fl oz",
   "pint",
   "quart",
   "gallon",
-
-  // Volume - Metric
   "ml",
   "l",
 
-  // Weight - Metric
+  // Weight
   "g",
   "kg",
-
-  // Weight - Imperial
   "oz",
   "lb",
 
-  // Generic units
-  "piece",
+  // Misc tiny units
   "pinch",
 ];
 

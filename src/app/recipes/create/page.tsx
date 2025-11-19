@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Formik, Field, Form, FieldArray } from "formik";
+import { Formik, Field, Form, FieldArray, FormikHelpers } from "formik";
 import { createRecipe } from "@/lib/actions/recipe.action";
 import ImageUpload from "@/app/components/ImageUpload";
 import { unitOptions, CATEGORY_OPTIONS } from "@/app/utils/data";
@@ -53,12 +53,13 @@ const CreateRecipe = () => {
   );
 
   const toggleFormView = () => {
-    setShowManualForm(!showManualForm);
+    setShowManualForm((prev) => !prev);
     setParseError("");
     setParsedValues(null);
     setRecipeText("");
   };
 
+  // --- PARSER CALL ---
   const handleParse = async () => {
     setParsing(true);
     setParseError("");
@@ -71,7 +72,6 @@ const CreateRecipe = () => {
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Parsing failed");
 
       const parsed: RecipeFormValues = {
@@ -88,10 +88,13 @@ const CreateRecipe = () => {
         steps: Array.isArray(data.steps)
           ? data.steps
           : defaultInitialValues.steps,
-        categories:
-          Array.isArray(data.categories) && data.categories.length > 0
-            ? data.categories
-            : [""],
+
+        // ⭐ Correct auto categories → fully cleaned
+        categories: Array.isArray(data.categories)
+          ? data.categories
+              .map((c: any) => String(c).trim().toLowerCase())
+              .filter(Boolean)
+          : [""],
       };
 
       setParsedValues(parsed);
@@ -152,12 +155,19 @@ const CreateRecipe = () => {
     );
   }
 
-  // --- STEP 2: STRUCTURED FORM USING FORMIK ---
+  // --- STEP 2: STRUCTURED FORM ---
   return (
     <Formik
-      initialValues={parsedValues || defaultInitialValues}
+      initialValues={
+        parsedValues
+          ? JSON.parse(JSON.stringify(parsedValues)) // ⭐ Deep-clone to force Formik FieldArray refresh
+          : defaultInitialValues
+      }
       enableReinitialize
-      onSubmit={async (values, { setSubmitting, resetForm }) => {
+      onSubmit={async (
+        values: RecipeFormValues,
+        { setSubmitting, resetForm }: FormikHelpers<RecipeFormValues>
+      ) => {
         try {
           const payload = {
             creator: userId,
@@ -165,16 +175,20 @@ const CreateRecipe = () => {
             description: values.description.trim(),
             cookTime: values.cookTime.trim(),
             image: values.image,
+
             ingredients: values.ingredients.map((ing) => ({
               amount: ing.amount.trim(),
               unit: ing.unit.trim(),
               name: ing.name.trim(),
             })),
+
             steps: values.steps.map((s) => s.trim()),
-            category: values.categories.map((c) => c.trim()).filter(Boolean),
+
+            // ⭐ Store under `category` field for database
+            categories: values.categories.map((c) => c.trim()).filter(Boolean),
           };
 
-          const newRecipe = await createRecipe(payload as any);
+          const newRecipe = await createRecipe(payload);
 
           if (newRecipe) {
             resetForm();
@@ -250,7 +264,7 @@ const CreateRecipe = () => {
               <div className="mb-8">
                 <label>Ingredients</label>
 
-                {values.ingredients.map((_, index) => (
+                {values.ingredients.map((_: Ingredient, index: number) => (
                   <div
                     key={index}
                     className="flex gap-2 mb-2 flex-col sm:flex-row"
@@ -265,11 +279,10 @@ const CreateRecipe = () => {
                     <Field
                       as="select"
                       name={`ingredients.${index}.unit`}
-                      required
                       className="p-2 border rounded-lg bg-white/80"
                     >
                       <option value="">Unit</option>
-                      {unitOptions.map((opt) => (
+                      {unitOptions.map((opt: string) => (
                         <option key={opt} value={opt}>
                           {opt}
                         </option>
@@ -310,7 +323,7 @@ const CreateRecipe = () => {
               <div className="mb-8">
                 <label>Steps</label>
 
-                {values.steps.map((_, index) => (
+                {values.steps.map((_: string, index: number) => (
                   <div key={index} className="flex items-center mb-2">
                     <Field
                       name={`steps.${index}`}
@@ -346,7 +359,7 @@ const CreateRecipe = () => {
               <div className="mb-10">
                 <label>Categories</label>
 
-                {values.categories.map((_, index) => (
+                {values.categories.map((_: string, index: number) => (
                   <div key={index} className="flex gap-3 mb-3">
                     <Field
                       as="select"
@@ -363,7 +376,7 @@ const CreateRecipe = () => {
                               .replace(/([A-Z])/g, " $1")
                               .replace(/^./, (str) => str.toUpperCase())}
                           >
-                            {options.map((opt) => (
+                            {options.map((opt: string) => (
                               <option key={opt} value={opt}>
                                 {opt.charAt(0).toUpperCase() + opt.slice(1)}
                               </option>
