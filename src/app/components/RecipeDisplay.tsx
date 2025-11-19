@@ -29,7 +29,6 @@ const RecipeDisplay = ({
   const router = useRouter();
   const { data: session } = useSession();
 
-  // IDs for ownership comparison
   const userId = (session?.user as any)?._id;
   const clerkId = (session?.user as any)?.clerkId;
 
@@ -40,57 +39,41 @@ const RecipeDisplay = ({
     (!!userId && recipeCreator === String(userId)) ||
     (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
 
-  // State
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [useMetric, setUseMetric] = useState(false);
-
-  // Copy animation
   const [copied, setCopied] = useState(false);
-
-  // NEW — saved state
   const [isSaved, setIsSaved] = useState(false);
 
-  // ---------------------------------
-  // LOAD WHETHER THIS RECIPE IS SAVED
-  // ---------------------------------
+  // Load saved status
   useEffect(() => {
     const checkSaved = async () => {
       if (!userId) return;
-
       const saved = await getSavedRecipes(userId);
-
       if (Array.isArray(saved) && saved.includes(recipe._id)) {
         setIsSaved(true);
       }
     };
-
     checkSaved();
   }, [userId, recipe._id]);
 
-  // ---------------- SAVE RECIPE ----------------
   const handleSave = async () => {
     if (!userId) return;
-
     await saveRecipe(userId, recipe._id);
     setIsSaved(true);
   };
 
-  // ---------------- UNSAVE RECIPE ----------------
   const handleUnsave = async () => {
     if (!userId) return;
-
     await unsaveRecipe(userId, recipe._id);
     setIsSaved(false);
   };
 
-  // ---------------- DELETE RECIPE ----------------
   const handleDelete = async () => {
     if (!isOwner) {
       alert("You are not the owner of this recipe.");
       return;
     }
-
     try {
       await deleteRecipe(recipe._id);
       if (onDeleteSuccess) onDeleteSuccess();
@@ -100,7 +83,6 @@ const RecipeDisplay = ({
     }
   };
 
-  // ---------------- COPY URL ----------------
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
@@ -108,7 +90,7 @@ const RecipeDisplay = ({
     });
   };
 
-  // ---------------- UNIT CONVERSIONS ----------------
+  // Unit conversion helpers
   const convertToMetric = (amount: number, unit: string) => {
     switch (unit.toLowerCase()) {
       case "cup":
@@ -167,7 +149,7 @@ const RecipeDisplay = ({
 
   return (
     <div className="relative from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
-      {/* Back button */}
+      {/* GO BACK BUTTON */}
       {onGoBack && (
         <div className="max-w-5xl mx-auto mb-6">
           <button
@@ -187,7 +169,7 @@ const RecipeDisplay = ({
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-2xl shadow-md overflow-hidden">
+      <div className="max-w-5xl mx-auto bg-amber-50/80 border border-amber-200 rounded-2xl shadow-md overflow-hidden">
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
@@ -198,70 +180,30 @@ const RecipeDisplay = ({
 
         <div className="p-8 sm:p-10">
           {/* HEADER AREA */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4 sm:mb-0">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
+            <h1 className="text-4xl font-[Homemade Apple] text-amber-800">
               {recipe.title}
             </h1>
 
-            <div className="flex items-center gap-4">
-              {/* Unit toggle */}
-              <div className="flex items-center gap-2 text-sm text-amber-700">
-                <span>Imperial</span>
-                <label className="relative inline-flex cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useMetric}
-                    onChange={() => setUseMetric(!useMetric)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-amber-200 rounded-full peer-checked:bg-amber-600 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
-                </label>
-                <span>Metric</span>
-              </div>
-
+            {/* BUTTON WRAPPER — NOW WRAPS ON MOBILE */}
+            <div className="flex flex-wrap gap-3 justify-start sm:justify-end">
               {/* Copy button */}
               <button
                 onClick={handleCopyUrl}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-sm transition ${
                   copied
                     ? "bg-green-600 text-white"
-                    : "text-amber-700 hover:text-amber-900"
+                    : "bg-white/60 text-amber-800 hover:bg-white/80"
                 }`}
               >
-                {copied ? (
-                  <>
-                    <svg
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086 5.707 9.293A1 1 0 004.293 10.707l3.5 3.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path d="M12.293 2.293a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L14.586 8H9a7 7 0 00-7 7v3a1 1 0 11-2 0v-3a9 9 0 019-9h5.586l-2.293-2.293A1 1 0 0112.293 2.293z" />
-                    </svg>
-                    Share
-                  </>
-                )}
+                {copied ? "Copied ✓" : "Share"}
               </button>
 
-              {/* SAVE / UNSAVE BUTTON — only for non-owners */}
+              {/* Save button — FIXED SIZE + ALWAYS VISIBLE */}
               {!isOwner && userId && (
                 <button
                   onClick={isSaved ? handleUnsave : handleSave}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-sm transition ${
                     isSaved
                       ? "bg-amber-400 hover:bg-amber-500 text-white"
                       : "bg-amber-700 hover:bg-amber-800 text-white"
@@ -270,10 +212,24 @@ const RecipeDisplay = ({
                   {isSaved ? "Saved ✓" : "Save +"}
                 </button>
               )}
+              {/* Unit toggle */}
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-white/60 px-3 py-2 rounded-full shadow-sm">
+                <span>Imperial</span>
+                <label className="relative inline-flex cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useMetric}
+                    onChange={() => setUseMetric(!useMetric)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-amber-200 rounded-full peer-checked:bg-amber-600 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-4 after:h-4 after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
+                </label>
+                <span>Metric</span>
+              </div>
             </div>
           </div>
 
-          {/* Description */}
+          {/* DESCRIPTION */}
           <p className="text-lg font-serif text-amber-800/90 mb-6 leading-relaxed">
             {recipe.description}
           </p>
