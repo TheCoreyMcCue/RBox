@@ -1,4 +1,3 @@
-// app/user/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,8 +11,9 @@ import Link from "next/link";
 import Placeholder from "../../../../public/placeholder.png";
 
 export default function UserProfilePage() {
-  const { id: profileUserId } = useParams(); // user ID from URL
+  const { id: profileUserId } = useParams();
   const { data: session } = useSession();
+
   const loggedInId =
     (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
@@ -55,7 +55,7 @@ export default function UserProfilePage() {
 
     setUser((prev: any) => ({
       ...prev,
-      followers: [...prev?.followers, loggedInId],
+      followers: [...(prev?.followers || []), loggedInId],
     }));
   };
 
@@ -67,10 +67,13 @@ export default function UserProfilePage() {
 
     setUser((prev: any) => ({
       ...prev,
-      followers: prev.followers.filter((id: string) => id !== loggedInId),
+      followers: (prev?.followers || []).filter(
+        (id: string) => id !== loggedInId
+      ),
     }));
   };
 
+  // ---------------- LOADING ----------------
   if (loading) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center text-amber-700 font-serif">
@@ -79,6 +82,7 @@ export default function UserProfilePage() {
     );
   }
 
+  // ---------------- NOT FOUND ----------------
   if (!user) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center text-center px-6">
@@ -118,8 +122,7 @@ export default function UserProfilePage() {
           {loggedInId && loggedInId !== profileUserId && (
             <button
               onClick={isFollowing ? handleUnfollow : handleFollow}
-              className={`mt-4 px-6 py-2 rounded-full text-white shadow font-serif transition 
-              ${
+              className={`mt-4 px-6 py-2 rounded-full text-white shadow font-serif transition ${
                 isFollowing
                   ? "bg-amber-400 hover:bg-amber-500"
                   : "bg-amber-700 hover:bg-amber-800"
@@ -142,7 +145,7 @@ export default function UserProfilePage() {
 
         {/* THEIR COOKBOOK */}
         <h2 className="text-3xl font-[Homemade Apple] text-amber-800 mb-6">
-          {fullName}'s Cookbook 📖
+          {fullName}&apos;s Cookbook 📖
         </h2>
 
         {recipes.length === 0 ? (

@@ -12,12 +12,10 @@ export default function DiscoverPeoplePage() {
   const [filtered, setFiltered] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Load all users into memory once (this is okay for small pilot stage)
   useEffect(() => {
     const loadUsers = async () => {
       try {
         const users = await getAllUsers();
-        // ensure state stays an array even if getAllUsers returns a single IUser
         setAllUsers(Array.isArray(users) ? users : [users]);
       } catch (err) {
         console.error("Failed to load users:", err);
@@ -26,7 +24,6 @@ export default function DiscoverPeoplePage() {
     loadUsers();
   }, []);
 
-  // Filter users when searchTerm changes
   useEffect(() => {
     if (searchTerm.length < 2) {
       setFiltered([]);
@@ -70,7 +67,6 @@ export default function DiscoverPeoplePage() {
 
   return (
     <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6 py-12">
-      {/* HEADER */}
       <div className="text-center mb-10">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow">
           Discover People 👥
@@ -80,7 +76,6 @@ export default function DiscoverPeoplePage() {
         </p>
       </div>
 
-      {/* SEARCH BOX */}
       <div className="max-w-xl mx-auto mb-10 relative">
         <input
           type="text"
@@ -90,7 +85,6 @@ export default function DiscoverPeoplePage() {
           className="w-full pl-12 pr-4 py-3 rounded-full border border-amber-300 shadow-sm bg-white/90 text-amber-800 placeholder:text-amber-400 focus:ring-2 focus:ring-amber-400 focus:outline-none"
         />
 
-        {/* Search Icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="w-5 h-5 absolute left-4 top-3.5 text-amber-400"
@@ -107,14 +101,12 @@ export default function DiscoverPeoplePage() {
         </svg>
       </div>
 
-      {/* MESSAGE IF LESS THAN 2 CHARACTERS */}
       {searchTerm.length > 0 && searchTerm.length < 2 && (
         <p className="text-center text-amber-700 font-serif mb-4">
           Type at least 2 characters to search…
         </p>
       )}
 
-      {/* RESULTS GRID */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filtered.map((user) => (
           <Link key={user._id} href={`/user/${user._id}`} className="group">
@@ -122,7 +114,7 @@ export default function DiscoverPeoplePage() {
               <div className="flex justify-center mb-4">
                 <Image
                   src={user.photo || "/placeholder-user.png"}
-                  alt={`${user.firstName} ${user.lastName}`}
+                  alt={`${user.firstName ?? ""} ${user.lastName ?? ""}`}
                   width={90}
                   height={90}
                   className="rounded-full border border-amber-200 shadow-sm group-hover:scale-105 transition"
@@ -139,12 +131,10 @@ export default function DiscoverPeoplePage() {
                 {user.email}
               </p>
 
-              {/* Followers count placeholder — fill later */}
               <p className="text-amber-600 font-serif text-sm mt-3">
                 followers: {user.followers?.length ?? 0}
               </p>
 
-              {/* Follow button placeholder (wired later) */}
               <button
                 className="mt-4 w-full bg-amber-600 text-white py-2 rounded-full font-serif shadow hover:bg-amber-700 transition"
                 type="button"
@@ -156,10 +146,9 @@ export default function DiscoverPeoplePage() {
         ))}
       </div>
 
-      {/* NO RESULTS */}
       {searchTerm.length >= 2 && filtered.length === 0 && (
         <p className="text-center text-amber-700 font-serif mt-10">
-          No users found matching "{searchTerm}"
+          No users found matching &quot;{searchTerm}&quot;
         </p>
       )}
     </div>
