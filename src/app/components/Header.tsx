@@ -56,16 +56,10 @@ const Navbar = () => {
             {signedIn && (
               <>
                 <Link
-                  href="/dashboard"
+                  href="/discover"
                   className="hover:text-amber-600 transition-colors duration-200"
                 >
-                  My Dashboard
-                </Link>
-                <Link
-                  href="/recipes/all"
-                  className="hover:text-amber-600 transition-colors duration-200"
-                >
-                  Discover Recipes
+                  Discover
                 </Link>
               </>
             )}
@@ -126,22 +120,13 @@ const Navbar = () => {
             {signedIn && (
               <>
                 <Link
-                  href="/dashboard"
+                  href="/discover"
                   onClick={() => setIsOpen(false)}
                   className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
                 >
-                  My Dashboard
+                  Discover
                 </Link>
 
-                <Link
-                  href="/recipes/all"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md hover:bg-amber-100 transition"
-                >
-                  Discover Recipes
-                </Link>
-
-                {/* 🔥 SIGN OUT BUTTON FOR MOBILE */}
                 <button
                   onClick={() => {
                     setIsOpen(false);

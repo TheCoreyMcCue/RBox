@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
-import logo from "../icon.png"; // Replace with the correct path to your new logo file
+import logo from "../icon.png";
 
 const Hero = () => {
   const { data: session, status } = useSession();
@@ -27,7 +27,7 @@ const Hero = () => {
             width={190}
             height={190}
             priority
-            className="rounded-md" // removed shadow-md
+            className="rounded-md"
           />
         </div>
 

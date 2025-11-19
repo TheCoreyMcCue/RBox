@@ -22,10 +22,7 @@ const Footer = () => {
           <Link href="/" className="hover:text-amber-600 transition">
             Home
           </Link>
-          <Link href="/dashboard" className="hover:text-amber-600 transition">
-            Dashboard
-          </Link>
-          <Link href="/recipes/all" className="hover:text-amber-600 transition">
+          <Link href="/discover" className="hover:text-amber-600 transition">
             Discover
           </Link>
           <Link
