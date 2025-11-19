@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
             firstName,
             lastName,
             email,
-            photo: user.image,
+            photo: user.image ?? undefined,
           });
 
           if (!dbUser) {
