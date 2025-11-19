@@ -5,10 +5,15 @@ import Placeholder from "../../../public/placeholder.png";
 import { Recipe } from "@/app/utils/types";
 import DeleteModal from "@/app/components/DeleteModal";
 import EditModal from "@/app/components/EditModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { deleteRecipe } from "@/lib/actions/recipe.action";
+import {
+  saveRecipe,
+  unsaveRecipe,
+  getSavedRecipes,
+} from "@/lib/actions/user.action";
 
 interface RecipeDisplayProps {
   recipe: Recipe;
@@ -24,25 +29,67 @@ const RecipeDisplay = ({
   const router = useRouter();
   const { data: session } = useSession();
 
+  // IDs for ownership comparison
   const userId = (session?.user as any)?._id;
   const clerkId = (session?.user as any)?.clerkId;
 
   const recipeCreator = recipe.creator?.toString?.() ?? "";
   const recipeClerk = (recipe as any)?.creatorClerkId?.toString?.() ?? "";
 
+  const isOwner =
+    (!!userId && recipeCreator === String(userId)) ||
+    (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
+
+  // State
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [useMetric, setUseMetric] = useState(false);
 
-  // 🔹 NEW: Copied Animation State
+  // Copy animation
   const [copied, setCopied] = useState(false);
 
-  const isOwner =
-    (!!userId && recipeCreator === userId.toString()) ||
-    (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
+  // NEW — saved state
+  const [isSaved, setIsSaved] = useState(false);
 
+  // ---------------------------------
+  // LOAD WHETHER THIS RECIPE IS SAVED
+  // ---------------------------------
+  useEffect(() => {
+    const checkSaved = async () => {
+      if (!userId) return;
+
+      const saved = await getSavedRecipes(userId);
+
+      if (Array.isArray(saved) && saved.includes(recipe._id)) {
+        setIsSaved(true);
+      }
+    };
+
+    checkSaved();
+  }, [userId, recipe._id]);
+
+  // ---------------- SAVE RECIPE ----------------
+  const handleSave = async () => {
+    if (!userId) return;
+
+    await saveRecipe(userId, recipe._id);
+    setIsSaved(true);
+  };
+
+  // ---------------- UNSAVE RECIPE ----------------
+  const handleUnsave = async () => {
+    if (!userId) return;
+
+    await unsaveRecipe(userId, recipe._id);
+    setIsSaved(false);
+  };
+
+  // ---------------- DELETE RECIPE ----------------
   const handleDelete = async () => {
-    if (!isOwner) return alert("You are not the owner of this recipe.");
+    if (!isOwner) {
+      alert("You are not the owner of this recipe.");
+      return;
+    }
 
     try {
       await deleteRecipe(recipe._id);
@@ -53,7 +100,7 @@ const RecipeDisplay = ({
     }
   };
 
-  // 🔹 NEW: Copy animation
+  // ---------------- COPY URL ----------------
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
@@ -61,7 +108,7 @@ const RecipeDisplay = ({
     });
   };
 
-  // Unit conversion helpers
+  // ---------------- UNIT CONVERSIONS ----------------
   const convertToMetric = (amount: number, unit: string) => {
     switch (unit.toLowerCase()) {
       case "cup":
@@ -141,7 +188,6 @@ const RecipeDisplay = ({
       )}
 
       <div className="max-w-5xl mx-auto bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-2xl shadow-md overflow-hidden">
-        {/* Image */}
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
@@ -151,14 +197,14 @@ const RecipeDisplay = ({
         />
 
         <div className="p-8 sm:p-10">
-          {/* Header */}
+          {/* HEADER AREA */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mb-4 sm:mb-0">
               {recipe.title}
             </h1>
 
             <div className="flex items-center gap-4">
-              {/* Unit Toggle */}
+              {/* Unit toggle */}
               <div className="flex items-center gap-2 text-sm text-amber-700">
                 <span>Imperial</span>
                 <label className="relative inline-flex cursor-pointer">
@@ -173,7 +219,7 @@ const RecipeDisplay = ({
                 <span>Metric</span>
               </div>
 
-              {/* 🔹 NEW Share / Copied Button */}
+              {/* Copy button */}
               <button
                 onClick={handleCopyUrl}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
@@ -184,9 +230,7 @@ const RecipeDisplay = ({
               >
                 {copied ? (
                   <>
-                    {/* Checkmark icon */}
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       className="w-5 h-5"
@@ -201,26 +245,31 @@ const RecipeDisplay = ({
                   </>
                 ) : (
                   <>
-                    {/* Share icon */}
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
                       viewBox="0 0 20 20"
+                      fill="currentColor"
                       className="w-5 h-5"
                     >
-                      <path
-                        d="M12.293 2.293a1 1 0 011.414 0l4 
-                        4a1 1 0 010 1.414l-4 4a1 1 0 
-                        11-1.414-1.414L14.586 8H9a5 5 0 
-                        00-5 5v3a1 1 0 11-2 
-                        0v-3a7 7 0 017-7h5.586l-2.293-2.293a1 1 0 
-                        010-1.414z"
-                      />
+                      <path d="M12.293 2.293a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L14.586 8H9a7 7 0 00-7 7v3a1 1 0 11-2 0v-3a9 9 0 019-9h5.586l-2.293-2.293A1 1 0 0112.293 2.293z" />
                     </svg>
                     Share
                   </>
                 )}
               </button>
+
+              {/* SAVE / UNSAVE BUTTON — only for non-owners */}
+              {!isOwner && userId && (
+                <button
+                  onClick={isSaved ? handleUnsave : handleSave}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition ${
+                    isSaved
+                      ? "bg-amber-400 hover:bg-amber-500 text-white"
+                      : "bg-amber-700 hover:bg-amber-800 text-white"
+                  }`}
+                >
+                  {isSaved ? "Saved ✓" : "Save +"}
+                </button>
+              )}
             </div>
           </div>
 
@@ -233,10 +282,11 @@ const RecipeDisplay = ({
             Cook Time: {recipe.cookTime} minutes
           </p>
 
-          {/* Ingredients */}
+          {/* INGREDIENTS */}
           <h2 className="text-2xl font-semibold text-amber-800 mb-3">
             Ingredients
           </h2>
+
           <ul className="list-disc list-inside text-amber-700/90 font-serif space-y-1 mb-8">
             {recipe.ingredients.map((ing, i) => {
               const amount = parseFloat(ing.amount);
@@ -261,18 +311,20 @@ const RecipeDisplay = ({
             })}
           </ul>
 
-          {/* Steps */}
+          {/* STEPS */}
           <h2 className="text-2xl font-semibold text-amber-800 mb-3">Steps</h2>
+
           <ol className="list-decimal list-inside text-amber-700/90 font-serif space-y-2 mb-8">
             {recipe.steps.map((step, i) => (
               <li key={i}>{step}</li>
             ))}
           </ol>
 
-          {/* Categories */}
+          {/* CATEGORIES */}
           <h2 className="text-xl font-semibold text-amber-800 mb-3">
             Categories
           </h2>
+
           <ul className="flex flex-wrap gap-2 mb-10">
             {recipe.categories?.map((cat, i) => (
               <li
@@ -284,21 +336,21 @@ const RecipeDisplay = ({
             ))}
           </ul>
 
-          {/* Owner buttons */}
+          {/* OWNER CONTROLS */}
           {isOwner && (
             <div className="flex flex-col sm:flex-row justify-end gap-4">
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white shadow-sm hover:from-red-600 hover:to-red-800 transition"
+                className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white shadow hover:from-red-600 hover:to-red-800 transition"
               >
-                🗑️ Delete
+                Delete
               </button>
 
               <button
                 onClick={() => setShowEditModal(true)}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm hover:from-amber-700 hover:to-amber-600 transition"
+                className="px-6 py-2 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow hover:from-amber-700 hover:to-amber-600 transition"
               >
-                ✎ Edit
+                Edit
               </button>
             </div>
           )}
@@ -308,6 +360,7 @@ const RecipeDisplay = ({
       {showEditModal && (
         <EditModal recipe={recipe} onClose={() => setShowEditModal(false)} />
       )}
+
       {showDeleteModal && (
         <DeleteModal
           handleDelete={handleDelete}

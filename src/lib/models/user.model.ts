@@ -12,6 +12,7 @@ export interface IUser extends Document {
 
   followers: string[]; // user IDs following this user
   following: string[]; // user IDs this user follows
+  savedRecipes: string[]; // recipe IDs saved by this user
 
   createdAt: Date;
   updatedAt: Date;
@@ -22,7 +23,7 @@ const UserSchema = new Schema<IUser>(
     clerkId: {
       type: String,
       required: false,
-      unique: false, // cannot require unique because new users may not have this
+      unique: false,
     },
 
     email: {
@@ -41,6 +42,11 @@ const UserSchema = new Schema<IUser>(
     },
 
     following: {
+      type: [String],
+      default: [],
+    },
+
+    savedRecipes: {
       type: [String],
       default: [],
     },

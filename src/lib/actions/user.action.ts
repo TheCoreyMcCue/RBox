@@ -23,6 +23,7 @@ export async function createUser(user: Partial<IUser>) {
       ...user,
       followers: [],
       following: [],
+      savedRecipes: [],
     });
 
     return JSON.parse(JSON.stringify(newUser));
@@ -39,7 +40,7 @@ export async function fetchUserByClerkId(clerkId: string) {
     const user = await User.findOne({ clerkId }).lean<IUser>().exec();
     return user ?? null;
   } catch (error) {
-    console.error(`❌ Error fetching user with clerkId ${clerkId}:`, error);
+    console.error(`❌ Error fetching user by clerkId ${clerkId}:`, error);
     return null;
   }
 }
@@ -57,11 +58,11 @@ export async function fetchUserByEmail(email: string) {
 }
 
 // ---------------- GET ALL USERS ----------------
-export async function getAllUsers() {
+export async function getAllUsers(): Promise<IUser[]> {
   try {
     await ensureConnected();
-    const users = await User.find().lean<IUser>().exec();
-    return users as IUser;
+    const users = await User.find().lean<IUser[]>().exec();
+    return users;
   } catch (error) {
     console.error("❌ Error fetching all users:", error);
     throw error;
@@ -76,7 +77,6 @@ export async function followUser(followerId: string, targetId: string) {
     throw new Error("You cannot follow yourself.");
   }
 
-  // ⭐ Fix: Use generic typed findById<IUser>
   const follower = await User.findById<IUser>(followerId).exec();
   const target = await User.findById<IUser>(targetId).exec();
 
@@ -84,13 +84,11 @@ export async function followUser(followerId: string, targetId: string) {
     throw new Error("User not found.");
   }
 
-  // Add following
-  if (!follower.following.includes(targetId)) {
-    follower.following.push(targetId);
+  if (!follower.following?.includes(targetId)) {
+    follower.following?.push(targetId);
     await follower.save();
   }
 
-  // Add follower
   if (!target.followers.includes(followerId)) {
     target.followers.push(followerId);
     await target.save();
@@ -110,8 +108,8 @@ export async function unfollowUser(followerId: string, targetId: string) {
     throw new Error("User not found.");
   }
 
-  follower.following = follower.following.filter((id) => id !== targetId);
-  target.followers = target.followers.filter((id) => id !== followerId);
+  follower.following = follower.following?.filter((id) => id !== targetId);
+  target.followers = target.followers?.filter((id) => id !== followerId);
 
   await follower.save();
   await target.save();
@@ -119,12 +117,52 @@ export async function unfollowUser(followerId: string, targetId: string) {
   return { success: true };
 }
 
+// ---------------- SAVE RECIPE ----------------
+export async function saveRecipe(userId: string, recipeId: string) {
+  await ensureConnected();
+
+  const user = await User.findById<IUser>(userId).exec();
+  if (!user) throw new Error("User not found.");
+
+  if (!user.savedRecipes?.includes(recipeId)) {
+    user.savedRecipes?.push(recipeId);
+    await user.save();
+  }
+
+  return { success: true };
+}
+
+// ---------------- UNSAVE RECIPE ----------------
+export async function unsaveRecipe(userId: string, recipeId: string) {
+  await ensureConnected();
+
+  const user = await User.findById<IUser>(userId).exec();
+  if (!user) throw new Error("User not found.");
+
+  user.savedRecipes = user.savedRecipes?.filter((id) => id !== recipeId);
+  await user.save();
+
+  return { success: true };
+}
+
+// ---------------- GET SAVED RECIPES ----------------
+export async function getSavedRecipes(userId: string) {
+  await ensureConnected();
+
+  const user = await User.findById<IUser>(userId)
+    .select("savedRecipes")
+    .lean()
+    .exec();
+
+  return user?.savedRecipes ?? [];
+}
+
 // ---------------- GET USER PROFILE ----------------
 export async function getUserProfile(userId: string) {
   await ensureConnected();
 
   const user = await User.findById<IUser>(userId)
-    .select("firstName lastName photo followers following email")
+    .select("firstName lastName photo followers following email savedRecipes")
     .lean()
     .exec();
 
@@ -134,5 +172,6 @@ export async function getUserProfile(userId: string) {
     ...user,
     followerCount: user.followers?.length,
     followingCount: user.following?.length,
+    savedCount: user.savedRecipes?.length,
   };
 }
