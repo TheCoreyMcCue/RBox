@@ -4,7 +4,7 @@ import { UploadButton } from "@/lib/uploadthing";
 import React, { Dispatch, SetStateAction, useState } from "react";
 
 type FileUploaderProps = {
-  setImage: Dispatch<SetStateAction<string>>;
+  setImage: (url: string) => void;
 };
 
 const ImageUpload = ({ setImage }: FileUploaderProps) => {
