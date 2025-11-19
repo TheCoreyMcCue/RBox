@@ -1,49 +1,138 @@
+// lib/actions/user.action.ts
+
 "use server";
 
-import User from "@/lib/models/user.model";
+import User, { IUser } from "@/lib/models/user.model";
 import { connect } from "@/lib/db";
 
-export async function createUser(user: any) {
+// ---------------- Helper ----------------
+async function ensureConnected() {
   try {
     await connect();
-    const newUser = await User.create(user);
+  } catch (err) {
+    console.error("❌ DB connection error:", err);
+  }
+}
+
+// ---------------- CREATE USER ----------------
+export async function createUser(user: Partial<IUser>) {
+  try {
+    await ensureConnected();
+
+    const newUser = await User.create({
+      ...user,
+      followers: [],
+      following: [],
+    });
+
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("❌ Error creating user:", error);
     return null;
   }
 }
 
+// ---------------- FETCH BY CLERK ID ----------------
 export async function fetchUserByClerkId(clerkId: string) {
   try {
-    await connect();
-    // Find user by clerkId
-    const user = await User.findOne({ clerkId }).lean().exec();
-    return JSON.parse(JSON.stringify(user));
+    await ensureConnected();
+    const user = await User.findOne({ clerkId }).lean<IUser>().exec();
+    return user ?? null;
   } catch (error) {
-    console.error(`Error fetching user with Clerk ID ${clerkId}:`, error);
+    console.error(`❌ Error fetching user with clerkId ${clerkId}:`, error);
     return null;
   }
 }
 
-export const getAllUsers = async () => {
-  try {
-    await connect(); // Ensure database connection
-    const allUsers = await User.find().lean().exec(); // Fetch all recipes as plain objects
-    return JSON.parse(JSON.stringify(allUsers)); // Return recipes in JSON format
-  } catch (error) {
-    console.error("Error fetching all recipes:", error);
-    throw error;
-  }
-};
-
+// ---------------- FETCH BY EMAIL ----------------
 export async function fetchUserByEmail(email: string) {
   try {
-    await connect();
-    const user = await User.findOne({ email }).lean().exec();
-    return JSON.parse(JSON.stringify(user));
+    await ensureConnected();
+    const user = await User.findOne({ email }).lean<IUser>().exec();
+    return user ?? null;
   } catch (error) {
-    console.error(`Error fetching user by email ${email}:`, error);
+    console.error(`❌ Error fetching user by email ${email}:`, error);
     return null;
   }
+}
+
+// ---------------- GET ALL USERS ----------------
+export async function getAllUsers() {
+  try {
+    await ensureConnected();
+    const users = await User.find().lean<IUser>().exec();
+    return users as IUser;
+  } catch (error) {
+    console.error("❌ Error fetching all users:", error);
+    throw error;
+  }
+}
+
+// ---------------- FOLLOW USER ----------------
+export async function followUser(followerId: string, targetId: string) {
+  await ensureConnected();
+
+  if (followerId === targetId) {
+    throw new Error("You cannot follow yourself.");
+  }
+
+  // ⭐ Fix: Use generic typed findById<IUser>
+  const follower = await User.findById<IUser>(followerId).exec();
+  const target = await User.findById<IUser>(targetId).exec();
+
+  if (!follower || !target) {
+    throw new Error("User not found.");
+  }
+
+  // Add following
+  if (!follower.following.includes(targetId)) {
+    follower.following.push(targetId);
+    await follower.save();
+  }
+
+  // Add follower
+  if (!target.followers.includes(followerId)) {
+    target.followers.push(followerId);
+    await target.save();
+  }
+
+  return { success: true };
+}
+
+// ---------------- UNFOLLOW USER ----------------
+export async function unfollowUser(followerId: string, targetId: string) {
+  await ensureConnected();
+
+  const follower = await User.findById<IUser>(followerId).exec();
+  const target = await User.findById<IUser>(targetId).exec();
+
+  if (!follower || !target) {
+    throw new Error("User not found.");
+  }
+
+  follower.following = follower.following.filter((id) => id !== targetId);
+  target.followers = target.followers.filter((id) => id !== followerId);
+
+  await follower.save();
+  await target.save();
+
+  return { success: true };
+}
+
+// ---------------- GET USER PROFILE ----------------
+export async function getUserProfile(userId: string) {
+  await ensureConnected();
+
+  const user = await User.findById<IUser>(userId)
+    .select("firstName lastName photo followers following email")
+    .lean()
+    .exec();
+
+  if (!user) return null;
+
+  return {
+    ...user,
+    followerCount: user.followers?.length,
+    followingCount: user.following?.length,
+  };
 }
