@@ -1,22 +1,28 @@
 export const unitOptions = [
-  "cups",
-  "teaspoons",
-  "tablespoons",
-  "pounds",
-  "ounces",
-  "grams",
-  "milligrams",
-  "liters",
-  "milliliters",
-  "kilograms",
-  "whole",
-  "half",
-  "quarter",
+  // Volume - US customary
+  "tsp",
+  "tbsp",
+  "cup",
+  "fl oz",
+  "pint",
+  "quart",
+  "gallon",
+
+  // Volume - Metric
+  "ml",
+  "l",
+
+  // Weight - Metric
+  "g",
+  "kg",
+
+  // Weight - Imperial
+  "oz",
+  "lb",
+
+  // Generic units
+  "piece",
   "pinch",
-  "large",
-  "small",
-  "cloves",
-  "packet",
 ];
 
 export const CATEGORY_OPTIONS = {
