@@ -16,17 +16,47 @@ import {
   getSavedRecipes,
 } from "@/lib/actions/user.action";
 
+// --------------------------------------------------
+// Density table (g per ml)
+// --------------------------------------------------
+const DENSITY: Record<string, number> = {
+  cabbage: 0.45,
+  onion: 0.85,
+  carrot: 0.65,
+  potato: 0.8,
+  flour: 0.53,
+  sugar: 0.85,
+  rice: 0.85,
+  pasta: 0.5,
+  beef: 1.03,
+  chicken: 1.0,
+  milk: 1.03,
+  water: 1.0,
+  oil: 0.92,
+  honey: 1.42,
+};
+
+// attempt to match ingredient name to a key in the table
+const guessIngredientKey = (name: string): string | null => {
+  const lower = name.toLowerCase();
+  return Object.keys(DENSITY).find((key) => lower.includes(key)) || null;
+};
+
+// --------------------------------------------------
+// Main Component
+// --------------------------------------------------
+
 interface RecipeDisplayProps {
   recipe: Recipe;
   onGoBack?: () => void;
   onDeleteSuccess?: () => void;
 }
 
-const RecipeDisplay = ({
+export default function RecipeDisplay({
   recipe,
   onGoBack,
   onDeleteSuccess,
-}: RecipeDisplayProps) => {
+}: RecipeDisplayProps) {
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -36,6 +66,7 @@ const RecipeDisplay = ({
   const recipeCreator = recipe.creator?.toString?.() ?? "";
   const recipeClerk = (recipe as any)?.creatorClerkId?.toString?.() ?? "";
 
+  // ownership logic
   const isOwner =
     (!!userId && recipeCreator === String(userId)) ||
     (!!clerkId && (recipeCreator === clerkId || recipeClerk === clerkId));
@@ -46,18 +77,19 @@ const RecipeDisplay = ({
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  // Load saved status
+  // load saved status
   useEffect(() => {
-    const checkSaved = async () => {
+    const loadSaved = async () => {
       if (!userId) return;
       const saved = await getSavedRecipes(userId);
       if (Array.isArray(saved) && saved.includes(recipe._id)) {
         setIsSaved(true);
       }
     };
-    checkSaved();
+    loadSaved();
   }, [userId, recipe._id]);
 
+  // SAVE / UNSAVE
   const handleSave = async () => {
     if (!userId) return;
     await saveRecipe(userId, recipe._id);
@@ -70,6 +102,7 @@ const RecipeDisplay = ({
     setIsSaved(false);
   };
 
+  // DELETE
   const handleDelete = async () => {
     if (!isOwner) {
       alert("You are not the owner of this recipe.");
@@ -84,27 +117,68 @@ const RecipeDisplay = ({
     }
   };
 
+  // COPY
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 1800);
     });
   };
 
-  // Unit conversion helpers
-  const convertToMetric = (amount: number, unit: string) => {
+  // --------------------------------------------------
+  // Conversion logic (metric)
+  // --------------------------------------------------
+  const LIQUID_INGREDIENTS = [
+    "milk",
+    "buttermilk",
+    "cream",
+    "water",
+    "broth",
+    "stock",
+    "oil",
+    "vinegar",
+    "soy sauce",
+    "honey",
+    "syrup",
+    "wine",
+    "juice",
+    "olive oil",
+    "coconut milk",
+    "lemon juice",
+    "lime juice",
+    "tomato sauce",
+    "ketchup",
+    "mustard",
+    "yogurt",
+  ];
+
+  const isLiquid = (name: string): boolean => {
+    const lower = name.toLowerCase();
+    return LIQUID_INGREDIENTS.some((liquid) => lower.includes(liquid));
+  };
+
+  const convertToMetric = (
+    amount: number,
+    unit: string,
+    ingredientName: string
+  ) => {
+    let ml = 0;
+
     switch (unit.toLowerCase()) {
       case "cup":
       case "cups":
-        return `${(amount * 240).toFixed(0)} ml`;
+        ml = amount * 240;
+        break;
       case "tbsp":
       case "tablespoon":
       case "tablespoons":
-        return `${(amount * 15).toFixed(0)} ml`;
+        ml = amount * 15;
+        break;
       case "tsp":
       case "teaspoon":
       case "teaspoons":
-        return `${(amount * 5).toFixed(0)} ml`;
+        ml = amount * 5;
+        break;
       case "oz":
       case "ounce":
       case "ounces":
@@ -116,47 +190,57 @@ const RecipeDisplay = ({
       default:
         return `${amount} ${unit}`;
     }
+
+    // NEW RULE: liquids → ml only
+    if (isLiquid(ingredientName)) {
+      return `${Math.round(ml)} ml`;
+    }
+
+    // solids → density-based grams
+    const key = guessIngredientKey(ingredientName);
+    if (key) {
+      const grams = ml * DENSITY[key];
+      return `${Math.round(grams)} g`;
+    }
+
+    // unknown solids fallback → ml
+    return `${Math.round(ml)} ml`;
   };
 
+  // convert to imperial (simplified)
   const convertToImperial = (amount: number, unit: string) => {
     switch (unit.toLowerCase()) {
       case "ml":
-      case "milliliter":
-      case "milliliters":
         return `${(amount / 240).toFixed(2)} cups`;
       case "l":
-      case "liter":
-      case "liters":
         return `${(amount * 4.167).toFixed(2)} cups`;
       case "g":
-      case "gram":
-      case "grams":
         return `${(amount / 28.35).toFixed(2)} oz`;
       case "kg":
-      case "kilogram":
-      case "kilograms":
         return `${(amount * 2.205).toFixed(2)} lb`;
       default:
         return `${amount} ${unit}`;
     }
   };
 
-  const isRecipeMetric = recipe.ingredients.some((ingredient) => {
-    const u = ingredient.unit?.toLowerCase();
-    return ["g", "gram", "grams", "kg", "ml", "l", "liter", "liters"].includes(
-      u || ""
-    );
-  });
+  const isRecipeMetric = recipe.ingredients.some((i) =>
+    ["g", "gram", "grams", "kg", "ml", "l", "liter", "liters"].includes(
+      i.unit?.toLowerCase() || ""
+    )
+  );
+
+  // --------------------------------------------------
+  // RENDER
+  // --------------------------------------------------
 
   return (
     <div className="relative from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
-      {/* GO BACK BUTTON */}
+      {/* GO BACK */}
       {onGoBack && (
         <div className="max-w-5xl mx-auto mb-6">
           <button
-            type="button"
             onClick={onGoBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-amber-800 bg-amber-100/70 border border-amber-200 rounded-full hover:bg-amber-200 transition shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-100/70 border border-amber-200 rounded-full text-amber-800 hover:bg-amber-200 shadow-sm"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
               <path
@@ -170,28 +254,29 @@ const RecipeDisplay = ({
         </div>
       )}
 
+      {/* CARD */}
       <div className="max-w-5xl mx-auto bg-amber-50/80 border border-amber-200 rounded-2xl shadow-md overflow-hidden">
         <Image
           src={recipe.image || Placeholder}
           alt={recipe.title}
-          height={800}
           width={1200}
+          height={800}
           className="w-full h-80 object-cover border-b border-amber-200"
         />
 
         <div className="p-8 sm:p-10">
-          {/* HEADER AREA */}
+          {/* HEADER */}
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-4xl font-[Homemade Apple] text-amber-800">
               {recipe.title}
             </h1>
 
-            {/* BUTTON WRAPPER — NOW WRAPS ON MOBILE */}
+            {/* BUTTON WRAPPER */}
             <div className="flex flex-wrap gap-3 justify-start sm:justify-end">
-              {/* Copy button */}
+              {/* COPY */}
               <button
                 onClick={handleCopyUrl}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-sm transition ${
+                className={`px-4 py-2 rounded-full text-sm shadow-sm ${
                   copied
                     ? "bg-green-600 text-white"
                     : "bg-white/60 text-amber-800 hover:bg-white/80"
@@ -200,20 +285,21 @@ const RecipeDisplay = ({
                 {copied ? "Copied ✓" : "Share"}
               </button>
 
-              {/* Save button — FIXED SIZE + ALWAYS VISIBLE */}
+              {/* SAVE */}
               {!isOwner && userId && (
                 <button
                   onClick={isSaved ? handleUnsave : handleSave}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-sm transition ${
+                  className={`px-4 py-2 rounded-full text-sm shadow-sm text-white ${
                     isSaved
-                      ? "bg-amber-400 hover:bg-amber-500 text-white"
-                      : "bg-amber-700 hover:bg-amber-800 text-white"
+                      ? "bg-amber-400 hover:bg-amber-500"
+                      : "bg-amber-700 hover:bg-amber-800"
                   }`}
                 >
                   {isSaved ? "Saved ✓" : "Save +"}
                 </button>
               )}
-              {/* Unit toggle */}
+
+              {/* UNIT TOGGLE */}
               <div className="flex items-center gap-2 text-sm text-amber-700 bg-white/60 px-3 py-2 rounded-full shadow-sm">
                 <span>Imperial</span>
                 <label className="relative inline-flex cursor-pointer">
@@ -246,23 +332,21 @@ const RecipeDisplay = ({
 
           <ul className="list-disc list-inside text-amber-700/90 font-serif space-y-1 mb-8">
             {recipe.ingredients.map((ing, i) => {
-              const amount = parseFloat(ing.amount);
+              const amt = parseFloat(ing.amount);
               const unit = ing.unit;
 
-              const finalAmt =
-                !isNaN(amount) && useMetric
+              const display =
+                !isNaN(amt) && useMetric
+                  ? convertToMetric(amt, unit, ing.name)
+                  : !isNaN(amt) && !useMetric
                   ? isRecipeMetric
-                    ? `${amount} ${unit}`
-                    : convertToMetric(amount, unit)
-                  : !isNaN(amount) && !useMetric
-                  ? isRecipeMetric
-                    ? convertToImperial(amount, unit)
-                    : `${amount} ${unit}`
-                  : `${ing.amount} ${unit || ""}`;
+                    ? convertToImperial(amt, unit)
+                    : `${amt} ${unit}`
+                  : `${ing.amount} ${unit}`;
 
               return (
                 <li key={i}>
-                  {finalAmt} — {ing.name}
+                  {display} — {ing.name}
                 </li>
               );
             })}
@@ -295,7 +379,7 @@ const RecipeDisplay = ({
 
           {/* OWNER CONTROLS */}
           {isOwner && (
-            <div className="flex flex-col sm:flex-row justify-end gap-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-4 mt-4">
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="px-6 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white shadow hover:from-red-600 hover:to-red-800 transition"
@@ -314,10 +398,11 @@ const RecipeDisplay = ({
         </div>
       </div>
 
+      {/* MODALS */}
       {showEditModal &&
         createPortal(
           <EditModal recipe={recipe} onClose={() => setShowEditModal(false)} />,
-          document.getElementById("modal-root")!
+          document.getElementById("modal-root") as HTMLElement
         )}
 
       {showDeleteModal &&
@@ -326,10 +411,8 @@ const RecipeDisplay = ({
             handleDelete={handleDelete}
             onClose={() => setShowDeleteModal(false)}
           />,
-          document.getElementById("modal-root")!
+          document.getElementById("modal-root") as HTMLElement
         )}
     </div>
   );
-};
-
-export default RecipeDisplay;
+}
