@@ -5,6 +5,21 @@
 import User, { IUser } from "@/lib/models/user.model";
 import { connect } from "@/lib/db";
 
+export type UserProfileResponse = {
+  _id: string;
+  clerkId?: string;
+  email: string;
+  photo?: string;
+  firstName?: string;
+  lastName?: string;
+  followers: string[];
+  following: string[];
+  savedRecipes: string[];
+  followerCount: number;
+  followingCount: number;
+  savedCount: number;
+};
+
 // ---------------- Helper ----------------
 async function ensureConnected() {
   try {
@@ -158,20 +173,36 @@ export async function getSavedRecipes(userId: string) {
 }
 
 // ---------------- GET USER PROFILE ----------------
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(
+  userId: string
+): Promise<UserProfileResponse | null> {
   await ensureConnected();
 
-  const user = await User.findById<IUser>(userId)
-    .select("firstName lastName photo followers following email savedRecipes")
+  const user = await User.findById(userId)
+    .select(
+      "firstName lastName photo followers following email savedRecipes clerkId"
+    )
     .lean()
     .exec();
 
   if (!user) return null;
 
+  const typedUser = user as unknown as {
+    _id: string;
+    clerkId?: string;
+    email: string;
+    photo?: string;
+    firstName?: string;
+    lastName?: string;
+    followers: string[];
+    following: string[];
+    savedRecipes: string[];
+  };
+
   return {
-    ...user,
-    followerCount: user.followers?.length,
-    followingCount: user.following?.length,
-    savedCount: user.savedRecipes?.length,
+    ...typedUser,
+    followerCount: typedUser.followers.length,
+    followingCount: typedUser.following.length,
+    savedCount: typedUser.savedRecipes.length,
   };
 }
