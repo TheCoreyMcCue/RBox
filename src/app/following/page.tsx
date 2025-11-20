@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import Placeholder from "../../../public/placeholder.png";
 import { getUserProfile, getAllUsers } from "@/lib/actions/user.action";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // ⬅ your existing NextAuth config
+import { authOptions } from "@/lib/auth";
 
 export default async function FollowingPage() {
   // 1️⃣ Get session on the server
