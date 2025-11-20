@@ -5,32 +5,48 @@ import { useSession } from "next-auth/react";
 import { getUserProfile, getAllUsers } from "@/lib/actions/user.action";
 import Link from "next/link";
 import Image from "next/image";
-import Placeholder from "../../../public/placeholder.png";
+import LoadingScreen from "@/app/components/LoadingScreen";
 
 export default function FollowingPage() {
   const { data: session, status } = useSession();
-  const userId = (session?.user as any)?._id || (session?.user as any)?.clerkId;
+  const userId: string | undefined =
+    (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
   const [following, setFollowing] = useState<string[]>([]);
   const [followingUsers, setFollowingUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // ───────────────── Load logged-in user ─────────────────
+  const [loading, setLoading] = useState(true);
+  const [followingLoaded, setFollowingLoaded] = useState(false); // 🔥 NEW FIX
+
+  // ───── Load current user's following list ─────
   useEffect(() => {
     const loadUserProfile = async () => {
-      if (!userId) return;
+      if (!userId) {
+        setFollowingLoaded(true);
+        return;
+      }
 
       const profile = await getUserProfile(userId);
-      setFollowing((profile as any)?.following ?? []);
+
+      // profile may not have a typed 'following' property — guard/cast to avoid TS error
+      setFollowing(
+        Array.isArray((profile as any)?.following)
+          ? (profile as any).following
+          : []
+      );
+      setFollowingLoaded(true); // following list is loaded
     };
 
     loadUserProfile();
   }, [userId]);
 
-  // ───────────────── Load all users & filter ─────────────
+  // ───── Once following list is loaded, fetch user objects ─────
   useEffect(() => {
     const loadFollowingUsers = async () => {
-      if (following.length === 0) {
+      if (!followingLoaded) return; // prevent early render
+
+      if (!userId || following.length === 0) {
+        setFollowingUsers([]);
         setLoading(false);
         return;
       }
@@ -45,18 +61,14 @@ export default function FollowingPage() {
     };
 
     loadFollowingUsers();
-  }, [following]);
+  }, [following, followingLoaded, userId]);
 
-  // ───────────────── Loading ─────────────────
-  if (status === "loading" || loading) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center text-amber-700 font-serif">
-        Loading...
-      </div>
-    );
+  // ───── Global Loading (session OR DB) ─────
+  if (status === "loading" || loading || !followingLoaded) {
+    return <LoadingScreen message="Loading your cooks…" />;
   }
 
-  // ───────────────── Not signed in ─────────────────
+  // ───── Not Signed In ─────
   if (!session) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
@@ -70,6 +82,7 @@ export default function FollowingPage() {
     );
   }
 
+  // ───── Page Content ─────
   return (
     <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6 py-12">
       {/* HEADER */}
@@ -82,8 +95,8 @@ export default function FollowingPage() {
         </p>
       </div>
 
-      {/* EMPTY STATE */}
-      {followingUsers.length === 0 ? (
+      {/* EMPTY STATE — only shows AFTER full load */}
+      {followingLoaded && !loading && followingUsers.length === 0 ? (
         <div className="text-center text-amber-700 font-serif mt-16">
           <p className="text-xl">You are not following anyone yet.</p>
           <Link
@@ -95,7 +108,7 @@ export default function FollowingPage() {
         </div>
       ) : (
         <>
-          {/* FOLLOWING GRID */}
+          {/* GRID */}
           <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {followingUsers.map((user) => {
               const fullName =

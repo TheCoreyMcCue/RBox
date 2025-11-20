@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Placeholder from "../../../public/placeholder.png";
+import { createPortal } from "react-dom";
 import { Recipe } from "@/app/utils/types";
 import DeleteModal from "@/app/components/DeleteModal";
 import EditModal from "@/app/components/EditModal";
@@ -313,16 +314,20 @@ const RecipeDisplay = ({
         </div>
       </div>
 
-      {showEditModal && (
-        <EditModal recipe={recipe} onClose={() => setShowEditModal(false)} />
-      )}
+      {showEditModal &&
+        createPortal(
+          <EditModal recipe={recipe} onClose={() => setShowEditModal(false)} />,
+          document.getElementById("modal-root")!
+        )}
 
-      {showDeleteModal && (
-        <DeleteModal
-          handleDelete={handleDelete}
-          onClose={() => setShowDeleteModal(false)}
-        />
-      )}
+      {showDeleteModal &&
+        createPortal(
+          <DeleteModal
+            handleDelete={handleDelete}
+            onClose={() => setShowDeleteModal(false)}
+          />,
+          document.getElementById("modal-root")!
+        )}
     </div>
   );
 };

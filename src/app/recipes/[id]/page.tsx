@@ -11,6 +11,7 @@ export default function RecipePage() {
   const router = useRouter();
   const pathname = usePathname();
   const id = pathname.split("/")[2];
+
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,37 +24,39 @@ export default function RecipePage() {
         } else {
           setRecipe(data);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
         router.push("/404");
       } finally {
         setLoading(false);
       }
     };
+
     fetchRecipe();
   }, [id, router]);
 
   const handleGoBack = () => {
-    const lastVisited = sessionStorage.getItem("lastVisitedPath");
-    if (lastVisited && lastVisited !== pathname) {
-      router.push(lastVisited);
-    } else {
-      router.push("/dashboard");
-    }
+    const last = sessionStorage.getItem("lastVisitedPath");
+    if (last && last !== pathname) router.push(last);
+    else router.push("/dashboard");
   };
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen message="loading recipe" />;
   if (!recipe) return null;
 
   return (
-    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
-      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl shadow-xl p-6 sm:p-10">
+    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-6 px-4 sm:px-8">
+      {/* The DISPLAY AREA */}
+      <div className="max-w-4xl mx-auto">
         <RecipeDisplay
           recipe={recipe}
           onGoBack={handleGoBack}
           onDeleteSuccess={() => router.push("/dashboard")}
         />
       </div>
+
+      {/* The modals are now rendered HERE (top-level), 
+          NOT inside the constrained recipe card container */}
+      <div id="modal-root" />
     </div>
   );
 }

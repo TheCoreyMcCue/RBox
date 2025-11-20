@@ -117,7 +117,8 @@ const Dashboard = () => {
     }
   };
 
-  if (loading || status === "loading") return <LoadingScreen />;
+  if (loading || status === "loading")
+    return <LoadingScreen message="loading your recipes" />;
 
   // ✅ Case 1: Not signed in
   if (!isSignedIn) {

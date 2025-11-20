@@ -2,17 +2,14 @@
 
 import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
+import LoadingScreen from "../components/LoadingScreen";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const isSignedIn = status === "authenticated";
 
   if (status === "loading") {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center text-amber-700 font-serif">
-        Loading your cookbook...
-      </div>
-    );
+    return <LoadingScreen message="loading your dashboard" />;
   }
 
   if (!isSignedIn) {
