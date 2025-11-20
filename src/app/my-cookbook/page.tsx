@@ -234,14 +234,12 @@ const Dashboard = () => {
           <Link
             key={recipe._id}
             href={`/recipes/${recipe._id}`}
-            onClick={() =>
+            onClick={() => {
               sessionStorage.setItem(
                 "lastVisitedPath",
-                `/dashboard?page=${currentPage}&search=${encodeURIComponent(
-                  searchTerm
-                )}`
-              )
-            }
+                window.location.pathname + window.location.search
+              );
+            }}
             className="group"
           >
             <div className="flex flex-col h-full bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl shadow-md overflow-hidden transform transition-all duration-500 hover:-translate-y-2 hover:shadow-xl">
