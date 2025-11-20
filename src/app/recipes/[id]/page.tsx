@@ -49,9 +49,6 @@ export default function RecipePage() {
   if (loading) return <LoadingScreen message="loading recipe" />;
   if (!recipe) return null;
 
-  console.log("lastVisitedPath =", sessionStorage.getItem("lastVisitedPath"));
-  console.log("pathname =", pathname);
-
   return (
     <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-6 px-4 sm:px-8">
       {/* THE DISPLAY AREA */}
