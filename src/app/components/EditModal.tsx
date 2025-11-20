@@ -79,7 +79,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
       });
 
       console.log("Recipe updated:", updatedRecipe);
-      router.push("/dashboard");
+      router.push("/my-cookbook");
     } catch (error) {
       console.error("Error updating recipe:", error);
       setError("Failed to update recipe. Please try again.");
@@ -180,7 +180,6 @@ const EditModal: React.FC<EditModalProps> = ({ onClose, recipe }) => {
                     )
                   }
                   className="w-full sm:w-1/4 px-3 py-2 border border-amber-200 rounded-lg"
-                  required
                 >
                   <option value="" disabled>
                     Select Unit
