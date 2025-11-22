@@ -17,42 +17,40 @@ export const authOptions: NextAuthOptions = {
     // Create a DB user on first sign-in
     // in lib/auth.ts -> inside signIn callback
     async signIn({ user }) {
+      console.log("OAuth signIn attempt from:", {
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      });
       try {
-        console.log("signIn callback triggered for:", user.email);
         const email = user.email?.toLowerCase();
-        if (!email) {
-          console.warn("No email returned from provider:", user);
-          return false;
-        }
+        if (!email) return false;
 
         let dbUser = await fetchUserByEmail(email);
-        if (!dbUser) {
-          console.log("Creating new user:", email);
-          const [firstName, ...rest] = user.name
-            ? user.name.split(" ")
-            : ["Unknown"];
-          const lastName = rest.join(" ") || "";
 
+        if (!dbUser) {
+          // Extract name safely
+          const parts = (user.name || "").trim().split(" ");
+          const firstName = parts[0] || "";
+          const lastName = parts.slice(1).join(" ");
+
+          // Try to create user — NEVER throw on failure
           dbUser = await createUser({
             firstName,
             lastName,
             email,
             photo: user.image ?? undefined,
+          }).catch((err) => {
+            console.error("❌ createUser failed:", err);
+            return null; // prevents OAuth crash
           });
-
-          if (!dbUser) {
-            console.error("createUser returned null");
-            throw new Error("User creation failed");
-          }
-          console.log("✅ Created new user:", dbUser.email);
-        } else {
-          console.log("Existing user:", dbUser.email);
         }
 
-        return true; // must return true explicitly
+        // Even if createUser fails, allow sign-in so session works
+        return true;
       } catch (err) {
         console.error("❌ signIn error:", err);
-        throw err; // let NextAuth show full stack trace in console
+        return false; // gracefully fail instead of throwing
       }
     },
 
