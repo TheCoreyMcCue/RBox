@@ -35,6 +35,37 @@ const defaultInitialValues: RecipeFormValues = {
   categories: [""],
 };
 
+// ---------- Normalizer for parsed recipes ----------
+const normalizeParsedRecipe = (raw: any): RecipeFormValues => {
+  return {
+    title: raw?.title || "",
+    description: raw?.description || "",
+    cookTime:
+      typeof raw?.cookTime === "number"
+        ? String(raw.cookTime)
+        : raw?.cookTime?.toString() || "",
+    image: "",
+    ingredients:
+      Array.isArray(raw?.ingredients) && raw.ingredients.length > 0
+        ? raw.ingredients.map((ing: any) => ({
+            amount: ing?.amount?.toString?.() || "",
+            unit: ing?.unit?.toString?.() || "",
+            name: ing?.name?.toString?.() || "",
+          }))
+        : defaultInitialValues.ingredients,
+    steps:
+      Array.isArray(raw?.steps) && raw.steps.length > 0
+        ? raw.steps.map((s: any) => s?.toString?.() || "")
+        : defaultInitialValues.steps,
+    categories:
+      Array.isArray(raw?.categories) && raw.categories.length > 0
+        ? raw.categories
+            .map((c: any) => String(c).trim().toLowerCase())
+            .filter(Boolean)
+        : [""],
+  };
+};
+
 const CreateRecipe = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -43,11 +74,12 @@ const CreateRecipe = () => {
   const userId: string | undefined =
     (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
-  // --- PARSING UI STATE ---
+  // --- PARSING / UI STATE ---
   const [showManualForm, setShowManualForm] = useState(false);
   const [recipeText, setRecipeText] = useState("");
-  const [parsing, setParsing] = useState(false);
-  const [parseError, setParseError] = useState("");
+  const [parsingText, setParsingText] = useState(false);
+  const [parsingImage, setParsingImage] = useState(false);
+  const [parseError, setParseError] = useState<string>("");
   const [parsedValues, setParsedValues] = useState<RecipeFormValues | null>(
     null
   );
@@ -59,11 +91,11 @@ const CreateRecipe = () => {
     setRecipeText("");
   };
 
-  // --- PARSER CALL ---
+  // --- TEXT PARSER CALL (/api/parse) ---
   const handleParse = async () => {
     if (!recipeText.trim()) return;
 
-    setParsing(true);
+    setParsingText(true);
     setParseError("");
 
     try {
@@ -74,35 +106,57 @@ const CreateRecipe = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Parsing failed");
+      if (!res.ok) {
+        const msg =
+          typeof data?.error === "string"
+            ? data.error
+            : JSON.stringify(data?.error || "Parsing failed");
+        throw new Error(msg);
+      }
 
-      const parsed: RecipeFormValues = {
-        title: data.title || "",
-        description: data.description || "",
-        cookTime:
-          typeof data.cookTime === "number"
-            ? String(data.cookTime)
-            : data.cookTime?.toString() || "",
-        image: "",
-        ingredients: Array.isArray(data.ingredients)
-          ? data.ingredients
-          : defaultInitialValues.ingredients,
-        steps: Array.isArray(data.steps)
-          ? data.steps
-          : defaultInitialValues.steps,
-        categories: Array.isArray(data.categories)
-          ? data.categories
-              .map((c: any) => String(c).trim().toLowerCase())
-              .filter(Boolean)
-          : [""],
-      };
-
+      const parsed = normalizeParsedRecipe(data);
       setParsedValues(parsed);
       setShowManualForm(true);
     } catch (err: any) {
+      console.error("❌ Text Parse Error:", err);
       setParseError(err.message || "Something went wrong while parsing.");
     } finally {
-      setParsing(false);
+      setParsingText(false);
+    }
+  };
+
+  // --- IMAGE PARSER CALL (/api/parse-image) ---
+  const handleImageParse = async (file: File) => {
+    try {
+      setParsingImage(true);
+      setParseError("");
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch("/api/parse-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        const msg =
+          typeof data?.error === "string"
+            ? data.error
+            : JSON.stringify(data?.error || "Failed to parse image");
+        throw new Error(msg);
+      }
+
+      const normalized = normalizeParsedRecipe(data);
+
+      setParsedValues(normalized);
+      setShowManualForm(true);
+    } catch (error: any) {
+      console.error("❌ OCR Parse Error:", error);
+      setParseError(error.message || "Failed to parse the image");
+    } finally {
+      setParsingImage(false);
     }
   };
 
@@ -129,7 +183,7 @@ const CreateRecipe = () => {
   }
 
   // ─────────────────────────────────────────────
-  // STEP 1: FREEFORM TEXT / URL INPUT
+  // STEP 1: FREEFORM TEXT + SCREENSHOT INPUT
   // ─────────────────────────────────────────────
   if (!showManualForm) {
     return (
@@ -141,8 +195,8 @@ const CreateRecipe = () => {
               Add a New Recipe ✍️
             </h1>
             <p className="text-amber-700 font-serif text-sm sm:text-base">
-              Paste a recipe from a blog or write it out freeform. We’ll help
-              you organize it into Nana’s format.
+              Paste a recipe from a blog, write it out, or upload a screenshot.
+              We’ll help you organize it into Nana’s format.
             </p>
           </div>
 
@@ -160,6 +214,33 @@ const CreateRecipe = () => {
             />
           </div>
 
+          {/* Screenshot upload */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-amber-800 mb-1 font-serif">
+              Or upload a screenshot of a recipe
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleImageParse(file);
+                  // reset the input so the same file can be chosen twice if needed
+                  e.target.value = "";
+                }
+              }}
+              className="block w-full text-sm file:mr-4 file:px-4 file:py-2 
+                file:rounded-full file:border-0 file:bg-amber-100
+                file:text-amber-800 hover:file:bg-amber-200"
+            />
+            {parsingImage && (
+              <p className="text-xs text-amber-600 font-serif">
+                Reading your screenshot…
+              </p>
+            )}
+          </div>
+
           {parseError && (
             <p className="text-red-600 text-sm font-serif text-center">
               {parseError}
@@ -171,10 +252,10 @@ const CreateRecipe = () => {
             <button
               type="button"
               onClick={handleParse}
-              disabled={parsing || !recipeText.trim()}
+              disabled={parsingText || !recipeText.trim()}
               className="flex-1 bg-gradient-to-r from-amber-700 to-amber-600 text-white py-3 px-6 rounded-full text-base font-semibold shadow-md hover:from-amber-800 hover:to-amber-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
             >
-              {parsing ? "Organizing…" : "Organize Recipe"}
+              {parsingText ? "Organizing…" : "Organize Recipe"}
             </button>
 
             <button
@@ -260,7 +341,7 @@ const CreateRecipe = () => {
                 onClick={toggleFormView}
                 className="self-start sm:self-auto inline-flex items-center gap-1 text-sm font-semibold text-amber-700 underline hover:text-amber-900"
               >
-                ← Start over with text
+                ← Start over with text / screenshot
               </button>
             </div>
 
