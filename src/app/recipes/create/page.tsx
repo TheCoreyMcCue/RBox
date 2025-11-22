@@ -297,7 +297,7 @@ const CreateRecipe = () => {
               creator: userId,
               title: values.title.trim(),
               description: values.description.trim(),
-              cookTime: values.cookTime.trim(),
+              cookTime: String(values.cookTime).trim(),
               image: values.image,
               ingredients: values.ingredients.map((ing) => ({
                 amount: ing.amount.trim(),
