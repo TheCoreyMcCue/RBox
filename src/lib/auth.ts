@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
         image: user.image,
       });
       try {
-        const email = user.email?.toLowerCase();
+        const email = user.email?.toLowerCase().trim();
         if (!email) return false;
 
         let dbUser = await fetchUserByEmail(email);

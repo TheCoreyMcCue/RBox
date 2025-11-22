@@ -44,7 +44,7 @@ export async function createUser(user: Partial<IUser>) {
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
     console.error("❌ Error creating user:", error);
-    return null;
+    throw error; // ← DO NOT SWALLOW THIS
   }
 }
 
