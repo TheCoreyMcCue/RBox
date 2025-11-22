@@ -32,6 +32,7 @@ interface RecipeResponse {
 // -------------- Your canonical categories --------------
 export const CATEGORY_OPTIONS = {
   mealTypes: ["breakfast", "brunch", "lunch", "dinner", "snack"],
+
   dishTypes: [
     "appetizer",
     "dessert",
@@ -41,6 +42,7 @@ export const CATEGORY_OPTIONS = {
     "salad",
     "soup",
   ],
+
   mainIngredientAndDiet: [
     "beef",
     "chicken",
@@ -56,6 +58,7 @@ export const CATEGORY_OPTIONS = {
     "vegan",
     "vegetarian",
   ],
+
   cuisines: [
     "american",
     "asian",
@@ -70,6 +73,7 @@ export const CATEGORY_OPTIONS = {
     "middle eastern",
     "thai",
   ],
+
   methods: [
     "air fryer",
     "baked",
@@ -79,6 +83,7 @@ export const CATEGORY_OPTIONS = {
     "slow cooker",
     "stovetop",
   ],
+
   occasions: [
     "birthday",
     "christmas",
@@ -89,6 +94,21 @@ export const CATEGORY_OPTIONS = {
     "summer",
     "thanksgiving",
     "winter",
+  ],
+
+  // ⭐ NEW SECTION — for rubs, sauces, condiments, etc.
+  misc: [
+    "sauce",
+    "marinade",
+    "rub",
+    "seasoning",
+    "dressing",
+    "condiment",
+    "spread",
+    "dip",
+    "syrup",
+    "jam",
+    "preserve",
   ],
 };
 

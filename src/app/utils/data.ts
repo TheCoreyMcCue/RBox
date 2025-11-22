@@ -30,15 +30,15 @@ export const unitOptions = [
 ];
 
 export const CATEGORY_OPTIONS = {
-  mealTypes: ["breakfast", "brunch", "dinner", "lunch", "snack"],
+  mealTypes: ["breakfast", "brunch", "lunch", "dinner", "snack"],
 
   dishTypes: [
     "appetizer",
     "dessert",
     "drink",
+    "side dish",
     "main course",
     "salad",
-    "side dish",
     "soup",
   ],
 
@@ -93,5 +93,20 @@ export const CATEGORY_OPTIONS = {
     "summer",
     "thanksgiving",
     "winter",
+  ],
+
+  // ⭐ NEW GROUP
+  misc: [
+    "sauce",
+    "marinade",
+    "rub",
+    "seasoning",
+    "dressing",
+    "condiment",
+    "spread",
+    "dip",
+    "syrup",
+    "jam",
+    "preserve",
   ],
 };
