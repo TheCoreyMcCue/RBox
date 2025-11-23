@@ -2,16 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { getAllUsers } from "@/lib/actions/user.action";
-import Link from "next/link";
+import { getAllUsers, followUser } from "@/lib/actions/user.action";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function DiscoverPeoplePage() {
+  const router = useRouter();
   const { data: session, status } = useSession();
+
+  const loggedInId =
+    (session?.user as any)?._id || (session?.user as any)?.clerkId;
+
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Load users
   useEffect(() => {
     const loadUsers = async () => {
       try {
@@ -24,6 +30,7 @@ export default function DiscoverPeoplePage() {
     loadUsers();
   }, []);
 
+  // Filter users by search
   useEffect(() => {
     if (searchTerm.length < 2) {
       setFiltered([]);
@@ -67,6 +74,7 @@ export default function DiscoverPeoplePage() {
 
   return (
     <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6 py-12">
+      {/* HEADER */}
       <div className="text-center mb-10">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow">
           Discover People 👥
@@ -76,6 +84,7 @@ export default function DiscoverPeoplePage() {
         </p>
       </div>
 
+      {/* SEARCH BAR */}
       <div className="max-w-xl mx-auto mb-10 relative">
         <input
           type="text"
@@ -85,6 +94,7 @@ export default function DiscoverPeoplePage() {
           className="w-full pl-12 pr-4 py-3 rounded-full border border-amber-300 shadow-sm bg-white/90 text-amber-800 placeholder:text-amber-400 focus:ring-2 focus:ring-amber-400 focus:outline-none"
         />
 
+        {/* Search Icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="w-5 h-5 absolute left-4 top-3.5 text-amber-400"
@@ -107,10 +117,18 @@ export default function DiscoverPeoplePage() {
         </p>
       )}
 
+      {/* RESULTS GRID */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filtered.map((user) => (
-          <Link key={user._id} href={`/user/${user._id}`} className="group">
-            <div className="bg-white/90 border border-amber-200 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center backdrop-blur-sm">
+        {filtered.map((user) => {
+          const alreadyFollowing = user.followers?.includes(loggedInId);
+
+          return (
+            <div
+              key={user._id}
+              onClick={() => router.push(`/user/${user._id}`)}
+              className="group bg-white/90 border border-amber-200 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer text-center backdrop-blur-sm"
+            >
+              {/* Avatar */}
               <div className="flex justify-center mb-4">
                 <Image
                   src={user.photo || "/placeholder-user.png"}
@@ -121,6 +139,7 @@ export default function DiscoverPeoplePage() {
                 />
               </div>
 
+              {/* Name */}
               <h2 className="text-xl font-[Homemade Apple] text-amber-800">
                 {user.firstName || user.lastName
                   ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
@@ -135,20 +154,46 @@ export default function DiscoverPeoplePage() {
                 followers: {user.followers?.length ?? 0}
               </p>
 
+              {/* FOLLOW BUTTON */}
               <button
-                className="mt-4 w-full bg-amber-600 text-white py-2 rounded-full font-serif shadow hover:bg-amber-700 transition"
                 type="button"
+                onClick={async (e) => {
+                  e.stopPropagation(); // prevent navigation
+
+                  if (alreadyFollowing) return;
+
+                  // call backend
+                  await followUser(loggedInId, user._id);
+
+                  // update UI instantly
+                  setFiltered((prev) =>
+                    prev.map((u) =>
+                      u._id === user._id
+                        ? {
+                            ...u,
+                            followers: [...(u.followers ?? []), loggedInId],
+                          }
+                        : u
+                    )
+                  );
+                }}
+                className={`mt-4 w-full py-2 rounded-full font-serif shadow transition ${
+                  alreadyFollowing
+                    ? "bg-amber-400 text-white"
+                    : "bg-amber-600 text-white hover:bg-amber-700"
+                }`}
               >
-                Follow
+                {alreadyFollowing ? "Following ✓" : "Follow"}
               </button>
             </div>
-          </Link>
-        ))}
+          );
+        })}
       </div>
 
+      {/* NO RESULTS */}
       {searchTerm.length >= 2 && filtered.length === 0 && (
         <p className="text-center text-amber-700 font-serif mt-10">
-          No users found matching &quot;{searchTerm}&quot;
+          No users found matching “{searchTerm}”
         </p>
       )}
     </div>
