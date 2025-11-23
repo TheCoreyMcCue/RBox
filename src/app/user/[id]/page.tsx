@@ -6,6 +6,11 @@ import { useSession } from "next-auth/react";
 import { getUserProfile } from "@/lib/actions/user.action";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import { followUser, unfollowUser } from "@/lib/actions/user.action";
+import {
+  saveRecipe,
+  unsaveRecipe,
+  getSavedRecipes,
+} from "@/lib/actions/user.action";
 import Image from "next/image";
 import Link from "next/link";
 import Placeholder from "../../../../public/placeholder.png";
@@ -21,6 +26,9 @@ export default function UserProfilePage() {
   const [recipes, setRecipes] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // ---------------- LOAD USER + RECIPES ----------------
   useEffect(() => {
@@ -38,6 +46,11 @@ export default function UserProfilePage() {
         loggedInId !== profileUserId
       ) {
         setIsFollowing(true);
+      }
+
+      if (loggedInId) {
+        const ids = await getSavedRecipes(loggedInId);
+        setSavedIds(Array.isArray(ids) ? ids : []);
       }
 
       setLoading(false);
@@ -99,6 +112,16 @@ export default function UserProfilePage() {
   const fullName =
     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || "Unnamed Cook";
 
+  const filteredRecipes = recipes.filter((r: any) => {
+    const text = searchTerm.toLowerCase();
+    const matchText =
+      r.title.toLowerCase().includes(text) ||
+      r.description.toLowerCase().includes(text) ||
+      r.categories?.some((c: string) => c.toLowerCase().includes(text));
+    const matchCat = !activeCategory || r.categories?.includes(activeCategory);
+    return matchText && matchCat;
+  });
+
   return (
     <div className="min-h-[100vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6 py-12">
       <div className="max-w-4xl mx-auto bg-white/80 border border-amber-200 rounded-3xl shadow p-10 backdrop-blur-sm">
@@ -148,13 +171,47 @@ export default function UserProfilePage() {
           {fullName}&apos;s Cookbook 📖
         </h2>
 
-        {recipes.length === 0 ? (
+        <div className="max-w-xl mx-auto mb-8">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search recipes..."
+            className="w-full px-4 py-2 border rounded-full bg-white/80"
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap justify-center mb-6">
+          {[
+            "breakfast",
+            "lunch",
+            "dinner",
+            "dessert",
+            "vegan",
+            "vegetarian",
+          ].map((cat) => (
+            <button
+              key={cat}
+              onClick={() =>
+                setActiveCategory(activeCategory === cat ? null : cat)
+              }
+              className={`px-3 py-1 rounded-full border ${
+                activeCategory === cat
+                  ? "bg-amber-700 text-white"
+                  : "bg-white/70 text-amber-700"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {filteredRecipes.length === 0 ? (
           <p className="text-amber-700 font-serif text-center">
             No recipes yet.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {recipes.map((recipe) => (
+            {filteredRecipes.map((recipe) => (
               <Link key={recipe._id} href={`/recipes/${recipe._id}`}>
                 <div className="bg-white/90 border border-amber-200 rounded-2xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer">
                   <Image
@@ -171,6 +228,30 @@ export default function UserProfilePage() {
                     <p className="text-amber-700/80 mt-1 line-clamp-2 font-serif">
                       {recipe.description}
                     </p>
+                    {loggedInId && (
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          if (savedIds.includes(recipe._id)) {
+                            await unsaveRecipe(loggedInId, recipe._id);
+                            setSavedIds((prev) =>
+                              prev.filter((id) => id !== recipe._id)
+                            );
+                          } else {
+                            await saveRecipe(loggedInId, recipe._id);
+                            setSavedIds((prev) => [...prev, recipe._id]);
+                          }
+                        }}
+                        className={`mt-3 w-full py-2 rounded-full text-white ${
+                          savedIds.includes(recipe._id)
+                            ? "bg-amber-400"
+                            : "bg-amber-700 hover:bg-amber-800"
+                        }`}
+                      >
+                        {savedIds.includes(recipe._id) ? "Saved ✓" : "Save +"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </Link>
