@@ -3,10 +3,28 @@
 import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import LoadingScreen from "../components/LoadingScreen";
+import { getUserProfile } from "@/lib/actions/user.action";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const isSignedIn = status === "authenticated";
+  const [followerCount, setFollowerCount] = useState<number | null>(null);
+  const userId = (session?.user as any)?._id;
+
+  useEffect(() => {
+    const load = async () => {
+      if (!userId) return;
+      try {
+        const profile = await getUserProfile(userId);
+        setFollowerCount(profile?.followerCount ?? 0);
+      } catch (e) {
+        console.error("Failed to load profile", e);
+        setFollowerCount(0);
+      }
+    };
+    load();
+  }, [userId]);
 
   if (status === "loading") {
     return <LoadingScreen message="loading your dashboard" />;
@@ -99,6 +117,11 @@ export default function Dashboard() {
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow-sm">
           Welcome Back, {session.user?.name?.split(" ")[0] || "Chef"} 👩‍🍳
         </h1>
+        {followerCount !== null && (
+          <p className="text-amber-700 font-serif mt-1">
+            Followers: {followerCount}
+          </p>
+        )}
         <p className="text-amber-700 font-serif mt-2">
           Your cozy cooking home — explore, save, and share
         </p>

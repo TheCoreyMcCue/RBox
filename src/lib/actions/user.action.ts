@@ -206,3 +206,18 @@ export async function getUserProfile(
     savedCount: typedUser.savedRecipes.length,
   };
 }
+
+// ---------------- GET FOLLOWER COUNT ----------------
+export async function getFollowerCount(userId: string): Promise<number> {
+  await ensureConnected();
+
+  // Explicitly type the result of the Lean query
+  const user = await User.findById(userId)
+    .select("followers")
+    .lean<{ followers: string[] } | null>()
+    .exec();
+
+  if (!user || !Array.isArray(user.followers)) return 0;
+
+  return user.followers.length;
+}
