@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <SessionWrapper>
       <html lang="en" className="h-full" suppressHydrationWarning>
-        <body className="flex flex-col min-h-dvh bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 text-amber-900 antialiased bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center">
+        <body className="flex flex-col min-h-dvh bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 text-amber-900 antialiased bg-cover bg-center">
           <Header />
           <main className="flex-grow flex flex-col">{children}</main>
           <Footer />

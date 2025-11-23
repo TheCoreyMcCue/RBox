@@ -12,7 +12,7 @@ const Hero = () => {
   return (
     <div className="relative w-full min-h-dvh flex items-center justify-center overflow-hidden bg-gradient-to-b from-amber-50 to-amber-100">
       {/* Background texture */}
-      <div className="absolute inset-0 bg-[url('/textures/notebook-paper.jpg')] opacity-50 bg-cover bg-center" />
+      <div className="absolute inset-0 opacity-50 bg-cover bg-center" />
 
       {/* Decorative overlays */}
       <div className="absolute top-8 left-6 w-24 h-24 bg-[url('/textures/coffee-ring.png')] bg-contain bg-no-repeat opacity-30 rotate-12 sm:w-32 sm:h-32" />

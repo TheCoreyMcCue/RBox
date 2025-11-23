@@ -123,7 +123,7 @@ export default function UserProfilePage() {
   });
 
   return (
-    <div className="min-h-[100vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6 py-12">
+    <div className="min-h-[100vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-6 py-12">
       <div className="max-w-4xl mx-auto bg-white/80 border border-amber-200 rounded-3xl shadow p-10 backdrop-blur-sm">
         {/* PROFILE HEADER */}
         <div className="flex flex-col items-center text-center mb-10">

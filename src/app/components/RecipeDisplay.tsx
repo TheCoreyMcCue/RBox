@@ -234,7 +234,7 @@ export default function RecipeDisplay({
   // --------------------------------------------------
 
   return (
-    <div className="relative from-amber-50 via-amber-100/80 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center py-10 px-4 sm:px-8">
+    <div className="relative from-amber-50 via-amber-100/80 to-amber-50 bg-cover bg-center py-10 px-4 sm:px-8">
       {/* GO BACK */}
       {onGoBack && (
         <div className="max-w-5xl mx-auto mb-6">

@@ -32,7 +32,7 @@ export default function Dashboard() {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6">
+      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-6">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow mb-4">
           Welcome to Nana’s Cookbook
         </h1>
@@ -111,7 +111,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-4 py-14">
+    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-4 py-14">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow-sm">

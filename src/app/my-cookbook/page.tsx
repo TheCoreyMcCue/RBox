@@ -24,7 +24,7 @@ export default async function MyCookbookPage({
   // If not signed in, show a gentle gate
   if (!session?.user) {
     return (
-      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center">
+      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4 bg-cover bg-center">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 mb-4">
           Welcome to Your Cookbook
         </h1>
@@ -59,7 +59,7 @@ export default async function MyCookbookPage({
   // If no recipes, show empty state (SSR)
   if (!allRecipes || allRecipes.length === 0) {
     return (
-      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center">
+      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4 bg-cover bg-center">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 mb-4">
           Your Cookbook is Empty
         </h1>
@@ -103,7 +103,7 @@ export default async function MyCookbookPage({
   const allRecipeIds = filtered.map((r) => r._id);
 
   return (
-    <div className="min-h-[90vh] bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center">
+    <div className="min-h-[90vh] bg-cover bg-center">
       <MyCookbookClient
         recipes={currentRecipes}
         allRecipeIds={allRecipeIds}

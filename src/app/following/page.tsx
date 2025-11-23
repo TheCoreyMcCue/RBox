@@ -34,7 +34,7 @@ export default async function FollowingPage() {
   );
 
   return (
-    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-[url('/textures/notebook-paper.jpg')] bg-cover bg-center px-6 py-12">
+    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-6 py-12">
       {/* HEADER */}
       <div className="text-center mb-10">
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow">
