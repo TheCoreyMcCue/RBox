@@ -3,7 +3,7 @@
 import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import LoadingScreen from "../components/LoadingScreen";
-import { getUserProfile } from "@/lib/actions/user.action";
+import { getFollowerCount } from "@/lib/actions/user.action";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
@@ -16,10 +16,10 @@ export default function Dashboard() {
     const load = async () => {
       if (!userId) return;
       try {
-        const profile = await getUserProfile(userId);
-        setFollowerCount(profile?.followerCount ?? 0);
+        const count = await getFollowerCount(userId);
+        setFollowerCount(count);
       } catch (e) {
-        console.error("Failed to load profile", e);
+        console.error("Failed to load follower count", e);
         setFollowerCount(0);
       }
     };
