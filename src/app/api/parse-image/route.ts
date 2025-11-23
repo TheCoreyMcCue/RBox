@@ -78,6 +78,7 @@ No markdown. No commentary. JSON only.
 
     const jsonString = rawOutput.slice(start, end + 1);
     const parsed = JSON.parse(jsonString);
+    console.log("🚀 ~ POST ~ parsed:", parsed);
 
     return NextResponse.json(parsed);
   } catch (err: any) {

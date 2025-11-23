@@ -35,7 +35,41 @@ const defaultInitialValues: RecipeFormValues = {
   categories: [""],
 };
 
-// ---------- Normalizer for parsed recipes ----------
+// ---------- Unit Normalizer (fix tablespoon / teaspoon, etc.) ----------
+const normalizeUnit = (raw?: string | null): string => {
+  if (!raw) return "";
+  let u = raw.toLowerCase().trim();
+
+  // strip trailing periods
+  if (u.endsWith(".")) u = u.slice(0, -1);
+
+  // normalize plurals
+  if (u.endsWith("s") && !["tbs", "tsp"].includes(u)) {
+    u = u.replace(/s$/, "");
+  }
+
+  // common mappings
+  if (u === "tsp" || u === "teaspoon" || u === "tea spoon" || u === "ts") {
+    return "tsp";
+  }
+
+  if (
+    u === "tbsp" ||
+    u === "tbl" ||
+    u === "tablespoon" ||
+    u === "table spoon" ||
+    u === "tb"
+  ) {
+    return "tbsp";
+  }
+
+  if (u === "c" || u === "cup") return "cup";
+
+  // fallback to cleaned unit
+  return u;
+};
+
+// ---------- Normalizer for parsed recipes (text + image) ----------
 const normalizeParsedRecipe = (raw: any): RecipeFormValues => {
   return {
     title: raw?.title || "",
@@ -49,7 +83,7 @@ const normalizeParsedRecipe = (raw: any): RecipeFormValues => {
       Array.isArray(raw?.ingredients) && raw.ingredients.length > 0
         ? raw.ingredients.map((ing: any) => ({
             amount: ing?.amount?.toString?.() || "",
-            unit: ing?.unit?.toString?.() || "",
+            unit: normalizeUnit(ing?.unit),
             name: ing?.name?.toString?.() || "",
           }))
         : defaultInitialValues.ingredients,
@@ -149,7 +183,6 @@ const CreateRecipe = () => {
       }
 
       const normalized = normalizeParsedRecipe(data);
-
       setParsedValues(normalized);
       setShowManualForm(true);
     } catch (error: any) {
@@ -297,7 +330,7 @@ const CreateRecipe = () => {
               creator: userId,
               title: values.title.trim(),
               description: values.description.trim(),
-              cookTime: String(values.cookTime).trim(),
+              cookTime: String(values.cookTime ?? "").trim(),
               image: values.image,
               ingredients: values.ingredients.map((ing) => ({
                 amount: ing.amount.trim(),
