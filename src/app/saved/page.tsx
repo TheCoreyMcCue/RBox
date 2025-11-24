@@ -1,7 +1,8 @@
 // app/saved/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import Placeholder from "../../../public/placeholder.png";
+
+import bg_saved from "../../../public/recipecards.png";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -68,50 +69,62 @@ export default async function SavedRecipesPage() {
   // 4) RENDER PAGE
   // ─────────────────────────────
   return (
-    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-6 py-12">
-      {/* HEADER */}
-      <div className="text-center mb-10">
-        <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow">
-          Saved Recipes ⭐
-        </h1>
-        <p className="font-serif text-amber-700 mt-2">
-          All your bookmarked favorites in one place
-        </p>
-      </div>
+    <div className="relative min-h-[90vh] overflow-hidden w-full">
+      <div
+        className="absolute inset-0 bg-fixed bg-center bg-no-repeat -z-10"
+        style={{
+          backgroundImage: `url(${bg_saved.src})`,
+          backgroundSize: "100% 100%",
+          opacity: 0.11,
+        }}
+      />
 
-      {/* EMPTY STATE AFTER FILTERING */}
-      {recipes.length === 0 ? (
-        <div className="text-center text-amber-700 font-serif mt-16">
-          <p className="text-xl">All saved recipes were deleted or hidden.</p>
+      {/* FOREGROUND CONTENT */}
+      <div className="relative z-10 min-h-[90vh] px-6 py-12">
+        {/* HEADER */}
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow">
+            Saved Recipes ⭐
+          </h1>
+          <p className="font-serif text-amber-700 mt-2">
+            All your bookmarked favorites in one place
+          </p>
         </div>
-      ) : (
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {recipes.map((recipe: any) => (
-            <Link key={recipe._id} href={`/recipes/${recipe._id}`}>
-              <div className="bg-white/90 border border-amber-200 rounded-3xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-sm">
-                <Image
-                  src={recipe.image || Placeholder}
-                  alt={recipe.title}
-                  width={500}
-                  height={300}
-                  className="h-48 w-full object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="text-2xl font-semibold text-amber-800 line-clamp-1">
-                    {recipe.title}
-                  </h3>
-                  <p className="text-amber-700/80 mt-2 line-clamp-2 font-serif">
-                    {recipe.description}
-                  </p>
-                  <p className="text-sm text-amber-600 mt-4">
-                    Cook Time: {recipe.cookTime} minutes
-                  </p>
+
+        {/* EMPTY STATE AFTER FILTERING */}
+        {recipes.length === 0 ? (
+          <div className="text-center text-amber-700 font-serif mt-16">
+            <p className="text-xl">All saved recipes were deleted or hidden.</p>
+          </div>
+        ) : (
+          <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {recipes.map((recipe: any) => (
+              <Link key={recipe._id} href={`/recipes/${recipe._id}`}>
+                <div className="bg-white/90 border border-amber-200 rounded-3xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-sm">
+                  <Image
+                    src={recipe.image}
+                    alt={recipe.title}
+                    width={500}
+                    height={300}
+                    className="h-48 w-full object-cover"
+                  />
+                  <div className="p-6">
+                    <h3 className="text-2xl font-semibold text-amber-800 line-clamp-1">
+                      {recipe.title}
+                    </h3>
+                    <p className="text-amber-700/80 mt-2 line-clamp-2 font-serif">
+                      {recipe.description}
+                    </p>
+                    <p className="text-sm text-amber-600 mt-4">
+                      Cook Time: {recipe.cookTime} minutes
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

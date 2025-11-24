@@ -6,6 +6,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Placeholder from "../../../public/placeholder.png";
+import bg_myCookbook from "../../../public/recipecards.png";
 import { Recipe } from "../utils/types";
 
 // Same quick category chips as before
@@ -138,7 +139,17 @@ export default function MyCookbookClient({
 
   // --------------- RENDER ---------------
   return (
-    <div className="min-h-[90vh] container mx-auto px-4 py-12">
+    <div className="min-h-[90vh] container mx-auto px-4 py-12 relative overflow-hidden">
+      {/* BACKGROUND IMAGE LAYER */}
+      <div
+        className="absolute inset-0 bg-no-repeat bg-top bg-fixed"
+        style={{
+          backgroundImage: `url(${bg_myCookbook.src})`,
+          backgroundSize: "cover",
+          opacity: 0.11,
+          zIndex: -1,
+        }}
+      />
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row items-center justify-between mb-14">
         <div>

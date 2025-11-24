@@ -6,6 +6,8 @@ import LoadingScreen from "../components/LoadingScreen";
 import { getFollowerCount } from "@/lib/actions/user.action";
 import { useEffect, useState } from "react";
 
+import bg_dashboard from "../../../public/recipecards.png";
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const isSignedIn = status === "authenticated";
@@ -111,75 +113,90 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-[90vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-4 py-14">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow-sm">
-          Welcome Back, {session.user?.name?.split(" ")[0] || "Chef"} 👩‍🍳
-        </h1>
-        {followerCount !== null && (
-          <p className="text-amber-700 font-serif mt-1">
-            Followers: {followerCount}
+    <div className="relative min-h-[90vh] overflow-hidden">
+      {/* Background Layer */}
+      <div
+        className="absolute inset-0 bg-fixed bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${bg_dashboard.src})`,
+          backgroundSize: "100% 100%",
+          opacity: 0.11,
+        }}
+      />
+
+      {/* Foreground Content */}
+      <div className="relative z-10 px-4 py-14">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow-sm">
+            Welcome Back, {session.user?.name?.split(" ")[0] || "Chef"} 👩‍🍳
+          </h1>
+
+          {followerCount !== null && (
+            <p className="text-amber-700 font-serif mt-1">
+              Followers: {followerCount}
+            </p>
+          )}
+
+          <p className="text-amber-700 font-serif mt-2">
+            Your cozy cooking home — explore, save, and share
           </p>
-        )}
-        <p className="text-amber-700 font-serif mt-2">
-          Your cozy cooking home — explore, save, and share
-        </p>
-      </div>
+        </div>
 
-      {/* Tile Grid */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
-        {/* My Cookbook */}
-        <Link href="/my-cookbook">
-          <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
-            {BookIcon}
-            <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
-              My Cookbook
-            </h2>
-            <p className="text-amber-700 mt-2 font-serif">
-              View and manage all your personal recipes
-            </p>
-          </div>
-        </Link>
+        {/* Tile Grid */}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+          {/* My Cookbook */}
+          <Link href="/my-cookbook">
+            <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+              {BookIcon}
+              <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
+                My Cookbook
+              </h2>
+              <p className="text-amber-700 mt-2 font-serif">
+                View and manage all your personal recipes
+              </p>
+            </div>
+          </Link>
 
-        {/* Saved Recipes */}
-        <Link href="/saved">
-          <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
-            {StarIcon}
-            <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
-              Saved Recipes
-            </h2>
-            <p className="text-amber-700 mt-2 font-serif">
-              Your favorites and recipes from others you saved
-            </p>
-          </div>
-        </Link>
+          {/* Saved Recipes */}
+          <Link href="/saved">
+            <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+              {StarIcon}
+              <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
+                Saved Recipes
+              </h2>
+              <p className="text-amber-700 mt-2 font-serif">
+                Your favorites and recipes from others you saved
+              </p>
+            </div>
+          </Link>
 
-        {/* Discover People */}
-        <Link href="/discover">
-          <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
-            {UserPlusIcon}
-            <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
-              Discover People
-            </h2>
-            <p className="text-amber-700 mt-2 font-serif">
-              Find other cooks and explore their cookbook collections
-            </p>
-          </div>
-        </Link>
+          {/* Discover People */}
+          <Link href="/discover">
+            <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+              {UserPlusIcon}
+              <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
+                Discover People
+              </h2>
+              <p className="text-amber-700 mt-2 font-serif">
+                Find other cooks and explore their cookbook collections
+              </p>
+            </div>
+          </Link>
 
-        {/* Following */}
-        <Link href="/following">
-          <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
-            {UsersIcon}
-            <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
-              Following
-            </h2>
-            <p className="text-amber-700 mt-2 font-serif">
-              The cooks you follow — and their latest recipes
-            </p>
-          </div>
-        </Link>
+          {/* Following */}
+          <Link href="/following">
+            <div className="group bg-white/90 backdrop-blur-sm border border-amber-200 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+              {UsersIcon}
+              <h2 className="text-3xl font-[Homemade Apple] text-amber-800">
+                Following
+              </h2>
+              <p className="text-amber-700 mt-2 font-serif">
+                The cooks you follow — and their latest recipes
+              </p>
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );
