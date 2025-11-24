@@ -4,15 +4,24 @@ import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
 import logo from "../icon.png";
+import bg_hero from "../../../public/recipecards.png";
 
 const Hero = () => {
   const { data: session, status } = useSession();
   const isSignedIn = status === "authenticated";
 
   return (
-    <div className="relative w-full min-h-dvh flex items-center justify-center overflow-hidden bg-gradient-to-b from-amber-50 to-amber-100">
-      {/* Background texture */}
-      <div className="absolute inset-0 opacity-50 bg-cover bg-center" />
+    <div className="relative w-full min-h-dvh overflow-hidden flex items-center justify-center">
+      {/* Background Layer */}
+      <div className="fixed inset-0 -z-10">
+        <div
+          className="w-full h-full bg-center bg-cover bg-no-repeat"
+          style={{
+            backgroundImage: `url(${bg_hero.src})`,
+            opacity: 0.22,
+          }}
+        />
+      </div>
 
       {/* Decorative overlays */}
       <div className="absolute top-8 left-6 w-24 h-24 bg-[url('/textures/coffee-ring.png')] bg-contain bg-no-repeat opacity-30 rotate-12 sm:w-32 sm:h-32" />
