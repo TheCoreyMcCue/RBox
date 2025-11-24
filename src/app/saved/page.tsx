@@ -69,18 +69,18 @@ export default async function SavedRecipesPage() {
   // 4) RENDER PAGE
   // ─────────────────────────────
   return (
-    <div className="relative min-h-[90vh] overflow-hidden w-full">
-      <div
-        className="absolute inset-0 bg-fixed bg-center bg-no-repeat -z-10"
-        style={{
-          backgroundImage: `url(${bg_saved.src})`,
-          backgroundSize: "100% 100%",
-          opacity: 0.11,
-        }}
-      />
-
-      {/* FOREGROUND CONTENT */}
-      <div className="relative z-10 min-h-[90vh] px-6 py-12">
+    <div className="relative min-h-[90vh] overflow-hidden">
+      <div className="fixed inset-0 -z-10">
+        <div
+          className="w-full h-full bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${bg_saved.src})`,
+            backgroundSize: "cover",
+            opacity: 0.22,
+          }}
+        />
+      </div>
+      <div className="relative z-10 min-h-[90vh] px-6 py-12 w-full">
         {/* HEADER */}
         <div className="text-center mb-10">
           <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow">
