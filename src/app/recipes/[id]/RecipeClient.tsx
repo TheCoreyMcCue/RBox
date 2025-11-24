@@ -12,16 +12,8 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Smart "back" behavior using lastVisitedPath
+  // Simplified "back" behavior
   const handleGoBack = () => {
-    const last = sessionStorage.getItem("lastVisitedPath");
-
-    if (last && last !== pathname) {
-      router.push(last);
-      return;
-    }
-
-    // Fallback: true browser back
     router.back();
   };
 
@@ -29,8 +21,10 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
     <RecipeDisplay
       recipe={recipe}
       onGoBack={handleGoBack}
-      // After delete, always go back to "My Cookbook"
-      onDeleteSuccess={() => router.push("/my-cookbook")}
+      // After delete, always go back
+      onDeleteSuccess={() => {
+        router.back();
+      }}
     />
   );
 }
