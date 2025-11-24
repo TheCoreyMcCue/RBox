@@ -24,8 +24,8 @@ const Hero = () => {
       </div>
 
       {/* Decorative overlays */}
-      <div className="absolute top-8 left-6 w-24 h-24 bg-[url('/textures/coffee-ring.png')] bg-contain bg-no-repeat opacity-30 rotate-12 sm:w-32 sm:h-32" />
-      <div className="absolute bottom-8 right-6 w-28 h-28 bg-[url('/textures/coffee-stain.png')] bg-contain bg-no-repeat opacity-25 -rotate-6 sm:w-40 sm:h-40" />
+      <div className="absolute top-8 left-6 w-24 h-24 bg-contain bg-no-repeat opacity-30 rotate-12 sm:w-32 sm:h-32" />
+      <div className="absolute bottom-8 right-6 w-28 h-28 bg-contain bg-no-repeat opacity-25 -rotate-6 sm:w-40 sm:h-40" />
 
       {/* Main content box */}
       <div className="relative z-10 bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl shadow-2xl w-[90%] max-w-2xl p-5 sm:p-10 text-center transform transition duration-500 hover:scale-[1.02]">
