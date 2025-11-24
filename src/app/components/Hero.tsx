@@ -67,11 +67,6 @@ const Hero = () => {
             >
               Get Started
             </button>
-            <Link href="/#about">
-              <div className="inline-block bg-white border border-amber-400 text-amber-800 py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg font-semibold hover:bg-amber-50 transition duration-300 shadow-md">
-                Learn More
-              </div>
-            </Link>
           </div>
         )}
       </div>

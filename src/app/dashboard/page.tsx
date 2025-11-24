@@ -114,17 +114,19 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-[90vh] overflow-hidden">
-      {/* Background Layer */}
-      <div
-        className="absolute inset-0 bg-fixed bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${bg_dashboard.src})`,
-          backgroundSize: "100% 100%",
-          opacity: 0.11,
-        }}
-      />
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div
+          className="w-full h-full bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${bg_dashboard.src})`,
+            backgroundSize: "cover",
+            opacity: 0.15,
+          }}
+        />
+      </div>
 
-      {/* Foreground Content */}
+      {/* Foreground */}
       <div className="relative z-10 px-4 py-14">
         {/* Header */}
         <div className="text-center mb-12">
