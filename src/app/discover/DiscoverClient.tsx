@@ -69,14 +69,16 @@ export default function DiscoverClient({
   return (
     <div className="relative min-h-[90vh] overflow-hidden">
       {/* Background */}
-      <div
-        className="absolute inset-0 bg-fixed bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${bgImage})`,
-          backgroundSize: "100% 100%",
-          opacity: 0.25,
-        }}
-      />
+      <div className="fixed inset-0 -z-10">
+        <div
+          className="w-full h-full bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: "cover",
+            opacity: 0.25,
+          }}
+        />
+      </div>
 
       {/* Foreground */}
       <div className="relative z-10 px-6 py-12">
