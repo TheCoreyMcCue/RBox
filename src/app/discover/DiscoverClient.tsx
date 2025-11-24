@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { followUser } from "@/lib/actions/user.action";
+import { followUser, unfollowUser } from "@/lib/actions/user.action";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -156,35 +156,54 @@ export default function DiscoverClient({
                   followers: {user.followers?.length ?? 0}
                 </p>
 
-                <button
-                  type="button"
-                  onClick={async (e) => {
-                    e.stopPropagation();
+                {user._id !== loggedInId && (
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
 
-                    if (alreadyFollowing) return;
+                      if (alreadyFollowing) {
+                        await unfollowUser(loggedInId, user._id);
 
-                    await followUser(loggedInId, user._id);
+                        setFiltered((prev) =>
+                          prev.map((u) =>
+                            u._id === user._id
+                              ? {
+                                  ...u,
+                                  followers: (u.followers ?? []).filter(
+                                    (fid: string) => fid !== loggedInId
+                                  ),
+                                }
+                              : u
+                          )
+                        );
+                      } else {
+                        await followUser(loggedInId, user._id);
 
-                    // optimistic UI update
-                    setFiltered((prev) =>
-                      prev.map((u) =>
-                        u._id === user._id
-                          ? {
-                              ...u,
-                              followers: [...(u.followers ?? []), loggedInId],
-                            }
-                          : u
-                      )
-                    );
-                  }}
-                  className={`mt-4 w-full py-2 rounded-full font-serif shadow transition ${
-                    alreadyFollowing
-                      ? "bg-amber-400 text-white"
-                      : "bg-amber-600 text-white hover:bg-amber-700"
-                  }`}
-                >
-                  {alreadyFollowing ? "Following ✓" : "Follow"}
-                </button>
+                        setFiltered((prev) =>
+                          prev.map((u) =>
+                            u._id === user._id
+                              ? {
+                                  ...u,
+                                  followers: [
+                                    ...(u.followers ?? []),
+                                    loggedInId,
+                                  ],
+                                }
+                              : u
+                          )
+                        );
+                      }
+                    }}
+                    className={`mt-4 w-full py-2 rounded-full font-serif shadow transition ${
+                      alreadyFollowing
+                        ? "bg-amber-400 hover:bg-amber-500 text-white"
+                        : "bg-amber-600 text-white hover:bg-amber-700"
+                    }`}
+                  >
+                    {alreadyFollowing ? "Following ✓" : "Follow"}
+                  </button>
+                )}
               </div>
             );
           })}

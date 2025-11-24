@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getUserProfile } from "@/lib/actions/user.action";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
@@ -16,6 +16,7 @@ import Link from "next/link";
 import Placeholder from "../../../../public/placeholder.png";
 
 export default function UserProfilePage() {
+  const router = useRouter();
   const { id: profileUserId } = useParams();
   const { data: session } = useSession();
 
@@ -123,8 +124,33 @@ export default function UserProfilePage() {
   });
 
   return (
-    <div className="min-h-[100vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-6 py-12">
-      <div className="max-w-4xl mx-auto bg-white/80 border border-amber-200 rounded-3xl shadow p-10 backdrop-blur-sm">
+    <div className="min-h-[100vh] from-amber-50 via-amber-100 to-amber-50 bg-cover bg-center px-6 py-12 relative">
+      {/* 🔙 BACK BUTTON */}
+      <button
+        onClick={() => {
+          if (window.history.length > 1) router.back();
+          else router.push("/discover");
+        }}
+        className="absolute left-6 top-6 bg-white/80 border border-amber-300 text-amber-800 px-4 py-2 rounded-full shadow hover:bg-white transition font-serif flex items-center gap-2 backdrop-blur-sm z-20"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        Back
+      </button>
+
+      {/* CONTENT CARD */}
+      <div className="max-w-4xl mx-auto bg-white/80 border border-amber-200 rounded-3xl shadow p-10 backdrop-blur-sm mt-16">
         {/* PROFILE HEADER */}
         <div className="flex flex-col items-center text-center mb-10">
           <Image
@@ -171,6 +197,7 @@ export default function UserProfilePage() {
           {fullName}&apos;s Cookbook 📖
         </h2>
 
+        {/* SEARCH */}
         <div className="max-w-xl mx-auto mb-8">
           <input
             type="text"
@@ -180,6 +207,8 @@ export default function UserProfilePage() {
             className="w-full px-4 py-2 border rounded-full bg-white/80"
           />
         </div>
+
+        {/* CATEGORY FILTER */}
         <div className="flex gap-2 flex-wrap justify-center mb-6">
           {[
             "breakfast",
@@ -205,6 +234,7 @@ export default function UserProfilePage() {
           ))}
         </div>
 
+        {/* RECIPES */}
         {filteredRecipes.length === 0 ? (
           <p className="text-amber-700 font-serif text-center">
             No recipes yet.
@@ -228,6 +258,7 @@ export default function UserProfilePage() {
                     <p className="text-amber-700/80 mt-1 line-clamp-2 font-serif">
                       {recipe.description}
                     </p>
+
                     {loggedInId && (
                       <button
                         type="button"
