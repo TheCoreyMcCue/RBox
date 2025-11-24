@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import bg_saved from "../../../public/recipecards.png";
+import Placeholder from "../../../public/placeholder.png";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -102,7 +103,7 @@ export default async function SavedRecipesPage() {
               <Link key={recipe._id} href={`/recipes/${recipe._id}`}>
                 <div className="bg-white/90 border border-amber-200 rounded-3xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-sm">
                   <Image
-                    src={recipe.image}
+                    src={recipe.image ? recipe.image : Placeholder.src}
                     alt={recipe.title}
                     width={500}
                     height={300}
