@@ -51,12 +51,12 @@ const Navbar = () => {
                 >
                   Home
                 </Link>
-                <Link
-                  href="/discover"
+                <button
+                  onClick={() => signIn("google")}
                   className="hover:text-amber-600 transition duration-200"
                 >
-                  Discover People
-                </Link>
+                  Sign In
+                </button>
               </>
             )}
 
@@ -154,13 +154,6 @@ const Navbar = () => {
                   className="block px-3 py-2 rounded-md hover:bg-amber-100"
                 >
                   Home
-                </Link>
-                <Link
-                  href="/discover"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md hover:bg-amber-100"
-                >
-                  Discover People
                 </Link>
                 <button
                   onClick={() => {
