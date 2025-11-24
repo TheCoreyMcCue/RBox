@@ -17,11 +17,6 @@ export const authOptions: NextAuthOptions = {
     // Create a DB user on first sign-in
     // in lib/auth.ts -> inside signIn callback
     async signIn({ user }) {
-      console.log("OAuth signIn attempt from:", {
-        email: user.email,
-        name: user.name,
-        image: user.image,
-      });
       try {
         const email = user.email?.toLowerCase().trim();
         if (!email) return false;
