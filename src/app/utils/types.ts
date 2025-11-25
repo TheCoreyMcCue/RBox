@@ -14,4 +14,5 @@ export interface Recipe {
   ingredients: Ingredient[];
   steps: string[];
   categories: string[];
+  savedCount?: number;
 }

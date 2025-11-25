@@ -221,52 +221,63 @@ export default function MyCookbookClient({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {recipes.map((recipe) => (
-              <Link
-                key={recipe._id}
-                href={`/recipes/${recipe._id}`}
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    sessionStorage.setItem(
-                      "lastVisitedPath",
-                      window.location.pathname + window.location.search
-                    );
-                  }
-                }}
-                className="group"
-              >
-                <div className="flex flex-col h-full bg-white/90 border border-amber-200 rounded-3xl shadow-md overflow-hidden transform transition-all duration-500 hover:-translate-y-2 hover:shadow-xl">
-                  <div className="relative">
-                    <Image
-                      src={recipe.image || Placeholder}
-                      alt={recipe.title}
-                      width={600}
-                      height={400}
-                      className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-amber-950/25 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </div>
+            {recipes.map((recipe) => {
+              const saveCount = (recipe as any).saveCount as number | undefined;
 
-                  <div className="p-6 flex flex-col justify-between flex-1">
-                    <div>
-                      <h2 className="text-2xl font-semibold text-amber-800 group-hover:text-amber-700 transition line-clamp-1">
-                        {recipe.title}
-                      </h2>
-                      <p className="text-amber-700/80 mt-2 font-serif line-clamp-2">
-                        {recipe.description}
-                      </p>
+              return (
+                <Link
+                  key={recipe._id}
+                  href={`/recipes/${recipe._id}`}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      sessionStorage.setItem(
+                        "lastVisitedPath",
+                        window.location.pathname + window.location.search
+                      );
+                    }
+                  }}
+                  className="group"
+                >
+                  <div className="flex flex-col h-full bg-white/90 border border-amber-200 rounded-3xl shadow-md overflow-hidden transform transition-all duration-500 hover:-translate-y-2 hover:shadow-xl">
+                    <div className="relative">
+                      <Image
+                        src={recipe.image || Placeholder}
+                        alt={recipe.title}
+                        width={600}
+                        height={400}
+                        className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-amber-950/25 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </div>
 
-                    <div className="mt-6 flex justify-between items-center text-sm text-amber-700 border-t border-amber-100 pt-4">
-                      <span>⏱ {recipe.cookTime} minutes</span>
-                      <span className="text-amber-700 font-medium group-hover:underline">
-                        View →
-                      </span>
+                    <div className="p-6 flex flex-col justify-between flex-1">
+                      <div>
+                        <h2 className="text-2xl font-semibold text-amber-800 group-hover:text-amber-700 transition line-clamp-1">
+                          {recipe.title}
+                        </h2>
+                        <p className="text-amber-700/80 mt-2 font-serif line-clamp-2">
+                          {recipe.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-6 flex justify-between items-center text-sm text-amber-700 border-t border-amber-100 pt-4">
+                        <span>
+                          ⏱ {recipe.cookTime} min
+                          {typeof saveCount === "number" && saveCount > 0 && (
+                            <>
+                              {" • "}⭐ {saveCount ?? 0} saves
+                            </>
+                          )}
+                        </span>
+                        <span className="text-amber-700 font-medium group-hover:underline">
+                          View →
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
 

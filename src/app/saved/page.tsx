@@ -119,6 +119,9 @@ export default async function SavedRecipesPage() {
                     <p className="text-sm text-amber-600 mt-4">
                       Cook Time: {recipe.cookTime} minutes
                     </p>
+                    <p className="text-sm text-amber-600 mt-1">
+                      ⭐ {recipe.saveCount ?? 0} saves
+                    </p>
                   </div>
                 </div>
               </Link>

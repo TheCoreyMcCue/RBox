@@ -262,6 +262,9 @@ export default function UserProfileClient({
                       <p className="text-amber-700/80 mt-1 line-clamp-2 font-serif">
                         {recipe.description}
                       </p>
+                      <p className="text-sm text-amber-600 font-serif mt-2">
+                        ⭐ {recipe.saveCount ?? 0} saves
+                      </p>
 
                       {loggedInId && (
                         <button

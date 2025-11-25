@@ -2,17 +2,29 @@
 
 import Recipe from "@/lib/models/recipe.model";
 import { connect } from "@/lib/db";
-import mongoose from "mongoose";
 import User from "@/lib/models/user.model";
 
-type GetRecipesByUserParams = {
-  userId: string;
-};
+// Optional: currently unused but kept for future use
+// type GetRecipesByUserParams = {
+//   userId: string;
+// };
 
 const handleError = (error: unknown) => {
   console.error(error);
   throw new Error(typeof error === "string" ? error : JSON.stringify(error));
 };
+
+// Count how many users have saved a specific recipe
+export async function getRecipeSaveCount(recipeId: string): Promise<number> {
+  try {
+    await connect();
+    const count = await User.countDocuments({ savedRecipes: recipeId }).exec();
+    return count;
+  } catch (error) {
+    handleError(error);
+    return 0;
+  }
+}
 
 export async function createRecipe(recipe: any) {
   try {
@@ -88,17 +100,33 @@ export const getRecipesByUser = async (userId: string) => {
       .lean()
       .exec();
 
-    return JSON.parse(JSON.stringify(recipes));
+    // For each recipe, compute saveCount and attach it
+    const recipesWithSaveCount = await Promise.all(
+      recipes.map(async (recipe: any) => {
+        const saveCount = await User.countDocuments({
+          savedRecipes: recipe._id,
+        }).exec();
+        return { ...recipe, saveCount };
+      })
+    );
+
+    return JSON.parse(JSON.stringify(recipesWithSaveCount));
   } catch (error) {
     console.error("Error fetching recipes by user:", error);
     throw error;
   }
 };
+
 export const getRecipeById = async (id: string) => {
   try {
     await connect();
     const updatedRecipe = await Recipe.findById(id).exec();
-    return updatedRecipe ? JSON.parse(JSON.stringify(updatedRecipe)) : null;
+    if (!updatedRecipe) {
+      return null;
+    }
+    const saveCount = await User.countDocuments({ savedRecipes: id }).exec();
+    const recipeObj = JSON.parse(JSON.stringify(updatedRecipe));
+    return { ...recipeObj, saveCount };
   } catch (error) {
     console.error("Error fetching recipe by ID:", error);
     throw error;

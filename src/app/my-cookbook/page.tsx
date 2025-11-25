@@ -2,6 +2,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // ⬅ your existing NextAuth configimport { redirect } from "next/navigation";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
+import { getRecipeSaveCount } from "@/lib/actions/recipe.action";
 import MyCookbookClient from "../components/MyCookbookClient";
 import { Recipe } from "../utils/types";
 import { redirect } from "next/navigation";
@@ -100,12 +101,19 @@ export default async function MyCookbookPage({
     startIndex + RECIPES_PER_PAGE
   );
 
+  const recipesWithSaveCount = await Promise.all(
+    currentRecipes.map(async (r) => {
+      const count = await getRecipeSaveCount(r._id);
+      return { ...r, saveCount: count };
+    })
+  );
+
   const allRecipeIds = filtered.map((r) => r._id);
 
   return (
     <div className="min-h-[90vh] bg-cover bg-center">
       <MyCookbookClient
-        recipes={currentRecipes}
+        recipes={recipesWithSaveCount}
         allRecipeIds={allRecipeIds}
         currentPage={safePage}
         totalPages={totalPages}
