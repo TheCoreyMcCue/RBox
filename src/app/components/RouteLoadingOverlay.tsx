@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 
 interface Props {
@@ -11,10 +11,9 @@ export default function RouteLoadingOverlay({ children }: Props) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 300); // small delay to smooth
-
+    const timeout = setTimeout(() => setLoading(false), 300);
     return () => clearTimeout(timeout);
   }, [pathname]);
 
