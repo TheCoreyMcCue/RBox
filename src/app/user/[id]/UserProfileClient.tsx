@@ -277,14 +277,46 @@ export default function UserProfileClient({
                           type="button"
                           onClick={async (e) => {
                             e.preventDefault();
+
                             if (savedIds.includes(recipe._id)) {
                               await unsaveRecipe(loggedInId, recipe._id);
+
+                              // update savedIds
                               setSavedIds((prev) =>
                                 prev.filter((id) => id !== recipe._id)
                               );
+
+                              // decrement saveCount on the recipe object
+                              setRecipes((prev) =>
+                                prev.map((r) =>
+                                  r._id === recipe._id
+                                    ? {
+                                        ...r,
+                                        saveCount: Math.max(
+                                          0,
+                                          (r.saveCount ?? 1) - 1
+                                        ),
+                                      }
+                                    : r
+                                )
+                              );
                             } else {
                               await saveRecipe(loggedInId, recipe._id);
+
+                              // update savedIds
                               setSavedIds((prev) => [...prev, recipe._id]);
+
+                              // increment saveCount on the recipe object
+                              setRecipes((prev) =>
+                                prev.map((r) =>
+                                  r._id === recipe._id
+                                    ? {
+                                        ...r,
+                                        saveCount: (r.saveCount ?? 0) + 1,
+                                      }
+                                    : r
+                                )
+                              );
                             }
                           }}
                           className={`mt-3 w-full py-2 rounded-full text-white ${
