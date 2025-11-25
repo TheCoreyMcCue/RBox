@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut, signIn } from "next-auth/react";
 import AuthButtons from "../components/AuthButtons";
-import logo from "../icon.png";
+import logo from "../../../public/logo-trans.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16 sm:h-20">
           {/* LOGO */}
           <Link href="/" className="flex items-center gap-3">
-            <Image src={logo} alt="logo" className="h-auto w-[3rem] rounded" />
+            <Image
+              src={logo}
+              alt="logo"
+              className="h-auto w-[3.5rem] rounded"
+            />
             <span className="hidden sm:inline text-2xl font-[Homemade Apple] text-amber-800 tracking-wide">
               Nana&apos;s Cookbook
             </span>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
-import logo from "../icon.png";
+import logo from "../../../public/logo-trans.png";
 import bg_hero from "../../../public/recipecards.png";
 
 const Hero = () => {
@@ -69,26 +69,6 @@ const Hero = () => {
             </button>
           </div>
         )}
-      </div>
-
-      {/* Floating recipe cards */}
-      <div className="absolute hidden sm:block top-[12%] left-[4%] transform rotate-[-8deg] opacity-80">
-        <Image
-          src="https://marketplace.canva.com/EAGBuMS-5fM/3/0/1600w/canva-beige-white-retro-minimalist-recipe-card-FI7idgE80p8.jpg"
-          alt="Recipe card 1"
-          width={140}
-          height={100}
-          className="rounded-md shadow-md"
-        />
-      </div>
-      <div className="absolute hidden sm:block bottom-[12%] right-[4%] transform rotate-[10deg] opacity-80">
-        <Image
-          src="https://marketplace.canva.com/EAGBuMS-5fM/3/0/1600w/canva-beige-white-retro-minimalist-recipe-card-FI7idgE80p8.jpg"
-          alt="Recipe card 2"
-          width={150}
-          height={110}
-          className="rounded-md shadow-md"
-        />
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ const Footer = () => {
         {/* Left: Logo + Name */}
         <div className="flex items-center gap-2 mb-2 md:mb-0">
           <Image
-            src="/icon.png"
+            src="/logo-trans.png"
             alt="Nana's Cookbook Logo"
             width={28}
             height={28}
