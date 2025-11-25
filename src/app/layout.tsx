@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import SessionWrapper from "./components/SessionWrapper";
+import RouteLoadingOverlay from "./components/RouteLoadingOverlay";
 
 export const metadata: Metadata = {
   title: "Nana's Cookbook",
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <SessionWrapper>
       <html lang="en" className="h-full" suppressHydrationWarning>
-        <body className="flex flex-col min-h-dvh bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 text-amber-900 antialiased bg-cover bg-center">
-          <Header />
-          <main className="flex-grow flex flex-col">{children}</main>
-          <Footer />
-        </body>
+        <RouteLoadingOverlay>
+          <body className="flex flex-col min-h-dvh bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 text-amber-900 antialiased bg-cover bg-center">
+            <Header />
+            <main className="flex-grow flex flex-col">{children}</main>
+            <Footer />
+          </body>
+        </RouteLoadingOverlay>
       </html>
     </SessionWrapper>
   );
