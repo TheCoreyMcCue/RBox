@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Placeholder from "../../../../public/placeholder.png";
 import bg_profile from "../../../../public/recipecards.png";
+import PlaceholderAvatar from "../../../../public/placeholder-avatar.png";
 
 import {
   followUser,
@@ -158,11 +159,16 @@ export default function UserProfileClient({
         <div className="max-w-4xl mx-auto bg-white/80 border border-amber-200 rounded-3xl shadow p-10 backdrop-blur-sm mt-16">
           <div className="flex flex-col items-center text-center mb-10">
             <Image
-              src={user.photo || "/placeholder-user.png"}
+              src={
+                user.photo && typeof user.photo === "string"
+                  ? user.photo
+                  : PlaceholderAvatar.src
+              }
               alt={fullName}
               width={110}
               height={110}
               className="rounded-full border border-amber-200 shadow-md"
+              unoptimized
             />
 
             <h1 className="text-4xl font-[Homemade Apple] text-amber-800 mt-4">

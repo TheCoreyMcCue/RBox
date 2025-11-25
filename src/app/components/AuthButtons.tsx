@@ -3,6 +3,7 @@
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import placeholderAvatar from "../../../public/placeholder-avatar.png";
 
 export default function AuthButtons() {
   const { data: session, status } = useSession();
@@ -44,15 +45,13 @@ export default function AuthButtons() {
         onClick={() => setIsDropdownOpen((prev) => !prev)}
         className="flex items-center gap-2 px-3 py-2 rounded-full bg-amber-100 hover:bg-amber-200 transition duration-300 border border-amber-300"
       >
-        {session.user?.image && (
-          <Image
-            src={session.user.image}
-            alt="User avatar"
-            width={32}
-            height={32}
-            className="rounded-full border border-amber-200"
-          />
-        )}
+        <Image
+          src={session.user?.image || placeholderAvatar}
+          alt="User avatar"
+          width={32}
+          height={32}
+          className="rounded-full border border-amber-200"
+        />
 
         {/* Show name on desktop */}
         <span className="hidden md:inline text-sm text-amber-800 font-serif">

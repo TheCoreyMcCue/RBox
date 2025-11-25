@@ -84,7 +84,7 @@ export default async function FollowingPage() {
                     <div className="bg-white/90 border border-amber-200 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center backdrop-blur-sm">
                       <div className="flex justify-center mb-4">
                         <Image
-                          src={user.photo || "/placeholder-user.png"}
+                          src={user.photo || "/placeholder-avatar.png"}
                           alt={fullName}
                           width={90}
                           height={90}

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { followUser, unfollowUser } from "@/lib/actions/user.action";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import PlaceholderAvatar from "../../../public/avatar-default-icon.png";
 
 interface DiscoverClientProps {
   users: any[];
@@ -135,8 +136,8 @@ export default function DiscoverClient({
               >
                 <div className="flex justify-center mb-4">
                   <Image
-                    src={user.photo || "/placeholder-user.png"}
-                    alt="User Photo"
+                    src={user.photo || "/placeholder-avatar.png"}
+                    alt="user photo"
                     width={90}
                     height={90}
                     className="rounded-full border border-amber-200 shadow-sm group-hover:scale-105 transition"
