@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +36,20 @@ export default function UserProfileClient({
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const avatar = useMemo(
+    () =>
+      user?.photo && typeof user.photo === "string"
+        ? user.photo
+        : PlaceholderAvatar.src,
+    [user]
+  );
+
+  const fullName = useMemo(
+    () =>
+      `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || "Unnamed Cook",
+    [user]
+  );
 
   // ---------------- FOLLOW STATE ----------------
   useEffect(() => {
@@ -81,21 +95,18 @@ export default function UserProfileClient({
   };
 
   // ---------------- FILTER RECIPES ----------------
-  const filteredRecipes = recipes.filter((r: any) => {
+  const filteredRecipes = useMemo(() => {
     const t = searchTerm.toLowerCase();
-
-    const matchText =
-      r.title.toLowerCase().includes(t) ||
-      r.description.toLowerCase().includes(t) ||
-      r.categories?.some((c: string) => c.toLowerCase().includes(t));
-
-    const matchCat = !activeCategory || r.categories?.includes(activeCategory);
-
-    return matchText && matchCat;
-  });
-
-  const fullName =
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || "Unnamed Cook";
+    return recipes.filter((r: any) => {
+      const matchText =
+        r.title.toLowerCase().includes(t) ||
+        r.description.toLowerCase().includes(t) ||
+        r.categories?.some((c: string) => c.toLowerCase().includes(t));
+      const matchCat =
+        !activeCategory || r.categories?.includes(activeCategory);
+      return matchText && matchCat;
+    });
+  }, [recipes, searchTerm, activeCategory]);
 
   // ---------------- BACK BUTTON LOGIC ----------------
   const handleBack = () => {
@@ -159,11 +170,7 @@ export default function UserProfileClient({
         <div className="max-w-4xl mx-auto bg-white/80 border border-amber-200 rounded-3xl shadow p-10 backdrop-blur-sm mt-16">
           <div className="flex flex-col items-center text-center mb-10">
             <Image
-              src={
-                user.photo && typeof user.photo === "string"
-                  ? user.photo
-                  : PlaceholderAvatar.src
-              }
+              src={avatar}
               alt={fullName}
               width={110}
               height={110}
@@ -287,19 +294,21 @@ export default function UserProfileClient({
                               );
 
                               // decrement saveCount on the recipe object
-                              setRecipes((prev) =>
-                                prev.map((r) =>
-                                  r._id === recipe._id
-                                    ? {
-                                        ...r,
-                                        saveCount: Math.max(
-                                          0,
-                                          (r.saveCount ?? 1) - 1
-                                        ),
-                                      }
-                                    : r
-                                )
-                              );
+                              setRecipes((prev) => {
+                                const idx = prev.findIndex(
+                                  (r) => r._id === recipe._id
+                                );
+                                if (idx === -1) return prev;
+                                const updated = [...prev];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  saveCount: Math.max(
+                                    0,
+                                    (updated[idx].saveCount ?? 1) - 1
+                                  ),
+                                };
+                                return updated;
+                              });
                             } else {
                               await saveRecipe(loggedInId, recipe._id);
 
@@ -307,16 +316,18 @@ export default function UserProfileClient({
                               setSavedIds((prev) => [...prev, recipe._id]);
 
                               // increment saveCount on the recipe object
-                              setRecipes((prev) =>
-                                prev.map((r) =>
-                                  r._id === recipe._id
-                                    ? {
-                                        ...r,
-                                        saveCount: (r.saveCount ?? 0) + 1,
-                                      }
-                                    : r
-                                )
-                              );
+                              setRecipes((prev) => {
+                                const idx = prev.findIndex(
+                                  (r) => r._id === recipe._id
+                                );
+                                if (idx === -1) return prev;
+                                const updated = [...prev];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  saveCount: (updated[idx].saveCount ?? 0) + 1,
+                                };
+                                return updated;
+                              });
                             }
                           }}
                           className={`mt-3 w-full py-2 rounded-full text-white ${

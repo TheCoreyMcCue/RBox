@@ -22,7 +22,6 @@ export default function RootLayout({
         from-amber-50 via-amber-100 to-amber-50 text-amber-900 
         antialiased bg-cover bg-center"
       >
-        {/* Client wrappers MUST live inside body for SSR to work properly */}
         <SessionWrapper>
           <RouteLoadingOverlay>
             <Header />

@@ -1,4 +1,6 @@
 // app/user/[id]/page.tsx
+export const dynamic = "force-dynamic";
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserProfile } from "@/lib/actions/user.action";
@@ -12,19 +14,30 @@ export default async function UserProfilePage({
 }) {
   const session = await getServerSession(authOptions);
 
-  // SSR guard – user must be signed in
+  // Logged-in user ID (string or null)
   const rawId =
     (session?.user as any)?._id || (session?.user as any)?.clerkId || null;
   const loggedInId = rawId ? String(rawId) : null;
 
-  const profileUserId = params.id;
+  const profileUserId = String(params.id);
 
-  // Fetch user + recipes on server
-  const user = await getUserProfile(profileUserId);
+  // Fetch profile + recipes (SSR)
+  const profileUser = await getUserProfile(profileUserId);
   const recipes = await getRecipesByUser(profileUserId);
 
-  // Convert Mongo objects → plain JSON
-  const safeUser = user ? JSON.parse(JSON.stringify(user)) : null;
+  // If user not found
+  if (!profileUser) {
+    return (
+      <UserProfileClient
+        loggedInId={loggedInId}
+        profileUser={null}
+        initialRecipes={[]}
+      />
+    );
+  }
+
+  // Fully serialize Mongo docs → plain JSON
+  const safeUser = JSON.parse(JSON.stringify(profileUser));
   const safeRecipes = JSON.parse(JSON.stringify(recipes || []));
 
   return (
