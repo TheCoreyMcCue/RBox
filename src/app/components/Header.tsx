@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut, signIn } from "next-auth/react";
@@ -16,17 +16,19 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
 
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = (event: PointerEvent) => {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
       setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    else document.removeEventListener("mousedown", handleClickOutside);
-
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (isOpen) {
+      document.addEventListener("pointerdown", handleClickOutside);
+      return () => {
+        document.removeEventListener("pointerdown", handleClickOutside);
+      };
+    }
   }, [isOpen]);
 
   return (
@@ -39,6 +41,7 @@ const Navbar = () => {
               src={logo}
               alt="logo"
               className="h-auto w-[3.5rem] rounded"
+              priority
             />
             <span className="hidden sm:inline text-2xl font-[Homemade Apple] text-amber-800 tracking-wide">
               Nana&apos;s Cookbook
@@ -231,4 +234,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default React.memo(Navbar);
