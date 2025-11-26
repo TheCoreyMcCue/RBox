@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@datadog/browser-rum": "^6.24.1",
+    "@datadog/browser-rum-react": "^6.24.1",
     "@uploadthing/react": "^6.7.2",
     "axios": "^1.13.2",
     "formik": "^2.4.6",

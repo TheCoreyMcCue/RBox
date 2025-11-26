@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import DatadogLoader from "./DatadogLoader"; // Import Datadog RUM initialization
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import SessionWrapper from "./components/SessionWrapper";
@@ -22,6 +23,7 @@ export default function RootLayout({
         from-amber-50 via-amber-100 to-amber-50 text-amber-900 
         antialiased bg-cover bg-center"
       >
+        <DatadogLoader />
         <SessionWrapper>
           <RouteLoadingOverlay>
             <Header />
