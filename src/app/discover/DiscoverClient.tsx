@@ -1,7 +1,6 @@
-// src/app/discover/DiscoverClient.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { followUser, unfollowUser } from "@/lib/actions/user.action";
 import { useRouter } from "next/navigation";
@@ -24,32 +23,59 @@ export default function DiscoverClient({
     (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filtered, setFiltered] = useState<any[]>([]);
+  const [clientUsers, setClientUsers] = useState<any[]>(users);
 
-  // Ensure client has its own copy
-  const [clientUsers] = useState<any[]>(users);
-
-  // Filter users
-  useEffect(() => {
-    if (searchTerm.length < 2) {
-      setFiltered([]);
-      return;
-    }
-
+  const filtered = useMemo(() => {
+    if (!searchTerm.trim()) return clientUsers;
     const lower = searchTerm.toLowerCase();
-
-    const results = clientUsers.filter((u) => {
+    return clientUsers.filter((u) => {
       if (!u) return false;
-
       const fullName = `${u.firstName ?? ""} ${u.lastName ?? ""}`
         .toLowerCase()
         .trim();
-
       return u.email?.toLowerCase().includes(lower) || fullName.includes(lower);
     });
-
-    setFiltered(results);
   }, [searchTerm, clientUsers]);
+
+  const navigate = useCallback(
+    (id: string) => {
+      router.push(`/user/${id}`);
+    },
+    [router]
+  );
+
+  const handleFollowToggle = useCallback(
+    async (user: any, alreadyFollowing: boolean) => {
+      if (alreadyFollowing) {
+        await unfollowUser(loggedInId, user._id);
+        setClientUsers((prev) =>
+          prev.map((u) =>
+            u._id === user._id
+              ? {
+                  ...u,
+                  followers: (u.followers ?? []).filter(
+                    (fid: string) => fid !== loggedInId
+                  ),
+                }
+              : u
+          )
+        );
+      } else {
+        await followUser(loggedInId, user._id);
+        setClientUsers((prev) =>
+          prev.map((u) =>
+            u._id === user._id
+              ? {
+                  ...u,
+                  followers: [...(u.followers ?? []), loggedInId],
+                }
+              : u
+          )
+        );
+      }
+    },
+    [loggedInId]
+  );
 
   if (status === "loading") {
     return (
@@ -75,7 +101,8 @@ export default function DiscoverClient({
           className="w-full h-full bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${bgImage})`,
-            backgroundSize: "cover",
+            backgroundSize: "contain",
+            backgroundRepeat: "repeat",
             opacity: 0.25,
           }}
         />
@@ -117,29 +144,27 @@ export default function DiscoverClient({
           </svg>
         </div>
 
-        {searchTerm.length > 0 && searchTerm.length < 2 && (
-          <p className="text-center text-amber-700 font-serif mb-4">
-            Type at least 2 characters to search…
-          </p>
-        )}
-
         {/* Results */}
         <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((user) => {
             const alreadyFollowing = user.followers?.includes(loggedInId);
 
             return (
-              <div
+              <button
                 key={user._id}
-                onClick={() => router.push(`/user/${user._id}`)}
+                type="button"
+                onClick={() => navigate(user._id)}
+                onMouseEnter={() => router.prefetch(`/user/${user._id}`)}
                 className="group bg-white/90 border border-amber-200 rounded-3xl p-6 shadow-md hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer backdrop-blur-sm text-center"
               >
                 <div className="flex justify-center mb-4">
                   <Image
-                    src={user.photo || "/placeholder-avatar.png"}
+                    src={user.photo || PlaceholderAvatar.src}
                     alt="user photo"
                     width={90}
                     height={90}
+                    loading="lazy"
+                    decoding="async"
                     className="rounded-full border border-amber-200 shadow-sm group-hover:scale-105 transition"
                   />
                 </div>
@@ -162,39 +187,7 @@ export default function DiscoverClient({
                     type="button"
                     onClick={async (e) => {
                       e.stopPropagation();
-
-                      if (alreadyFollowing) {
-                        await unfollowUser(loggedInId, user._id);
-
-                        setFiltered((prev) =>
-                          prev.map((u) =>
-                            u._id === user._id
-                              ? {
-                                  ...u,
-                                  followers: (u.followers ?? []).filter(
-                                    (fid: string) => fid !== loggedInId
-                                  ),
-                                }
-                              : u
-                          )
-                        );
-                      } else {
-                        await followUser(loggedInId, user._id);
-
-                        setFiltered((prev) =>
-                          prev.map((u) =>
-                            u._id === user._id
-                              ? {
-                                  ...u,
-                                  followers: [
-                                    ...(u.followers ?? []),
-                                    loggedInId,
-                                  ],
-                                }
-                              : u
-                          )
-                        );
-                      }
+                      await handleFollowToggle(user, alreadyFollowing);
                     }}
                     className={`mt-4 w-full py-2 rounded-full font-serif shadow transition ${
                       alreadyFollowing
@@ -205,7 +198,7 @@ export default function DiscoverClient({
                     {alreadyFollowing ? "Following ✓" : "Follow"}
                   </button>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>

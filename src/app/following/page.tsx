@@ -35,16 +35,19 @@ export default async function FollowingPage() {
 
   return (
     <div className="relative min-h-[90vh] overflow-hidden">
+      {/* Fixed Background */}
       <div className="fixed inset-0 -z-10">
         <div
           className="w-full h-full bg-center bg-no-repeat"
           style={{
             backgroundImage: "url('/recipecards.png')",
             backgroundSize: "cover",
-            opacity: 0.12,
+            opacity: 0.2,
           }}
         />
       </div>
+
+      {/* Foreground Content */}
       <div className="relative z-10">
         <div className="px-6 py-12">
           {/* HEADER */}
