@@ -1,7 +1,6 @@
-// app/my-cookbook/MyCookbookClient.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,8 +21,6 @@ const QUICK_CATEGORY_FILTERS = [
   "vegan",
   "vegetarian",
 ];
-
-const RECIPES_PER_PAGE = 6;
 
 interface MyCookbookClientProps {
   recipes: Recipe[];
@@ -47,9 +44,7 @@ export default function MyCookbookClient({
   const searchParams = useSearchParams();
 
   const [showButton, setShowButton] = useState(true);
-  const [scrollTimeoutId, setScrollTimeoutId] = useState<NodeJS.Timeout | null>(
-    null
-  );
+  const scrollTimeoutRef = useRef<number | null>(null);
   const [searchTerm, setSearchTerm] = useState(search);
   const [activeCat, setActiveCat] = useState<string | null>(
     activeCategory || null
@@ -81,18 +76,39 @@ export default function MyCookbookClient({
     [pathname, router, searchParams]
   );
 
+  // --------------- DEBOUNCE SEARCH → URL ---------------
+  useEffect(() => {
+    // If the prop-provided search matches local state, do nothing
+    if (searchTerm === search) return;
+
+    const timeoutId = window.setTimeout(() => {
+      updateURL(1, searchTerm, null);
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchTerm, search, updateURL]);
+
   // --------------- SCROLL HANDLER (random button visibility) ---------------
   useEffect(() => {
     const handleScroll = () => {
       setShowButton(false);
-      if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-      const id = setTimeout(() => setShowButton(true), 250);
-      setScrollTimeoutId(id);
+      if (scrollTimeoutRef.current !== null) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+      const id = window.setTimeout(() => setShowButton(true), 250);
+      scrollTimeoutRef.current = id;
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [scrollTimeoutId]);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current !== null) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // --------------- RANDOM RECIPE ---------------
   const handleRandomRecipe = () => {
@@ -113,7 +129,6 @@ export default function MyCookbookClient({
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setActiveCat(null);
-    updateURL(1, value, null);
   };
 
   // --------------- CATEGORY CLICK ---------------

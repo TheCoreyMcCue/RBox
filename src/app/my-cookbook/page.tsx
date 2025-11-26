@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // ⬅ your existing NextAuth configimport { redirect } from "next/navigation";
 import { getRecipesByUser } from "@/lib/actions/recipe.action";
 import { getRecipeSaveCount } from "@/lib/actions/recipe.action";
-import MyCookbookClient from "../components/MyCookbookClient";
+import MyCookbookClient from "./MyCookbookClient";
 import { Recipe } from "../utils/types";
 import { redirect } from "next/navigation";
 
