@@ -7,14 +7,12 @@ import Placeholder from "../../../public/placeholder.png";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getSavedRecipes, getUserProfile } from "@/lib/actions/user.action";
+import { getSavedRecipes } from "@/lib/actions/user.action";
 import { getRecipeById } from "@/lib/actions/recipe.action";
 
-// ⭐ Server Component
+// Server Component
 export default async function SavedRecipesPage() {
-  // ─────────────────────────────
   // 1) AUTH CHECK (SSR)
-  // ─────────────────────────────
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?._id || (session?.user as any)?.clerkId;
 
@@ -31,14 +29,15 @@ export default async function SavedRecipesPage() {
     );
   }
 
-  // ─────────────────────────────
   // 2) LOAD SAVED IDS (SSR)
-  // ─────────────────────────────
   const savedIds = await getSavedRecipes(userId);
 
   if (!savedIds || savedIds.length === 0) {
     return (
-      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-6 bg-cover bg-center">
+      <div
+        className="min-h-[90vh] flex flex-col items-center justify-center text-center px-6 bg-cover bg-center"
+        style={{ backgroundImage: `url(${bg_saved.src})` }}
+      >
         <h1 className="text-5xl font-[Homemade Apple] text-amber-800 drop-shadow mb-4">
           Saved Recipes ⭐
         </h1>
@@ -57,18 +56,16 @@ export default async function SavedRecipesPage() {
     );
   }
 
-  // ─────────────────────────────
   // 3) LOAD ALL RECIPE OBJECTS IN PARALLEL (SSR)
-  // ─────────────────────────────
-  const recipePromises = savedIds.map((id: string) => getRecipeById(id));
+  const recipePromises: Promise<any>[] = savedIds.map((id: string) =>
+    getRecipeById(id)
+  );
   const resolvedRecipes = await Promise.all(recipePromises);
 
-  // filter deleted or missing recipes
+  // Filter deleted or missing recipes
   const recipes = resolvedRecipes.filter(Boolean);
 
-  // ─────────────────────────────
   // 4) RENDER PAGE
-  // ─────────────────────────────
   return (
     <div className="relative min-h-[90vh] overflow-hidden">
       <div className="fixed inset-0 -z-10">
@@ -103,7 +100,7 @@ export default async function SavedRecipesPage() {
               <Link key={recipe._id} href={`/recipes/${recipe._id}`}>
                 <div className="bg-white/90 border border-amber-200 rounded-3xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer backdrop-blur-sm">
                   <Image
-                    src={recipe.image ? recipe.image : Placeholder.src}
+                    src={recipe.image ? recipe.image : Placeholder}
                     alt={recipe.title}
                     width={500}
                     height={300}
