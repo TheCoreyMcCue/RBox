@@ -12,20 +12,25 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <SessionWrapper>
-      <html lang="en" className="h-full" suppressHydrationWarning>
-        <RouteLoadingOverlay>
-          <body className="flex flex-col min-h-dvh bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 text-amber-900 antialiased bg-cover bg-center">
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <body
+        className="flex flex-col min-h-dvh bg-gradient-to-b 
+        from-amber-50 via-amber-100 to-amber-50 text-amber-900 
+        antialiased bg-cover bg-center"
+      >
+        {/* Client wrappers MUST live inside body for SSR to work properly */}
+        <SessionWrapper>
+          <RouteLoadingOverlay>
             <Header />
             <main className="flex-grow flex flex-col">{children}</main>
             <Footer />
-          </body>
-        </RouteLoadingOverlay>
-      </html>
-    </SessionWrapper>
+          </RouteLoadingOverlay>
+        </SessionWrapper>
+      </body>
+    </html>
   );
 }
