@@ -12,7 +12,7 @@ export default async function DiscoverPage() {
   const users = JSON.parse(JSON.stringify(rawUsers));
 
   return (
-    <div className="min-h-[90vh]">
+    <div className="min-h-[90vh]" suppressHydrationWarning>
       <DiscoverClient users={users} bgImage={bg_discover.src} />
     </div>
   );

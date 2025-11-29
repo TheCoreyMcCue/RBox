@@ -21,6 +21,7 @@ export default function RootLayout({
     <html lang="en" className="h-full" suppressHydrationWarning>
       <DatadogLoader />
       <body
+        suppressHydrationWarning
         className="flex flex-col min-h-dvh bg-gradient-to-b 
         from-amber-50 via-amber-100 to-amber-50 text-amber-900 
         antialiased bg-cover bg-center"

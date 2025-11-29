@@ -153,6 +153,30 @@ export default function RecipeDisplay({
     "yogurt",
   ];
 
+  // Spices/powders that should NOT be converted
+  const SPICES = [
+    "salt",
+    "pepper",
+    "paprika",
+    "cayenne",
+    "cumin",
+    "turmeric",
+    "oregano",
+    "thyme",
+    "garlic powder",
+    "onion powder",
+    "chili powder",
+    "curry",
+    "ginger",
+    "nutmeg",
+    "coriander",
+  ];
+
+  const isSpice = (name: string): boolean => {
+    const lower = name.toLowerCase();
+    return SPICES.some((s) => lower.includes(s));
+  };
+
   const isLiquid = (name: string): boolean => {
     const lower = name.toLowerCase();
     return LIQUID_INGREDIENTS.some((liquid) => lower.includes(liquid));
@@ -198,10 +222,16 @@ export default function RecipeDisplay({
     }
 
     // solids → density-based grams
+    // solids → density-based grams
     const key = guessIngredientKey(ingredientName);
     if (key) {
       const grams = ml * DENSITY[key];
       return `${Math.round(grams)} g`;
+    }
+
+    // ❌ prevent wrong conversions for spices/powders
+    if (isSpice(ingredientName)) {
+      return `${amount} ${unit}`;
     }
 
     // unknown solids fallback → ml

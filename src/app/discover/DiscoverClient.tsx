@@ -150,11 +150,15 @@ export default function DiscoverClient({
             const alreadyFollowing = user.followers?.includes(loggedInId);
 
             return (
-              <button
+              <div
                 key={user._id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => navigate(user._id)}
                 onMouseEnter={() => router.prefetch(`/user/${user._id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") navigate(user._id);
+                }}
                 className="group bg-white/90 border border-amber-200 rounded-3xl p-6 shadow-md hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer backdrop-blur-sm text-center"
               >
                 <div className="flex justify-center mb-4">
@@ -198,7 +202,7 @@ export default function DiscoverClient({
                     {alreadyFollowing ? "Following ✓" : "Follow"}
                   </button>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
