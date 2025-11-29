@@ -412,7 +412,7 @@ const CreateRecipe = () => {
 
                   <p className="text-xs text-amber-700 mb-2">
                     Amount and unit are optional — you can leave them blank for
-                    things like "salt" or "pepper to taste".
+                    things like &quot;salt&quot; or &quot;pepper to taste&quot;.
                   </p>
 
                   <div className="space-y-3">
