@@ -1,15 +1,24 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 interface DeleteModalProps {
   onClose: () => void;
   handleDelete: () => Promise<void>;
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({ onClose, handleDelete }) => {
+  const router = useRouter();
+
   const confirmAndDelete = async () => {
     try {
       await handleDelete();
       onClose();
+      router.push("/my-cookbook");
+      // Give push a tick before refresh
+      setTimeout(() => {
+        router.refresh();
+      }, 50);
     } catch (error) {
       console.error("Error deleting recipe:", error);
       alert("Something went wrong while deleting the recipe.");

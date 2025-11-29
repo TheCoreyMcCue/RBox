@@ -74,6 +74,9 @@ export default function EditModal({ onClose, recipe }: EditModalProps) {
 
       await updateRecipe(recipe._id, payload);
       router.push("/my-cookbook");
+      setTimeout(() => {
+        router.refresh();
+      }, 50);
     } catch (err) {
       console.error(err);
       setError("Failed to update recipe.");
@@ -189,7 +192,6 @@ export default function EditModal({ onClose, recipe }: EditModalProps) {
                       )
                     }
                     className="w-24 rounded-xl border border-amber-200 p-2 bg-white/80"
-                    required
                   />
 
                   <select

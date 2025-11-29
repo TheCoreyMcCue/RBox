@@ -21,11 +21,13 @@ export interface IRecipe extends Document {
 const IngredientSchema = new Schema<IIngredient>({
   amount: {
     type: String,
-    required: true,
+    required: false,
+    default: "",
   },
   unit: {
     type: String,
     required: false,
+    default: "",
   },
   name: {
     type: String,
@@ -59,7 +61,7 @@ const RecipeSchema = new Schema<IRecipe>({
   },
   categories: {
     type: [String],
-    required: true,
+    default: [],
   },
   createdAt: {
     type: Date,

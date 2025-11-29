@@ -295,11 +295,13 @@ const CreateRecipe = () => {
               description: values.description.trim(),
               cookTime: String(values.cookTime || "").trim(),
               image: values.image,
-              ingredients: values.ingredients.map((i) => ({
-                amount: i.amount.trim(),
-                unit: i.unit.trim(),
-                name: i.name.trim(),
-              })),
+              ingredients: values.ingredients
+                .map((i) => ({
+                  amount: i.amount.trim(),
+                  unit: i.unit.trim(),
+                  name: i.name.trim(),
+                }))
+                .filter((i) => i.name.length > 0),
               steps: values.steps.map((s) => s.trim()),
               categories: values.categories
                 .map((c) => c.trim())
@@ -309,7 +311,14 @@ const CreateRecipe = () => {
             const newRecipe = await createRecipe(payload);
             if (newRecipe) {
               resetForm();
-              router.push("/my-cookbook");
+
+              // 🔥 Force Next.js to invalidate the cached SSR result
+              router.refresh();
+
+              // 🔥 After the refresh propagates, navigate to the page
+              setTimeout(() => {
+                router.push("/my-cookbook");
+              }, 50);
             }
           } catch (err) {
             console.error("❌ Error creating recipe:", err);
@@ -400,6 +409,11 @@ const CreateRecipe = () => {
                       ➕ Add Ingredient
                     </button>
                   </div>
+
+                  <p className="text-xs text-amber-700 mb-2">
+                    Amount and unit are optional — you can leave them blank for
+                    things like "salt" or "pepper to taste".
+                  </p>
 
                   <div className="space-y-3">
                     {values.ingredients.map((_, index) => (
