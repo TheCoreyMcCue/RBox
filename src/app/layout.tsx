@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import SessionWrapper from "./components/SessionWrapper";
 import RouteLoadingOverlay from "./components/RouteLoadingOverlay";
+import EarlyAccessGate from "./components/EarlyAccess";
 
 export const metadata: Metadata = {
   title: "Nana's Cookbook",
@@ -18,13 +19,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
+      <DatadogLoader />
       <body
         className="flex flex-col min-h-dvh bg-gradient-to-b 
         from-amber-50 via-amber-100 to-amber-50 text-amber-900 
         antialiased bg-cover bg-center"
       >
-        <DatadogLoader />
         <SessionWrapper>
+          <EarlyAccessGate />
           <RouteLoadingOverlay>
             <Header />
             <main className="flex-grow flex flex-col">{children}</main>
