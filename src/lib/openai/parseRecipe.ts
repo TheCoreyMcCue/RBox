@@ -68,6 +68,18 @@ function sanitizeRecipeText(input: string): string {
       .replace(/\r/g, "")
       .replace(/\n{3,}/g, "\n\n")
       .trim()
+      // Remove zero-width characters
+      .replace(/[\u200B-\u200D\uFEFF]/g, "")
+
+      // Normalize non-breaking spaces
+      .replace(/\u00A0/g, " ")
+
+      // Remove soft hyphens
+      .replace(/\u00AD/g, "")
+
+      // Normalize smart punctuation
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
   );
 }
 

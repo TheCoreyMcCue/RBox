@@ -9,11 +9,11 @@ export interface IIngredient extends Document {
 const IngredientSchema = new Schema<IIngredient>({
   amount: {
     type: String,
-    required: true,
+    required: false,
   },
   unit: {
     type: String,
-    required: true,
+    required: false,
   },
   name: {
     type: String,
