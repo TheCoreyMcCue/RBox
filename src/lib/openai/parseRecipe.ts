@@ -35,8 +35,15 @@ interface RecipeResponse {
 function sanitizeRecipeText(input: string): string {
   return (
     input
-      // Remove IG/food-blog checkbox bullets
+      // Remove IG/food-blog checkbox bullets (both "▢ 1" and "▢1")
       .replace(/^▢\s*/gm, "")
+      .replace(/^▢(?=\d)/gm, "")
+
+      // Remove scaling controls like "1x", "2x", "3x"
+      .replace(/^\s*[0-9]+x\s*$/gim, "")
+
+      // Remove US / Metric headers
+      .replace(/^\s*(US|Metric)\s*$/gim, "")
 
       // Remove "ADVERTISING" or similar junk lines
       .replace(/^\s*ADVERTISING\s*$/gim, "")
