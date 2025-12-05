@@ -29,6 +29,41 @@ interface RecipeResponse {
   }[];
 }
 
+// -------------------------------------------------
+//                ROBUST SANITIZER
+// -------------------------------------------------
+function sanitizeRecipeText(input: string): string {
+  return (
+    input
+      // Remove IG/food-blog checkbox bullets
+      .replace(/^▢\s*/gm, "")
+
+      // Remove "ADVERTISING" or similar junk lines
+      .replace(/^\s*ADVERTISING\s*$/gim, "")
+
+      // Normalize various dash styles to ASCII hyphen
+      .replace(/[–—−]/g, "-")
+
+      // Normalize fractions (common IG/blog characters)
+      .replace(/¼/g, "1/4")
+      .replace(/½/g, "1/2")
+      .replace(/¾/g, "3/4")
+
+      // Fix unit plural mismatch when amount is 1
+      .replace(/\b1 tablespoons\b/gi, "1 tablespoon")
+      .replace(/\b1 teaspoons\b/gi, "1 teaspoon")
+      .replace(/\b1 cups\b/gi, "1 cup")
+
+      // Remove stray bullet characters
+      .replace(/^[•*+-]\s*/gm, "")
+
+      // Normalize double spaces and whitespace noise
+      .replace(/\r/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
+}
+
 // -------------- Your canonical categories --------------
 export const CATEGORY_OPTIONS = {
   mealTypes: ["breakfast", "brunch", "lunch", "dinner", "snack"],
@@ -96,7 +131,6 @@ export const CATEGORY_OPTIONS = {
     "winter",
   ],
 
-  // ⭐ NEW SECTION — for rubs, sauces, condiments, etc.
   misc: [
     "sauce",
     "marinade",
@@ -121,77 +155,63 @@ function normalizeUnit(rawUnit: any): string {
   const u = String(rawUnit).toLowerCase().trim();
 
   const map: Record<string, string> = {
-    // teaspoons
     tsp: "tsp",
     tsps: "tsp",
     teaspoon: "tsp",
     teaspoons: "tsp",
 
-    // tablespoons
     tbsp: "tbsp",
     tbsps: "tbsp",
     tablespoon: "tbsp",
     tablespoons: "tbsp",
     tbl: "tbsp",
 
-    // cups
     cup: "cup",
     cups: "cup",
 
-    // quarts
     quart: "quart",
     quarts: "quart",
     qt: "quart",
     qts: "quart",
 
-    // pints
     pint: "pint",
     pints: "pint",
     pt: "pint",
     pts: "pint",
 
-    // gallons
     gallon: "gallon",
     gallons: "gallon",
     gal: "gallon",
 
-    // fl oz
     "fl oz": "fl oz",
     "fluid ounce": "fl oz",
     "fluid ounces": "fl oz",
 
-    // ml
     ml: "ml",
     milliliter: "ml",
     milliliters: "ml",
 
-    // liters
     l: "l",
     liter: "l",
     liters: "l",
 
-    // grams
     g: "g",
     gram: "g",
     grams: "g",
 
-    // kilograms
     kg: "kg",
     kilogram: "kg",
     kilograms: "kg",
 
-    // ounces
     oz: "oz",
     ounce: "oz",
     ounces: "oz",
 
-    // pounds
     lb: "lb",
     lbs: "lb",
     pound: "lb",
     pounds: "lb",
 
-    // ✅ whole units (intact items)
     whole: "whole",
     wholes: "whole",
     each: "whole",
@@ -210,7 +230,6 @@ function normalizeUnit(rawUnit: any): string {
     ear: "whole",
     ears: "whole",
 
-    // cooking descriptors that are more like "sub-pieces"
     clove: "clove",
     cloves: "clove",
     slice: "slice",
@@ -218,13 +237,11 @@ function normalizeUnit(rawUnit: any): string {
     stick: "stick",
     sticks: "stick",
 
-    // “tiny” units
     pinch: "pinch",
     pinches: "pinch",
     dash: "pinch",
     dashes: "pinch",
 
-    // handful
     handful: "handful",
     handfuls: "handful",
   };
@@ -234,12 +251,10 @@ function normalizeUnit(rawUnit: any): string {
 
 function normalizeCategories(raw: any): string[] {
   if (!Array.isArray(raw)) return [];
-
   const cleaned = raw
     .map((c) => String(c).toLowerCase().trim())
     .filter((c) => ALL_CATEGORIES.includes(c));
 
-  // unique
   return Array.from(new Set(cleaned));
 }
 
@@ -259,12 +274,14 @@ export const parseRecipe = async (
     return null;
   }
 
+  // ⭐ Apply robust sanitizer BEFORE sending to OpenAI
+  const cleanedInput = sanitizeRecipeText(recipeText);
+
   try {
     const prompt = `
 You are a world-class recipe parser. Your ONLY job is to convert ANY recipe text into strictly valid JSON.
 
 Return ONLY valid, minified JSON:
-
 {
   "title": string,
   "description": string,
@@ -283,20 +300,20 @@ ${ALL_CATEGORIES.map((c) => `"${c}"`).join(", ")}
 - cookTime MUST be an integer number of minutes.
 - ingredients.amount must be plain strings ("1", "1/2", "2.5").
 - ingredients.unit must be canonical:
-  ["tsp","tbsp","cup","ml","l","g","kg","oz","lb","piece","pinch","quart","pint","gallon","fl oz"]
+  ["tsp","tbsp","cup","ml","l","g","kg","oz","lb","pinch","quart","pint","gallon","fl oz","whole"]
 - If a unit is missing, set unit to "".
-- DO NOT include numbering in steps ("1.", "2.", "•").
-- DO NOT invent ingredients or steps—use ONLY what appears in the recipe.
-- DO NOT output any text outside the JSON.
+- DO NOT include numbering in steps.
+- DO NOT invent ingredients or steps.
+- DO NOT output anything outside the JSON.
     `.trim();
 
     const response = await axios.post<RecipeResponse>(
       OPENAI_API_URL,
       {
-        model: "gpt-4.1-mini", // more stable than gpt-4-turbo
+        model: "gpt-4.1-mini",
         messages: [
           { role: "system", content: prompt },
-          { role: "user", content: recipeText },
+          { role: "user", content: cleanedInput },
         ],
         temperature: 0.0,
         max_tokens: 1200,
@@ -312,21 +329,18 @@ ${ALL_CATEGORIES.map((c) => `"${c}"`).join(", ")}
 
     const rawString = response.data.choices?.[0]?.message?.content || "";
 
-    // Extract JSON safely
     const start = rawString.indexOf("{");
     const end = rawString.lastIndexOf("}");
     const jsonString = rawString.slice(start, end + 1);
 
-    // Clean formatting issues
     const cleaned = jsonString
-      .replace(/\u201C|\u201D/g, '"') // smart quotes
+      .replace(/\u201C|\u201D/g, '"')
       .replace(/\u2018|\u2019/g, "'")
       .replace(/,\s*}/g, "}")
       .replace(/,\s*]/g, "]");
 
     const raw = JSON.parse(cleaned);
 
-    // ---------- Normalize ingredients ----------
     const ingredients = Array.isArray(raw.ingredients)
       ? raw.ingredients.map((i: any) => ({
           amount: String(i.amount ?? "").trim(),
@@ -335,7 +349,6 @@ ${ALL_CATEGORIES.map((c) => `"${c}"`).join(", ")}
         }))
       : [];
 
-    // ---------- Normalize steps ----------
     const steps = Array.isArray(raw.steps)
       ? raw.steps.map((s: any) => stripStepNumbering(String(s)))
       : [];
