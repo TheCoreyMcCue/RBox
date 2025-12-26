@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import DatadogLoader from "./DatadogLoader"; // Import Datadog RUM initialization
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import SessionWrapper from "./components/SessionWrapper";
@@ -19,7 +18,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
-      <DatadogLoader />
       <body
         suppressHydrationWarning
         className="flex flex-col min-h-dvh bg-gradient-to-b 
